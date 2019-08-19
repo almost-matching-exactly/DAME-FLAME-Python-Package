@@ -19,10 +19,7 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated', match
     # the treatment indicator column and the matched indicator column.
     # it returns the array indicating whether each unit is matched (the first return value), 
     # and a list of indices for the matched units (the second return value)
-    
-    print("covs", covs)
-    print("covs_max_list", covs_max_list)
-    print("df", df)
+
     arr_slice_wo_t = df[covs].values # the covariates values as a matrix
     arr_slice_w_t = df[ covs + [treatment_indicator_col] ].values # the covariate values together with the treatment indicator as a matrix
     lidx_wo_t = np.dot( arr_slice_wo_t, np.array([ covs_max_list[i]**(i) for i in range(len(covs_max_list))]) ) # matrix multiplication, get a unique number for each unit
@@ -31,10 +28,7 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated', match
     _, unqtags_w_t, counts_w_t = np.unique(lidx_w_t, return_inverse=True, return_counts=True) # count how many times each number appears (with treatment indicator)
     
     match_indicator = ~(counts_w_t[unqtags_w_t] == counts_wo_t[unqtags_wo_t]) # a unit is matched if and only if the counts don't agree
-    print("**", lidx_wo_t)
-    print(type(lidx_wo_t))
-    print(lidx_wo_t.shape)
-    print(type(match_indicator))
+
     print(match_indicator.shape)
     
     return match_indicator, lidx_wo_t[match_indicator]

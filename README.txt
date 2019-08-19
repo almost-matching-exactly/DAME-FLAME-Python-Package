@@ -21,11 +21,10 @@ Here's my remaining todo list (they're mostly commented in the code, but wanted 
 (Easy)
 I mistakenly thought we wanted variables named according to the paper and will change those. (So "lambda" will become "active_covariates", etc. Whoops!)
 Author names in function headers, along with filling in the rest of them)
-Validate user input (weight vector correct length? Adds to one? Included treatment column? Column headers unique? etc)
 Need to add in the group by SQL implementation from Tianyu's code too
 Allow for early stopping conditions based on weight or number of units being low
 There might be a more time efficient implementation of checking for a single treatment unit remaining (checking Tianyu's code again)
 
 (Harder)
 More test cases
-a new structure for the output, involving two separate files/datasets listing groups and units. Also, allowing for CATE output values
+Allowing for CATE output values

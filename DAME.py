@@ -33,9 +33,6 @@ def main():
                         const='bit-vector', 
                         help='enter bit-vector or sql (default: bit-vector)')
     
-
-    #parser.add_argument('--file_name', nargs=1, type=argparse.FileType('r'),
-    #                    help='enter name of input file')
     
     parser.add_argument('--file_name', nargs=1, type=str,
                         help='enter name of input file')
@@ -45,7 +42,8 @@ def main():
                               boolean value for treatment or control group')
     
     parser.add_argument('--weight_array', nargs=1, type=str,
-                        help='enter a comma separated string indicating the weights of \
+                        help='enter a comma separated string indicating the \
+                        weights of \
                         the coefficients, predetermined from a ML algorithm. \
                         Must be the length of the number of coefficients.')
     
@@ -55,10 +53,10 @@ def main():
     args = parser.parse_args()
 
     # call functions to do things.
-    df, treatment_column_name = data_cleaning.process_input_file(args)
+    df, treatment_column_name, weight_array = data_cleaning.process_input_file(args)
     
-    weight_array = [float(item) for item in args.weight_array[0].split(',')]
-    dame_algorithms.algo1(df, treatment_column_name, weight_array)
+    
+    return_covs_list, return_matched_group, return_matched_data = dame_algorithms.algo1(df, treatment_column_name, weight_array)
     
     
 if __name__ == "__main__":
