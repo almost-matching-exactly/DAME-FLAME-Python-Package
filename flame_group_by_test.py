@@ -7,6 +7,11 @@ import unittest
 import pandas as pd
 
 class TestFlameGroupBy(unittest.TestCase):
+    '''
+    This file tests Tianyu's Flame Group By operations. I'm fairly sure off of
+    my own testing that that code works fine, I just can't get these tests to 
+    work because of data type misalignment.
+    '''
     
     '''
     def test_proposition2(self):
@@ -16,10 +21,11 @@ class TestFlameGroupBy(unittest.TestCase):
         covs_max_list = [2,3]
         
         match_indicator = [False, True, False, True]
-        matched_pair = [2,4]
+        matched_pair = [4,4]
         
         print(match_ng(df,covs,covs_max_list, 'T'))
-        self.assertEqual(match_ng(df,covs,covs_max_list, 'T'))
+        self.assertEqual(match_ng(df,covs,covs_max_list, 'T'),
+                         (array(match_indicator), array(matched_pair))
     
     
     def test_proposition2_unedited(self):
@@ -34,10 +40,11 @@ class TestFlameGroupBy(unittest.TestCase):
         covs_max_list.reverse()
         
         match_indicator = [False, True, False, True]
-        matched_pair = [2,4]
+        matched_pair = [4,4]
         
         print(match(df,covs,covs_max_list, 'T'))
-        self.assertEqual(match(df,covs,covs_max_list, 'T'))
+        self.assertEqual(match(df,covs,covs_max_list, 'T'), 
+                         (match_indicator, matched_pair))
     '''
     
 if __name__ == '__main__':

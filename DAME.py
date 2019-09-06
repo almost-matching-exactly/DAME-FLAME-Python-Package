@@ -6,6 +6,9 @@ This package implements the code in the paper "Interpretable Almost-Exact
 Matching For Causual Inference" (Liu, Dieng, Roy, Rudin, Volfovsky) 
 TODO: Insert Arxiv Link Here
 
+This file in particular though, is just a wrapper that accepts user input and 
+kicks off the parsing, algo, etc. 
+
 Example:
     TODO: Insert example here
     
@@ -17,12 +20,15 @@ Example:
 
 import argparse
 import data_cleaning
-import dame_algorithms
+import dame_algorithm
+import match_quality
+import pandas as pd
 
 
 def main():
     
     # parse commandline arguments.
+    print("here")
     
     parser = argparse.ArgumentParser(description="Implement the matching \
                                      method from the paper, Interpretable \
@@ -47,17 +53,54 @@ def main():
                         the coefficients, predetermined from a ML algorithm. \
                         Must be the length of the number of coefficients.')
     
+    parser.add_argument('--outcome_column_name', nargs=1, type=str,
+                        help='enter the name of the column that has the \
+                              value for outcome value')
+    
+    parser.add_argument('--match_quality', nargs=1, type=str,
+                        help='Enter True if want match quality metric. Default\
+                              is false')
+
+    
     # TODO: add option for accepting a dataframe
     # TODO: output options. 
     
     args = parser.parse_args()
 
-    # call functions to do things.
-    df, treatment_column_name, weight_array = data_cleaning.process_input_file(args)
+    # Process input command line options and for valid inputs
+    df, treatment_column_name, \
+        weight_array, outcome_column_name = data_cleaning.process_command_line(args)
     
     
-    return_covs_list, return_matched_group, return_matched_data = dame_algorithms.algo1(df, treatment_column_name, weight_array)
+    return_covs_list, return_matched_group, \
+        return_matched_data = dame_algorithm.algo1(df,
+                                                    treatment_column_name,
+                                                    weight_array,
+                                                    outcome_column_name)
     
+def DAME(valid_group_by='bit-vector', file_name = 'sample.csv', 
+         treatment_column_name = 'treated', weight_array = [0.75, 0.25],
+         outcome_column_name='outcome', match_qual=False):
+        
+    df = pd.read_csv(file_name)
+    
+    df, treatment_column_name, \
+        weight_array, outcome_column_name = data_cleaning.process_input_file(df, \
+                                                        treatment_column_name,\
+                                                        weight_array, \
+                                                        outcome_column_name)
+    return_covs_list, return_matched_group, \
+        return_matched_data = dame_algorithm.algo1(df,
+                                                    treatment_column_name,
+                                                    weight_array,
+                                                    outcome_column_name)
+    
+    if match_qual == True:
+        qual = match_quality.compute_linear_qual(return_matched_group, 
+                                                 weight_array)
+        return return_covs_list, return_matched_group, return_matched_data, qual
+    
+    return return_covs_list, return_matched_group, return_matched_data
     
 if __name__ == "__main__":
     main()

@@ -6,18 +6,33 @@
 import pandas as pd
 import sys
 
-def process_input_file(args):
+def process_command_line(args):
     
-    
-    f = open(args.file_name[0], 'r')
-    
+    try:
+        f = open(args.file_name[0], 'r')
+    except TypeError:
+        print('Invalid input error. See help for required inputs')
+        sys.exit(1)
     df = pd.read_csv(args.file_name[0])
-    print(df.head())
+    treatment_column_name =  args.treatment_column_name[0]
+    outcome_column_name = args.outcome_column_name[0]
+    weight_array = [float(item) for item in args.weight_array[0].split(',')]
+
+    return process_input_file(df, treatment_column_name, weight_array, \
+                              outcome_column_name)
+
+def process_input_file(df, treatment_column_name, weight_array,
+                       outcome_column_name):
+    
     
     # Confirm that the treatment column name exists. 
-    treatment_column_name = args.treatment_column_name[0]
     if treatment_column_name not in df.columns:
         print('Invalid input error. Treatment column name does not exist')
+        sys.exit(1)
+        
+    # Confirm that the outcome column name exists. 
+    if outcome_column_name not in df.columns:
+        print('Invalid input error. Outcome column name does not exist')
         sys.exit(1)
         
     # column only has 0s and 1s. 
@@ -26,8 +41,8 @@ def process_input_file(args):
         sys.exit(1)
     
     # Confirm that weight array has the right number of values in it
-    weight_array = [float(item) for item in args.weight_array[0].split(',')]
-    if len(weight_array) != (len(df.columns)-1):
+    # Subtracting 2 because one col is the treatment and one is outcome. 
+    if len(weight_array) != (len(df.columns)-2):
         print('Invalid input error. Weight array size not equal to number \
               of columns in dataframe')
         sys.exit(1)
@@ -40,7 +55,7 @@ def process_input_file(args):
     # Ensure that the columns are sorted in order: binary, tertary, etc
     max_column_size = 1
     for col_name in df.columns:
-        if col_name != treatment_column_name:
+        if (col_name != treatment_column_name) and (col_name != outcome_column_name):
             if df[col_name].unique().max() >= max_column_size:
                 max_column_size = df[col_name].unique().max()
             else:
@@ -49,4 +64,4 @@ def process_input_file(args):
                 sys.exit(1)
             
     
-    return df, treatment_column_name, weight_array
+    return df, treatment_column_name, weight_array, outcome_column_name

@@ -2,12 +2,17 @@
 """
 @author: Neha
 """
-import dame_algorithms
+import generate_new_active_sets
 import unittest
 import pandas as pd
 
 class TestAlgorithm3(unittest.TestCase):
-
+    ''' This tests just algorithm 3 in the paper, the find new active set part.
+    Uses the example from the paper but with variations on data type just
+    to make sure its robust to that
+    '''
+    
+    
     def test_paper_example(self):
         s = {(2, 3)}
         delta = {(1,), (1, 2), (1, 3), (1, 5), (2,), (3,), (5,)}

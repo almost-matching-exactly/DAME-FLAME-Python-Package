@@ -29,7 +29,7 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated', match
     
     match_indicator = ~(counts_w_t[unqtags_w_t] == counts_wo_t[unqtags_wo_t]) # a unit is matched if and only if the counts don't agree
 
-    print(match_indicator.shape)
+    #print(match_indicator.shape)
     
     return match_indicator, lidx_wo_t[match_indicator]
 
