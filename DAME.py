@@ -61,6 +61,17 @@ def main():
                         help='Enter True if want match quality metric. Default\
                               is false')
 
+    parser.add_argument('--adaptive_weights', nargs=1, type=str,
+                        help='Enter True if want to decide to drop weights\
+                        based on a ridge regression on hold-out training set\
+                        or false (default) if want to decide to drop weights\
+                        based on the weights given in the weight_array')
+    
+    parser.add_argument('--holdout_filename', nargs=1, type=str,
+                        help='Enter True if want to decide to drop weights\
+                        based on a ridge regression on hold-out training set\
+                        or false (default) if want to decide to drop weights\
+                        based on the weights given in the weight_array')
     
     # TODO: add option for accepting a dataframe
     # TODO: output options. 
@@ -69,18 +80,21 @@ def main():
 
     # Process input command line options and for valid inputs
     df, treatment_column_name, \
-        weight_array, outcome_column_name = data_cleaning.process_command_line(args)
+        weight_array, outcome_column_name, \
+        adaptive_weights = data_cleaning.process_command_line(args)
     
     
     return_covs_list, return_matched_group, \
-        return_matched_data = dame_algorithm.algo1(df,
+        return_matched_data, return_pe = dame_algorithm.algo1(df,
                                                     treatment_column_name,
                                                     weight_array,
-                                                    outcome_column_name)
+                                                    outcome_column_name,
+                                                    adaptive_weights)
     
-def DAME(valid_group_by='bit-vector', file_name = 'sample.csv', 
-         treatment_column_name = 'treated', weight_array = [0.75, 0.25],
-         outcome_column_name='outcome', match_qual=False):
+def DAME(valid_group_by='bit-vector', file_name = 'sample4.csv', 
+         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
+         outcome_column_name='outcome', match_qual=False, 
+         adaptive_weights=False):
         
     df = pd.read_csv(file_name)
     
@@ -89,18 +103,20 @@ def DAME(valid_group_by='bit-vector', file_name = 'sample.csv',
                                                         treatment_column_name,\
                                                         weight_array, \
                                                         outcome_column_name)
+        
     return_covs_list, return_matched_group, \
-        return_matched_data = dame_algorithm.algo1(df,
+        return_matched_data, return_pe = dame_algorithm.algo1(df,
                                                     treatment_column_name,
                                                     weight_array,
-                                                    outcome_column_name)
+                                                    outcome_column_name,
+                                                    adaptive_weights)
     
     if match_qual == True:
         qual = match_quality.compute_linear_qual(return_matched_group, 
                                                  weight_array)
         return return_covs_list, return_matched_group, return_matched_data, qual
     
-    return return_covs_list, return_matched_group, return_matched_data
+    return return_covs_list, return_matched_group, return_matched_data, return_pe
     
 if __name__ == "__main__":
     main()

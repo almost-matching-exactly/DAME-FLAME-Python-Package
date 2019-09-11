@@ -18,10 +18,14 @@ def algo3GenerateNewActiveSets(s, delta):
 
     """
     # TODO: explore variable names
-    
     Z = set()
-    k = len(list(s)[0])
+    # TODO: possible bug right here with the k/set_s when col character len > 1.
+    # k = len(list(s)[0])
+    # set_s = set(list(s)[0])
+    k = len(list(s))
     set_s = set(list(s)[0])
+    #print("s", s)
+    # print("set_s", set_s)
     
     # Step 3: delta_k is all subsets of delta that are size k, and s. 
     subsets_size_k = set()
@@ -29,7 +33,7 @@ def algo3GenerateNewActiveSets(s, delta):
         if len(prev_processed_tup) == k:
             subsets_size_k.add(prev_processed_tup)
     delta_k = subsets_size_k.union(s)
-        
+            
     # Step 4: rho is all the covariates contained in sets in delta_k
     rho = set()
     for tup in delta_k:

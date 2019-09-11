@@ -9,10 +9,91 @@ import numpy as np
 import itertools
 import grouped_mr
 import generate_new_active_sets
+from sklearn.linear_model import Ridge
+from sklearn.metrics import mean_squared_error
+
+def decide_drop(all_covs, active_covar_sets, weights, 
+                                     adaptive_weights, df,
+                                     treatment_column_name,
+                                     outcome_column_name):
+    """ This is a helper function to Algorithm 1 in the paper. 
+    
+    Args:
+        all_covs: This is an array of just the cov column names. 
+            Not including treat/outcome
+        active_covar_sets:
+        weights: This is the weight array provided by the user
+        adaptive_weights: This is the T/F provided by the user indicating
+            whether to run ridge regression to decide who to drop. 
+        df: The untouched dataset given by the user (df_all elsewhere)
+    """
+    
+    curr_covar_set = set()
+    min_pe = 1000000000 # TODO: find a better max
+    if adaptive_weights == False:
+        # We iterate
+        # through all active covariate sets and find the total weight of each 
+        # For each possible covariate set, temp_weight counts 
+        # the total weight of the covs that are going to get used in the match,
+        # or the ones *not* in that  possible cov set. 
+        # TODO: come back and make it more readable/optimize?
+        max_weight = 0
+        for s in active_covar_sets: # s is a set to consider dropping
+            temp_weight = 0
+            for cov_index in range(len(all_covs)):  # iter through all covars
+                if all_covs[cov_index] not in s:    
+                    # if an item not in s, add weight. finding impact of drop s
+                    temp_weight += weights[cov_index]
+            if temp_weight >= max_weight:
+                max_weight = temp_weight
+                curr_covar_set = s # This is the items we will drop, that will
+                # not get used in the match. 
+                
+    else:
+        # TODO: for now, test=train. Later, allow for separate training input
+        
+        # Iterate through all of the active_covar_sets and drop one at a time, 
+        # and drop the one with the highest match quality score 
+        # @Vittorio: 
+        # This is where we decide who to drop, and also compute the pe 
+        # value that gets outputted in the list described in readme. 
+        # So, PE is computed on the whole dataset then, not just the dataset
+        # that is matched using those values...Can explain. 
+        
+        for s in active_covar_sets:
+            # S is the frozenset of covars we drop. 
+            X_treated = df.loc[df[treatment_column_name]==1, 
+                               df.columns.difference([outcome_column_name, 
+                                                      treatment_column_name] + list(s))]
+            X_control = df.loc[df[treatment_column_name]==0, 
+                               df.columns.difference([outcome_column_name, 
+                                                      treatment_column_name] + list(s))]
+    
+            Y_treated = df.loc[df[treatment_column_name]==1, outcome_column_name]
+            
+            Y_control = df.loc[df[treatment_column_name]==0, outcome_column_name]
+            
+            clf = Ridge(alpha=0.1)
+            clf.fit(X_treated, Y_treated) 
+            predicted = clf.predict(X_treated)
+            MSE_treated = mean_squared_error(Y_treated, predicted)
+            
+            clf = Ridge(alpha=0.1)
+            clf.fit(X_control, Y_control) 
+            predicted = clf.predict(X_treated)
+            MSE_control = mean_squared_error(Y_control, predicted)
+        
+            PE = MSE_treated + MSE_control
+            
+            if PE < min_pe:
+                min_pe = PE
+                curr_covar_set = s
+                
+    return curr_covar_set, min_pe
 
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
-          outcome_column_name = "outcome"):
+          outcome_column_name = "outcome", adaptive_weights=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -26,6 +107,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             that are in df_all.
         outcome_column_name: As provided by the user, this indicates the name
             of the column that contains the outcome values. 
+        adaptive_weights: Provided by the user, this is true if decide to drop 
+            weights based on a ridge regression on hold-out training set\
+            or false (default) if decide to drop weights\
+            based on the weights given in the weight_array
 
     Returns:
         return_covs_list: List of lists, indicates which covariates were used 
@@ -52,8 +137,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     return_covs_list = [] # each index is that iteration's cov list matched on
     return_matched_group = [] # gid & covar list
     return_matched_data = [] # uid and gid list. 
+    return_pe= [] # list of predictive errors, 
+                  # one for each item in return_covs_list
     
-    # As an initial step, match on all covariates
+    # As an initial step, we attempt to match on all covariates
     
     covs = all_covs
     covs_max_list = all_covs_max_list
@@ -64,7 +151,9 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             df_all, df_all, covs, treatment_column_name, outcome_column_name,
                     return_matched_group, return_matched_data, group_index)
  
-    # TODO: is this how we want it, or do we want the above?
+    # TODO: Note that right now, the return_covs_list contains covs that we
+    # attempted to find a match on, so we could possibly restrict it to just
+    # the covariates that we did successfully find matches with. 
     #if (len(matched_rows) != 0):
         # only if we found a match do we add to the covs list
     #    return_covs_list.append(covs)
@@ -79,12 +168,11 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     # processed sets from previous iterations. In the paper, it's delta_h. 
     
     active_covar_sets = set(frozenset([i]) for i in all_covs) 
-    curr_covar_set = set()
     processed_covar_sets = set() 
         
     h = 1 # The iteration number
     
-    # This is the iterative dropping procedure of DAME
+    # Her, we begin the iterative dropping procedure of DAME
     while True:
         # Iterates while there is at least one treatment unit to match in
         # TODO: shouldn't there also be at least one control unit to match in?
@@ -96,25 +184,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # TODO: Also add early stopping critera based on low match quality.
         
-        # We find curr_covar_set, the best covariate set to drop. We iterate
-        # through all active covariate sets and find the total weight of each 
-        # For each possible covariate set, temp_weight counts 
-        # the total weight of the covs that are going to get used in the match,
-        # or the ones *not* in that  possible cov set. 
-        # TODO: come back and make it more readable/optimize?
-
-        max_weight = 0
-        for s in active_covar_sets: # s is a set to consider dropping
-            temp_weight = 0
-            for cov_index in range(len(all_covs)):  # iter through all covars
-                if all_covs[cov_index] not in s:    
-                    # if an item not in s, add weight. finding impact of drop s
-                    temp_weight += weights[cov_index]
-            if temp_weight >= max_weight:
-                max_weight = temp_weight
-                curr_covar_set = s # This is the items we will drop, that will
-                # not get used in the match. 
-                        
+        # We find curr_covar_set, the best covariate set to drop. 
+        curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
+                                     adaptive_weights, df_all, 
+                                     treatment_column_name, outcome_column_name)
+        
+        return_pe.append(pe)                
         # So now we call GroupedMR, Algorithm 2.
         # TODO: confirm, do we lose the column ordering in this set operation?
 
@@ -146,8 +221,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         active_covar_sets = active_covar_sets.union(Z_h)
         
         # Update the set of already processed covariate-sets
-        processed_covar_sets = processed_covar_sets.union(curr_covar_set)
-                
+        processed_covar_sets.add(curr_covar_set)
+        
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
 
@@ -156,4 +231,4 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # end loop. 
     
     # return matched_groups
-    return return_covs_list, return_matched_group, return_matched_data
+    return return_covs_list, return_matched_group, return_matched_data, return_pe
