@@ -15,7 +15,8 @@ from sklearn.metrics import mean_squared_error
 def decide_drop(all_covs, active_covar_sets, weights, 
                                      adaptive_weights, df,
                                      treatment_column_name,
-                                     outcome_column_name):
+                                     outcome_column_name,
+                                     df_holdout):
     """ This is a helper function to Algorithm 1 in the paper. 
     
     Args:
@@ -26,10 +27,13 @@ def decide_drop(all_covs, active_covar_sets, weights,
         adaptive_weights: This is the T/F provided by the user indicating
             whether to run ridge regression to decide who to drop. 
         df: The untouched dataset given by the user (df_all elsewhere)
+        df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
+            There are no changes made to this throughout the code. Used only in
+            testing/training for adaptive_weights version.
     """
     
     curr_covar_set = set()
-    min_pe = 1000000000 # TODO: find a better max
+    best_pe = 1000000000 # TODO: find a better max
     if adaptive_weights == False:
         # We iterate
         # through all active covariate sets and find the total weight of each 
@@ -48,6 +52,7 @@ def decide_drop(all_covs, active_covar_sets, weights,
                 max_weight = temp_weight
                 curr_covar_set = s # This is the items we will drop, that will
                 # not get used in the match. 
+        best_pe = max_weight
                 
     else:
         # TODO: for now, test=train. Later, allow for separate training input
@@ -57,27 +62,37 @@ def decide_drop(all_covs, active_covar_sets, weights,
         # @Vittorio: 
         # This is where we decide who to drop, and also compute the pe 
         # value that gets outputted in the list described in readme. 
-        # So, PE is computed on the whole dataset then, not just the dataset
-        # that is matched using those values...Can explain. 
         
         for s in active_covar_sets:
-            # S is the frozenset of covars we drop. 
-            X_treated = df.loc[df[treatment_column_name]==1, 
-                               df.columns.difference([outcome_column_name, 
-                                                      treatment_column_name] + list(s))]
-            X_control = df.loc[df[treatment_column_name]==0, 
-                               df.columns.difference([outcome_column_name, 
-                                                      treatment_column_name] + list(s))]
+            # S is the frozenset of covars we drop. We try dropping each one
+            
+            #X-treated is the df that has rows where treated col = 1 and
+            # all cols except: outcome/treated/the covs being dropped
+            X_treated = df_holdout.loc[df_holdout[treatment_column_name]==1, 
+                               df_holdout.columns.difference(
+                                       [outcome_column_name, 
+                                        treatment_column_name] + list(s))]
     
-            Y_treated = df.loc[df[treatment_column_name]==1, outcome_column_name]
+            #X-control is the df that has rows where treated col = 0 and
+            # all cols except: outcome/treated/the covs being dropped
+            X_control = df_holdout.loc[df_holdout[treatment_column_name]==0, 
+                               df_holdout.columns.difference(
+                                       [outcome_column_name, 
+                                        treatment_column_name] + list(s))]
+    
+            Y_treated = df_holdout.loc[df_holdout[treatment_column_name]==1, 
+                                       outcome_column_name]
             
-            Y_control = df.loc[df[treatment_column_name]==0, outcome_column_name]
+            Y_control = df_holdout.loc[df_holdout[treatment_column_name]==0, 
+                                       outcome_column_name]
             
+            # Calculate treated MSE
             clf = Ridge(alpha=0.1)
             clf.fit(X_treated, Y_treated) 
             predicted = clf.predict(X_treated)
             MSE_treated = mean_squared_error(Y_treated, predicted)
             
+            # Calculate control MSE
             clf = Ridge(alpha=0.1)
             clf.fit(X_control, Y_control) 
             predicted = clf.predict(X_treated)
@@ -85,15 +100,17 @@ def decide_drop(all_covs, active_covar_sets, weights,
         
             PE = MSE_treated + MSE_control
             
-            if PE < min_pe:
-                min_pe = PE
+            # Use the smallest PE as the covariate set to drop.
+            if PE < best_pe:
+                best_pe = PE
                 curr_covar_set = s
                 
-    return curr_covar_set, min_pe
+    return curr_covar_set, best_pe
 
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
-          outcome_column_name = "outcome", adaptive_weights=False):
+          outcome_column_name = "outcome", adaptive_weights=False,
+          df_holdout=""):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -108,9 +125,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         outcome_column_name: As provided by the user, this indicates the name
             of the column that contains the outcome values. 
         adaptive_weights: Provided by the user, this is true if decide to drop 
-            weights based on a ridge regression on hold-out training set\
-            or false (default) if decide to drop weights\
+            weights based on a ridge regression on hold-out training set
+            or false (default) if decide to drop weights
             based on the weights given in the weight_array
+        df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
+            There are no changes made to this throughout the code. Used only in
+            testing/training for adaptive_weights version.
 
     Returns:
         return_covs_list: List of lists, indicates which covariates were used 
@@ -153,7 +173,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
  
     # TODO: Note that right now, the return_covs_list contains covs that we
     # attempted to find a match on, so we could possibly restrict it to just
-    # the covariates that we did successfully find matches with. 
+    # the covariates that we did successfully find matches with via: 
     #if (len(matched_rows) != 0):
         # only if we found a match do we add to the covs list
     #    return_covs_list.append(covs)
@@ -175,7 +195,9 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     # Her, we begin the iterative dropping procedure of DAME
     while True:
         # Iterates while there is at least one treatment unit to match in
-        # TODO: shouldn't there also be at least one control unit to match in?
+        # TODO: shouldn't there also be at least one control unit to match in? 
+        # copute ATT on avg treatment effect on treated (all t have match) 
+        # or ATE ate on whole sample, all have match. 
         try:
             if (1 not in df_unmatched[treatment_column_name].values):
                 break
@@ -187,16 +209,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # We find curr_covar_set, the best covariate set to drop. 
         curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
                                      adaptive_weights, df_all, 
-                                     treatment_column_name, outcome_column_name)
+                                     treatment_column_name, outcome_column_name,
+                                     df_holdout)
         
         return_pe.append(pe)                
-        # So now we call GroupedMR, Algorithm 2.
-        # TODO: confirm, do we lose the column ordering in this set operation?
-
-        # the paper asks that theta has 1 if covar not in s, and calls 
-        # groupedMR on j - s and I accidentally reversed it. 
         
-        
+        # TODO: confirm, do we lose the column ordering in this set operation?                
         covs_match_on = list(set(all_covs)-curr_covar_set)
         # covs_match_on = list(set(curr_covar_set))
         

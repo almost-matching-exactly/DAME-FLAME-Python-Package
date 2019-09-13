@@ -7,7 +7,7 @@ Matching For Causual Inference" (Liu, Dieng, Roy, Rudin, Volfovsky)
 TODO: Insert Arxiv Link Here
 
 This file in particular though, is just a wrapper that accepts user input and 
-kicks off the parsing, algo, etc. 
+kicks off the input parsing, algo, etc. 
 
 Example:
     TODO: Insert example here
@@ -56,10 +56,6 @@ def main():
     parser.add_argument('--outcome_column_name', nargs=1, type=str,
                         help='enter the name of the column that has the \
                               value for outcome value')
-    
-    parser.add_argument('--match_quality', nargs=1, type=str,
-                        help='Enter True if want match quality metric. Default\
-                              is false')
 
     parser.add_argument('--adaptive_weights', nargs=1, type=str,
                         help='Enter True if want to decide to drop weights\
@@ -67,7 +63,7 @@ def main():
                         or false (default) if want to decide to drop weights\
                         based on the weights given in the weight_array')
     
-    parser.add_argument('--holdout_filename', nargs=1, type=str,
+    parser.add_argument('--holdout_file_name', nargs=1, type=str,
                         help='Enter True if want to decide to drop weights\
                         based on a ridge regression on hold-out training set\
                         or false (default) if want to decide to drop weights\
@@ -93,13 +89,21 @@ def main():
     
 def DAME(valid_group_by='bit-vector', file_name = 'sample4.csv', 
          treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
-         outcome_column_name='outcome', match_qual=False, 
-         adaptive_weights=False):
+         outcome_column_name='outcome',
+         adaptive_weights=False, holdout_file_name='sample4.csv'):
+    
+    # TODO: another input check, if adaptive_weight=True, then need holdout
         
     df = pd.read_csv(file_name)
+    df_holdout = pd.read_csv(holdout_file_name)
     
     df, treatment_column_name, \
         weight_array, outcome_column_name = data_cleaning.process_input_file(df, \
+                                                        treatment_column_name,\
+                                                        weight_array, \
+                                                        outcome_column_name)
+        
+    df_holdout, _, _, _ = data_cleaning.process_input_file(df, \
                                                         treatment_column_name,\
                                                         weight_array, \
                                                         outcome_column_name)
@@ -109,12 +113,8 @@ def DAME(valid_group_by='bit-vector', file_name = 'sample4.csv',
                                                     treatment_column_name,
                                                     weight_array,
                                                     outcome_column_name,
-                                                    adaptive_weights)
-    
-    if match_qual == True:
-        qual = match_quality.compute_linear_qual(return_matched_group, 
-                                                 weight_array)
-        return return_covs_list, return_matched_group, return_matched_data, qual
+                                                    adaptive_weights,
+                                                    df_holdout)
     
     return return_covs_list, return_matched_group, return_matched_data, return_pe
     
