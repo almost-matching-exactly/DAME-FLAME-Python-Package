@@ -12,12 +12,21 @@ class TestAlgorithm3(unittest.TestCase):
     to make sure its robust to that
     '''
     
+    def test_paper_example(self):
+        s = frozenset((2, 3))
+        delta = {frozenset((1,)), frozenset((1,2)), \
+                 frozenset((1,3)), frozenset((1,5)), \
+                 frozenset((2,)), frozenset((3,)), frozenset((5,))}
+        omega = {frozenset((1, 2, 3))}
+        self.assertEqual(algo3GenerateNewActiveSets(s,delta), omega)
     
+    '''
     def test_paper_example(self):
         s = {(2, 3)}
         delta = {(1,), (1, 2), (1, 3), (1, 5), (2,), (3,), (5,)}
         omega = {frozenset((1, 2, 3))}
         self.assertEqual(algo3GenerateNewActiveSets(s,delta), omega)
+    
     
     def test_paper_example_str(self):
         s = {('second', 'third')}
@@ -32,7 +41,7 @@ class TestAlgorithm3(unittest.TestCase):
                  frozenset(('second',)), frozenset(('third',)), frozenset(('fifth',))}
         omega = {frozenset(('first', 'second', 'third'))}
         self.assertEqual(algo3GenerateNewActiveSets(s,delta), omega)
-    
+   ''' 
 
 if __name__ == '__main__':
     unittest.main()

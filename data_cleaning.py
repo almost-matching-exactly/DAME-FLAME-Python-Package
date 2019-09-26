@@ -17,12 +17,13 @@ def process_command_line(args):
     treatment_column_name =  args.treatment_column_name[0]
     outcome_column_name = args.outcome_column_name[0]
     weight_array = [float(item) for item in args.weight_array[0].split(',')]
+    adaptive_weights = args.adaptive_weights[0]
 
     return process_input_file(df, treatment_column_name, weight_array, \
-                              outcome_column_name)
+                              outcome_column_name, adaptive_weights)
 
 def process_input_file(df, treatment_column_name, weight_array,
-                       outcome_column_name):
+                       outcome_column_name, adaptive_weights):
     
     
     # Confirm that the treatment column name exists. 
@@ -39,18 +40,22 @@ def process_input_file(df, treatment_column_name, weight_array,
     if set(df[treatment_column_name].unique()) != {0,1}:
         print('Invalid input error. Treatment column must have 0 and 1 values')
         sys.exit(1)
-    
-    # Confirm that weight array has the right number of values in it
-    # Subtracting 2 because one col is the treatment and one is outcome. 
-    if len(weight_array) != (len(df.columns)-2):
-        print('Invalid input error. Weight array size not equal to number \
-              of columns in dataframe')
-        sys.exit(1)
-    
-    # Confirm that weights in weight vector add to 1.
-    if sum(weight_array) != 1.0:
-        print('Invalid input error. Weight array values must sum to 1.0')
-        sys.exit(1)
+        
+        
+    # Checks on the weight array...if the weight array needs to exist
+    if adaptive_weights == False:
+        
+        # Confirm that weight array has the right number of values in it
+        # Subtracting 2 because one col is the treatment and one is outcome. 
+        if len(weight_array) != (len(df.columns)-2):
+            print('Invalid input error. Weight array size not equal to number \
+                  of columns in dataframe')
+            sys.exit(1)
+        
+        # Confirm that weights in weight vector add to 1.
+        if sum(weight_array) != 1.0:
+            print('Invalid input error. Weight array values must sum to 1.0')
+            sys.exit(1)
     
     # Ensure that the columns are sorted in order: binary, tertary, etc
     max_column_size = 1
@@ -64,4 +69,4 @@ def process_input_file(df, treatment_column_name, weight_array,
                 sys.exit(1)
             
     
-    return df, treatment_column_name, weight_array, outcome_column_name
+    return df, treatment_column_name, weight_array, outcome_column_name, adaptive_weights

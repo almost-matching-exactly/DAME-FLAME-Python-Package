@@ -28,7 +28,6 @@ import pandas as pd
 def main():
     
     # parse commandline arguments.
-    print("here")
     
     parser = argparse.ArgumentParser(description="Implement the matching \
                                      method from the paper, Interpretable \
@@ -93,20 +92,22 @@ def DAME(valid_group_by='bit-vector', file_name = 'sample4.csv',
          adaptive_weights=False, holdout_file_name='sample4.csv'):
     
     # TODO: another input check, if adaptive_weight=True, then need holdout
-        
     df = pd.read_csv(file_name)
     df_holdout = pd.read_csv(holdout_file_name)
     
     df, treatment_column_name, \
-        weight_array, outcome_column_name = data_cleaning.process_input_file(df, \
+        weight_array, outcome_column_name, \
+        adaptive_weights = data_cleaning.process_input_file(df, \
                                                         treatment_column_name,\
                                                         weight_array, \
-                                                        outcome_column_name)
+                                                        outcome_column_name,
+                                                        adaptive_weights)
         
-    df_holdout, _, _, _ = data_cleaning.process_input_file(df, \
+    df_holdout, _, _, _, _ = data_cleaning.process_input_file(df, \
                                                         treatment_column_name,\
                                                         weight_array, \
-                                                        outcome_column_name)
+                                                        outcome_column_name, \
+                                                        adaptive_weights)
         
     return_covs_list, return_matched_group, \
         return_matched_data, return_pe = dame_algorithm.algo1(df,

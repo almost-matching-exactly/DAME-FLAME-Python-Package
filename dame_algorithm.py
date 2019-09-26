@@ -22,7 +22,7 @@ def decide_drop(all_covs, active_covar_sets, weights,
     Args:
         all_covs: This is an array of just the cov column names. 
             Not including treat/outcome
-        active_covar_sets:
+        active_covar_sets: A set of frozensets, representing all the active covar sets
         weights: This is the weight array provided by the user
         adaptive_weights: This is the T/F provided by the user indicating
             whether to run ridge regression to decide who to drop. 
@@ -142,6 +142,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         return_matched_data: List of tuples (unit num, group num). indicates 
             what unit numbers belong to what group numbers.
     """
+    
     # Initialize variables. These are all moving/temporary throughout algo
     matched_groups = [] # This is a list of df's. Will be replaced for new output.
     all_covs = df_all.columns.tolist()
@@ -199,19 +200,25 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # copute ATT on avg treatment effect on treated (all t have match) 
         # or ATE ate on whole sample, all have match. 
         try:
-            if (1 not in df_unmatched[treatment_column_name].values):
+            if (1 not in df_unmatched[treatment_column_name].values or \
+                0 not in df_unmatched[treatment_column_name].values):
+                print("We finished with no more units to match")
                 break
         except TypeError:
             break
         
         # TODO: Also add early stopping critera based on low match quality.
         
+        
+        # quit if there are covariate sets to choose from
+        if (len(active_covar_sets) == 0):
+            break
+        
         # We find curr_covar_set, the best covariate set to drop. 
         curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
                                      adaptive_weights, df_all, 
                                      treatment_column_name, outcome_column_name,
                                      df_holdout)
-        
         return_pe.append(pe)                
         
         # TODO: confirm, do we lose the column ordering in this set operation?                
@@ -227,7 +234,6 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                                                      return_matched_group,
                                                      return_matched_data, 
                                                      group_index)
-               
         # Generate new active sets
         Z_h = generate_new_active_sets.algo3GenerateNewActiveSets(
                 curr_covar_set, processed_covar_sets)
@@ -238,7 +244,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # Update the set of active sets
         active_covar_sets = active_covar_sets.union(Z_h)
         
-        # Update the set of already processed covariate-sets
+        # Update the set of already processed covariate-sets. This works bc
+        # processed_covar_sets is type set, but curr_covar_set is type frozenset
         processed_covar_sets.add(curr_covar_set)
         
         # Remove matches.
@@ -249,4 +256,4 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # end loop. 
     
     # return matched_groups
-    return return_covs_list, return_matched_group, return_matched_data, return_pe
+    return return_covs_list, return_matched_group, return_matched_data #, return_pe
