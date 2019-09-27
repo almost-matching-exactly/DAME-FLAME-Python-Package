@@ -11,7 +11,7 @@ $ python3 DAME.py --valid_group_by bit-vector --file_name sample.csv --treatment
 Sample command from inline in Python code:
 DAME(valid_group_by='bit-vector', file_name = 'sample.csv', \
          treatment_column_name = 'treated', weight_array = [0.75, 0.25],
-	adaptive_weights=True)
+	adaptive_weights=True, ate=False)
 
 
 
@@ -19,7 +19,8 @@ Output interpretation of the above command:
 ([['first variable', 'second variable'], ['first variable']],
  [[1, 1, '*'], [1, '*', '*']],
  [(1, 0), (3, 0), (1, 1), (2, 1), (3, 1)],
- [1000])
+ [1000],
+ -0.75)
 
 The first item [['first variable', 'second variable'], ['first variable']] indicates which covariates were used in the match
 So we know that in the first match, we used covariates ['first variable', 'second variable'], and in the second match.
@@ -31,12 +32,14 @@ So we know that in the 0th group, the pairs had values [1, 1, '*'], and in the 1
 The third item,  [(1, 0), (3, 0), (1, 1), (2, 1), (3, 1)]), indicates what entry is in each group. 
 So we know that unit 1 and 3 are in the 0th group, and unit 1,2, and 3 are in the 1st group. 
 
-The last item, [1000] is a list of PE, where PE=(MSE treated + MSE control)
+The fourth item, [1000] is a list of PE, where PE=(MSE treated + MSE control)
 for each covariate set if If adaptive_weights=True, and based on running ridge reg with alpha = 0.1 to decide which covar to drop.
 Or, if adaptive_weights=False, then it reports the weighted sum of weights. 
 0th index of this list will correspond to the 1st index of the 1st list, so
 the PE of ['first variable'] is 1000. The 1st index of this list will 
 correspond to the 2nd index of the first item, etc... 
+
+The last thing is the ATE value. 
 
 Code organization:
 Some test cases are in *_test.py

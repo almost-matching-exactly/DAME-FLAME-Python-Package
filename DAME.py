@@ -89,7 +89,7 @@ def main():
 def DAME(valid_group_by='bit-vector', file_name = 'sample4.csv', 
          treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
          outcome_column_name='outcome',
-         adaptive_weights=False, holdout_file_name='sample4.csv'):
+         adaptive_weights=False, holdout_file_name='sample4.csv', ate=False):
     
     # TODO: another input check, if adaptive_weight=True, then need holdout
     df = pd.read_csv(file_name)
@@ -110,14 +110,14 @@ def DAME(valid_group_by='bit-vector', file_name = 'sample4.csv',
                                                         adaptive_weights)
         
     return_covs_list, return_matched_group, \
-        return_matched_data, return_pe = dame_algorithm.algo1(df,
+        return_matched_data, return_pe, ate = dame_algorithm.algo1(df,
                                                     treatment_column_name,
                                                     weight_array,
                                                     outcome_column_name,
                                                     adaptive_weights,
-                                                    df_holdout)
+                                                    df_holdout, ate)
     
-    return return_covs_list, return_matched_group, return_matched_data, return_pe
+    return return_covs_list, return_matched_group, return_matched_data, return_pe, ate
     
 if __name__ == "__main__":
     main()

@@ -9,6 +9,7 @@ import numpy as np
 import itertools
 import grouped_mr
 import generate_new_active_sets
+import evaluation
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 
@@ -110,7 +111,7 @@ def decide_drop(all_covs, active_covar_sets, weights,
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
           outcome_column_name = "outcome", adaptive_weights=False,
-          df_holdout=""):
+          df_holdout="", ate=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -131,6 +132,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
+        ate: Bool, whether to output the ATE value for the matches.
 
     Returns:
         return_covs_list: List of lists, indicates which covariates were used 
@@ -255,5 +257,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
 
         # end loop. 
     
+    # Calculate ATE if needed.
+    if ate == True:
+        ate = evaluation.calc_ate(return_covs_list, return_matched_group, 
+                            return_matched_data, df_all, 
+                            treatment_column_name, 
+                            outcome_column_name)
+        
     # return matched_groups
-    return return_covs_list, return_matched_group, return_matched_data #, return_pe
+    return return_covs_list, return_matched_group, return_matched_data, return_pe, ate

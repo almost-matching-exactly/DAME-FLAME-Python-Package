@@ -39,7 +39,7 @@ class TestAlgorithm3(unittest.TestCase):
         self.assertEqual(dame_algorithm.algo1(df,
                                               treatment_column_name,
                                               weight_array,
-                                              outcome_column_name), expected)
+                                              outcome_column_name, ate=True), expected)
   
     def test_case2(self):
         '''
