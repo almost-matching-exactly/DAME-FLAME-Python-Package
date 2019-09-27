@@ -96,7 +96,7 @@ def decide_drop(all_covs, active_covar_sets, weights,
             # Calculate control MSE
             clf = Ridge(alpha=0.1)
             clf.fit(X_control, Y_control) 
-            predicted = clf.predict(X_treated)
+            predicted = clf.predict(X_control)
             MSE_control = mean_squared_error(Y_control, predicted)
         
             PE = MSE_treated + MSE_control

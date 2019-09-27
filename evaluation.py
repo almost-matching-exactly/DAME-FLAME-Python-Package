@@ -33,19 +33,25 @@ def calc_ate(return_covs_list, return_matched_group,
         # each item is a tuple (row number, group number)
         treated = df[treatment_column_name][row_number]
         if treated == 0:
+            # our group is untreated
             if group_number in group_num_untreated:
+                # If we have seen this untreated group before
                 group_num_untreated[group_number] += 1
                 group_auo[group_number] += df[outcome_column_name][row_number]
             else:
+                # Or, if we haven't seen the untreated group before.
                 group_num_untreated[group_number] = 1
                 group_auo[group_number] = df[outcome_column_name][row_number]
         else:
+            # our group is treated
             if group_number in group_num_treated:
+                # If we have seen this treated group before
                 group_num_treated[group_number] += 1
                 group_ato[group_number] += df[outcome_column_name][row_number]
             else:
+                # or, if we haven't seen this treated group before. 
                 group_num_treated[group_number] = 1
-                group_auo[group_number] = df[outcome_column_name][row_number]
+                group_ato[group_number] = df[outcome_column_name][row_number]
                 
     
     # now we get the averages, or compute cates. 
