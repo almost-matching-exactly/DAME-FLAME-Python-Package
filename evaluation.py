@@ -42,10 +42,10 @@ def calc_ate(return_covs_list, return_matched_group,
         else:
             if group_number in group_num_treated:
                 group_num_treated[group_number] += 1
-                group_ato[group_number] = df[outcome_column_name][row_number]
+                group_ato[group_number] += df[outcome_column_name][row_number]
             else:
                 group_num_treated[group_number] = 1
-                group_auo[group_number] += df[outcome_column_name][row_number]
+                group_auo[group_number] = df[outcome_column_name][row_number]
                 
     
     # now we get the averages, or compute cates. 
