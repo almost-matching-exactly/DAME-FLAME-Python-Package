@@ -5,34 +5,32 @@ import itertools
 
 #TODO: split steps into separate tiny functions for more unittests
 #TODO: validate function input.
-def algo3GenerateNewActiveSets(s, delta):
+def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
     """This function does Algorithm 3 in the paper.
 
     Args:
-        s: A newly dropped set of size k. Stored as type frozenset. 
-        delta: the set of previously processed sets. Stored as set of frozensets
+        newly_dropped: A newly dropped set of size k. Stored as type frozenset.
+            This is s in the paper. 
+        prev_processed: the set of previously processed sets. Stored as set of 
+            frozensets. This is delta in the paper. 
 
     Returns:
         Z, the new active sets. Stored as set of frozensets.
 
     """
-    # TODO: explore variable names
-    Z = set()
-    # TODO: possible bug right here with the k/set_s when col character len > 1.
-    # k = len(list(s)[0])
-    #set_s = set(list(s)[0])
-    k = len(list(s))
-    set_s = set(s)
+    new_active_sets = set() # this is Z in the paper
+    size_newly_dropped = len(list(newly_dropped)) # this is k in the paper
+    set_newly_dropped = set(newly_dropped)
     
     
     
     # Step 3: delta_k is a set of frozensets. 
     # it contains all subsets of delta that are size k, and s. 
     subsets_size_k = set()
-    for fs_prevprocessed in delta:
-        if len(fs_prevprocessed) == k:
+    for fs_prevprocessed in prev_processed:
+        if len(fs_prevprocessed) == size_newly_dropped:
             subsets_size_k.add(fs_prevprocessed)
-    subsets_size_k.add(s)
+    subsets_size_k.add(newly_dropped)
     delta_k = subsets_size_k
     
     # Step 4: rho is all the covariates contained in sets in delta_k
@@ -51,27 +49,27 @@ def algo3GenerateNewActiveSets(s, delta):
                 s_e[e] += 1
                     
     # Step 6: omega is all the covariates not in s that have enough support
-    dict_covars_eno = dict((key, val) for key, val in s_e.items() if val >= k) 
+    dict_covars_eno = dict((key, val) for key, val in s_e.items() if val >= size_newly_dropped) 
     omega = set(dict_covars_eno.keys())
-    omega = omega.difference(set_s)
+    omega = omega.difference(set_newly_dropped)
     
        
     # Step 7: do all covariates in S have enough support in delta_k?
     # TODO: confirm this step is right. 
     for e,support_e in s_e.items():
-        if e in s and support_e < k:
-            return Z
+        if e in newly_dropped and support_e < size_newly_dropped:
+            return new_active_sets
         
     # Step 8
     for alpha in omega:
         # Step 9
-        r = set_s.union(set([alpha]))
+        r = set_newly_dropped.union(set([alpha]))
         
-        # Step 10: Get all subsets of size k in r, check if belong in delta_k
+        # Step 10: Get all subsets of size_newly_dropped in r, check if belong in delta_k
         
         # Have to convert these to sets and frozen sets before doing the search
         delta_k = set(frozenset(i) for i in delta_k)
-        subsets_size_k = set(list(itertools.combinations(r, k)))
+        subsets_size_k = set(list(itertools.combinations(r, size_newly_dropped)))
         subsets_size_k = set(frozenset(i) for i in subsets_size_k)
         #subset = set(subset)
         allin = True
@@ -82,6 +80,6 @@ def algo3GenerateNewActiveSets(s, delta):
             
         if allin == True:
             # Step 11: Add r to Z
-            Z.add(frozenset(r))
+            new_active_sets.add(frozenset(r))
     
-    return Z
+    return new_active_sets

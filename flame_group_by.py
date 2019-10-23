@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-@author: Neha
+@author: Neha, Tianyu
 """
 import pandas as pd
 import numpy as np
 
 
-''' This file copied verbatim from 
-https://github.com/ty-w/FLAME/blob/master/FLAMEbit.py#L177
-Except I made changes,
- to lidx_wo_t and lidx_w_t
+''' 
+Group by match of FLAME algorithm.
 '''
 
-# This one is my edit of Tianyu's code. 
+# This one is my edit of Tianyu's code...Nearly copied verbatim from Tianyu,
+# Except I made changes, to lidx_wo_t and lidx_w_t
 def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated', match_indicator_col = 'matched'):
     
     # this function takes a dataframe, a set of covariates to match on, 
@@ -33,8 +32,10 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated', match
     
     return match_indicator, lidx_wo_t[match_indicator]
 
-
-# This is the unedited version!
+'''
+This function copied verbatim from 
+https://github.com/ty-w/FLAME/blob/master/FLAMEbit.py#L177
+ '''
 def match(df, covs, covs_max_list, treatment_indicator_col = 'treated', match_indicator_col = 'matched'):
     
     # this function takes a dataframe, a set of covariates to match on, 

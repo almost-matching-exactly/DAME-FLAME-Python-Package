@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Neha
-This is disgustingly inefficient, but since I'm changing the output style,
-it doesn't really make sense to be cleaner right now
+THIS FILE ALSO UNDER DEVELOPMENT
 """
 
 def calc_ate(return_covs_list, return_matched_group, 

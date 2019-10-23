@@ -2,10 +2,11 @@
 """
 @author: Neha
 
-This is Algorithm 1 in the paper.
+This file implements Algorithm 1 in the paper.
 """
 
 import numpy as np
+import pandas as pd
 import itertools
 import grouped_mr
 import generate_new_active_sets
@@ -13,11 +14,8 @@ import evaluation
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 
-def decide_drop(all_covs, active_covar_sets, weights, 
-                                     adaptive_weights, df,
-                                     treatment_column_name,
-                                     outcome_column_name,
-                                     df_holdout):
+def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
+                treatment_column_name, outcome_column_name, df_holdout):
     """ This is a helper function to Algorithm 1 in the paper. 
     
     Args:
@@ -27,21 +25,22 @@ def decide_drop(all_covs, active_covar_sets, weights,
         weights: This is the weight array provided by the user
         adaptive_weights: This is the T/F provided by the user indicating
             whether to run ridge regression to decide who to drop. 
-        df: The untouched dataset given by the user (df_all elsewhere)
+        df: The untouched dataset given by the user (df_all in algo1)
+        treatment_column_name (str): name of treatment column in df
+        outcome_column_name (str): name of outcome column in df
         df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
     """
     
     curr_covar_set = set()
-    best_pe = 1000000000 # TODO: find a better max
+    best_pe = 1000000000
     if adaptive_weights == False:
         # We iterate
         # through all active covariate sets and find the total weight of each 
         # For each possible covariate set, temp_weight counts 
         # the total weight of the covs that are going to get used in the match,
         # or the ones *not* in that  possible cov set. 
-        # TODO: come back and make it more readable/optimize?
         max_weight = 0
         for s in active_covar_sets: # s is a set to consider dropping
             temp_weight = 0
@@ -56,14 +55,8 @@ def decide_drop(all_covs, active_covar_sets, weights,
         best_pe = max_weight
                 
     else:
-        # TODO: for now, test=train. Later, allow for separate training input
-        
         # Iterate through all of the active_covar_sets and drop one at a time, 
         # and drop the one with the highest match quality score 
-        # @Vittorio: 
-        # This is where we decide who to drop, and also compute the pe 
-        # value that gets outputted in the list described in readme. 
-        
         for s in active_covar_sets:
             # S is the frozenset of covars we drop. We try dropping each one
             
@@ -73,7 +66,6 @@ def decide_drop(all_covs, active_covar_sets, weights,
                                df_holdout.columns.difference(
                                        [outcome_column_name, 
                                         treatment_column_name] + list(s))]
-    
             #X-control is the df that has rows where treated col = 0 and
             # all cols except: outcome/treated/the covs being dropped
             X_control = df_holdout.loc[df_holdout[treatment_column_name]==0, 
@@ -86,6 +78,12 @@ def decide_drop(all_covs, active_covar_sets, weights,
             
             Y_control = df_holdout.loc[df_holdout[treatment_column_name]==0, 
                                        outcome_column_name]
+            
+            # error check. If this is true, we stop matching. 
+            if (len(X_treated)==0 or len(X_control) == 0 or \
+                len(Y_treated) == 0 or len(Y_control) ==0 or \
+                len(X_treated.columns) == 0 or len(X_control.columns) == 0):
+                return False, False
             
             # Calculate treated MSE
             clf = Ridge(alpha=0.1)
@@ -111,7 +109,7 @@ def decide_drop(all_covs, active_covar_sets, weights,
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
           outcome_column_name = "outcome", adaptive_weights=False,
-          df_holdout="", ate=False):
+          df_holdout="", ate=False, repeats=True, want_pe=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -133,16 +131,13 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
         ate: Bool, whether to output the ATE value for the matches.
+        repeats: Bool, whether or not values for whom a MMG has been found can
+            be used again and placed in an auxiliary matched group.
+        want_pe (bool): Whether or not we want predictive error of each match
 
     Returns:
-        return_covs_list: List of lists, indicates which covariates were used 
-            in each match. So first element is a list of covariates used in the
-            first match.
-        return_matched_group: List of lists, indicates what values were used
-            in each group. So first element is a list of values each covariate
-            had in the first group.
-        return_matched_data: List of tuples (unit num, group num). indicates 
-            what unit numbers belong to what group numbers.
+        return_matches: df of units with the column values of their main matched
+            group, with "*"s in place for the columns not in their MMG
     """
     
     # Initialize variables. These are all moving/temporary throughout algo
@@ -155,34 +150,25 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     
     # Indexes the group numbers throughout. 
     group_index = 0
-    
-    # The items getting returned
-    return_covs_list = [] # each index is that iteration's cov list matched on
-    return_matched_group = [] # gid & covar list
-    return_matched_data = [] # uid and gid list. 
-    return_pe= [] # list of predictive errors, 
-                  # one for each item in return_covs_list
+                  
+    # Initialize return values
+    if want_pe == True:
+        return_pe = []
+    return_matches = pd.DataFrame(columns=all_covs)
     
     # As an initial step, we attempt to match on all covariates
     
-    covs = all_covs
-    covs_max_list = all_covs_max_list
-    return_covs_list.append(covs)
+    covs_match_on = all_covs
+    matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
+            df_all, df_all, covs_match_on, all_covs, treatment_column_name, 
+            outcome_column_name, return_matches)
     
-    matched_rows, return_matched_group, \
-        return_matched_data, group_index = grouped_mr.algo2_GroupedMR(
-            df_all, df_all, covs, treatment_column_name, outcome_column_name,
-                    return_matched_group, return_matched_data, group_index)
- 
-    # TODO: Note that right now, the return_covs_list contains covs that we
-    # attempted to find a match on, so we could possibly restrict it to just
-    # the covariates that we did successfully find matches with via: 
-    #if (len(matched_rows) != 0):
-        # only if we found a match do we add to the covs list
-    #    return_covs_list.append(covs)
     
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
+    
+    if repeats == False:
+        df_all = df_unmatched
     
     # Here we initializing variables for the iterative portion of the code.
     # active_covar_sets indicates the sets elibible to be dropped. In the
@@ -198,9 +184,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     # Her, we begin the iterative dropping procedure of DAME
     while True:
         # Iterates while there is at least one treatment unit to match in
-        # TODO: shouldn't there also be at least one control unit to match in? 
-        # copute ATT on avg treatment effect on treated (all t have match) 
-        # or ATE ate on whole sample, all have match. 
+                
         try:
             if (1 not in df_unmatched[treatment_column_name].values or \
                 0 not in df_unmatched[treatment_column_name].values):
@@ -208,9 +192,6 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                 break
         except TypeError:
             break
-        
-        # TODO: Also add early stopping critera based on low match quality.
-        
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
@@ -221,21 +202,21 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                                      adaptive_weights, df_all, 
                                      treatment_column_name, outcome_column_name,
                                      df_holdout)
-        return_pe.append(pe)                
         
-        # TODO: confirm, do we lose the column ordering in this set operation?                
+        # Check for error in above step:
+        if (curr_covar_set == False):
+            break
+        
+        if want_pe == True:
+            return_pe.append(pe)              
+        
         covs_match_on = list(set(all_covs)-curr_covar_set)
-        # covs_match_on = list(set(curr_covar_set))
-        
-        return_covs_list.append(covs_match_on)
-        matched_rows, return_matched_group, return_matched_data, \
-            group_index = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
-                                                     covs_match_on, 
+                
+        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
+                                                     covs_match_on, all_covs,
                                                      treatment_column_name, 
                                                      outcome_column_name,
-                                                     return_matched_group,
-                                                     return_matched_data, 
-                                                     group_index)
+                                                     return_matches)
         # Generate new active sets
         Z_h = generate_new_active_sets.algo3GenerateNewActiveSets(
                 curr_covar_set, processed_covar_sets)
@@ -252,17 +233,24 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
+ 
+        if repeats == False:
+            df_all = df_unmatched
 
         h += 1
+        print("Iteration number: ", h)
 
         # end loop. 
     
     # Calculate ATE if needed.
+    '''
+    # TODO: there's a bug here. 
     if ate == True:
         ate = evaluation.calc_ate(return_covs_list, return_matched_group, 
                             return_matched_data, df_all, 
                             treatment_column_name, 
                             outcome_column_name)
-        
-    # return matched_groups
-    return return_covs_list, return_matched_group, return_matched_data, return_pe, ate
+    '''    
+    if want_pe == True:
+        return return_matches, return_pe
+    return return_matches
