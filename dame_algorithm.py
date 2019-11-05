@@ -106,7 +106,6 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
                 best_pe = PE
                 curr_covar_set = s
     
-    print("curr_covar_set", curr_covar_set)
     return curr_covar_set, best_pe
 
 
