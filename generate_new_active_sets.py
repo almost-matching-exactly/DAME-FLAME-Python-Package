@@ -3,8 +3,6 @@
 import numpy as np
 import itertools
 
-#TODO: split steps into separate tiny functions for more unittests
-#TODO: validate function input.
 def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
     """This function does Algorithm 3 in the paper.
 
@@ -21,8 +19,6 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
     new_active_sets = set() # this is Z in the paper
     size_newly_dropped = len(list(newly_dropped)) # this is k in the paper
     set_newly_dropped = set(newly_dropped)
-    
-    
     
     # Step 3: delta_k is a set of frozensets. 
     # it contains all subsets of delta that are size k, and s. 
@@ -71,7 +67,7 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
         delta_k = set(frozenset(i) for i in delta_k)
         subsets_size_k = set(list(itertools.combinations(r, size_newly_dropped)))
         subsets_size_k = set(frozenset(i) for i in subsets_size_k)
-        #subset = set(subset)
+
         allin = True
         for subset in subsets_size_k:
             if subset not in delta_k:

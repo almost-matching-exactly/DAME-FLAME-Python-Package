@@ -21,14 +21,14 @@ import pandas as pd
 import argparse
 import data_cleaning
 import dame_algorithm
-import match_quality
 import query_mmg
+import query_ate
 import flame_algorithm
 
 def DAME(file_name = 'sample4.csv', 
          treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
          outcome_column_name='outcome',
-         adaptive_weights=False, holdout_file_name='sample4.csv', ate=False,
+         adaptive_weights=False, holdout_file_name=False,
          repeats=True, want_pe=False):
     """
     This function kicks off the DAME algorithm
@@ -56,108 +56,47 @@ def DAME(file_name = 'sample4.csv',
             group, with "*"s in place for the columns not in their MMG
     """
     
-    df = pd.read_csv(file_name)
-    df_holdout = pd.read_csv(holdout_file_name)
-    
-    df, treatment_column_name, \
-        weight_array, outcome_column_name, \
-        adaptive_weights = data_cleaning.process_input_file(df, \
-                                                        treatment_column_name,\
-                                                        weight_array, \
-                                                        outcome_column_name,
-                                                        adaptive_weights)
+    df, df_holdout = data_cleaning.read_files(file_name, holdout_file_name)
         
-    df_holdout, _, _, _, _ = data_cleaning.process_input_file(df, \
-                                                        treatment_column_name,\
-                                                        weight_array, \
-                                                        outcome_column_name, \
-                                                        adaptive_weights)
+    data_cleaning.process_input_file(df, treatment_column_name,
+                                     outcome_column_name)
+
+    data_cleaning.check_parameters(adaptive_weights, weight_array, 
+                                                df_holdout, df)
    
     return_df =  dame_algorithm.algo1(df, treatment_column_name, weight_array,
                                 outcome_column_name, adaptive_weights,
-                                df_holdout, ate, repeats, want_pe)
+                                df_holdout, repeats, want_pe)
 
     return return_df
 
-def FLAME(valid_group_by='bit-vector', file_name = 'sample4.csv', 
-         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
+def FLAME(file_name = 'sample4.csv', 
+         treatment_column_name = 'treated', weight_array = [0],
          outcome_column_name='outcome',
-         adaptive_weights=False, holdout_file_name='sample4.csv', ate=False,
-         repeats=True):
+         adaptive_weights=False, holdout_file_name='sample4.csv',
+         repeats=True, pre_dame=False):
     """
     This function kicks off the FLAME algorithm.
     
     Args:
         See DAME above.
+        pre_dame (int, False): Indicates whether to switch to dame and after
+            int number of iterations. 
     Returns:
         See DAME above.
     """
     
-    df = pd.read_csv(file_name)
-    df_holdout = pd.read_csv(holdout_file_name)
-    
-    df, treatment_column_name, \
-        weight_array, outcome_column_name, \
-        adaptive_weights = data_cleaning.process_input_file(df, \
-                                                        treatment_column_name,\
-                                                        weight_array, \
-                                                        outcome_column_name,
-                                                        adaptive_weights)
+    df, df_holdout = data_cleaning.read_files(file_name, holdout_file_name)
         
-    df_holdout, _, _, _, _ = data_cleaning.process_input_file(df, \
-                                                        treatment_column_name,\
-                                                        weight_array, \
-                                                        outcome_column_name, \
-                                                        adaptive_weights)
-   
-    return_df =  flame_algorithm.flame_generic(df, treatment_column_name, \
-                                               outcome_column_name, df_holdout, \
-                                               repeats=True, pre_dame = False)
-        
-    return return_df
+    data_cleaning.process_input_file(df, treatment_column_name,
+                                     outcome_column_name)
 
-
-def FLAMEthenDAME(valid_group_by='bit-vector', file_name = 'sample4.csv', 
-         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
-         outcome_column_name='outcome',
-         adaptive_weights=False, holdout_file_name='sample4.csv', ate=False,
-         repeats=True):
-    """
-    This function kicks off the FLAME algorithm and then transitions to DAME.
+    data_cleaning.check_parameters(adaptive_weights, weight_array, 
+                                                df_holdout, df)
     
-    Args:
-        See DAME above.
-    Returns:
-        See DAME above.
-    """
-    
-    df = pd.read_csv(file_name)
-    df_holdout = pd.read_csv(holdout_file_name)
-    
-    df, treatment_column_name, \
-        weight_array, outcome_column_name, \
-        adaptive_weights = data_cleaning.process_input_file(df, \
-                                                        treatment_column_name,\
-                                                        weight_array, \
-                                                        outcome_column_name,
-                                                        adaptive_weights)
-        
-    df_holdout, _, _, _, _ = data_cleaning.process_input_file(df, \
-                                                        treatment_column_name,\
-                                                        weight_array, \
-                                                        outcome_column_name, \
-                                                        adaptive_weights)
-   
-    return_df =  flame_algorithm.flame_generic(df, treatment_column_name, \
-                                               outcome_column_name, df_holdout, \
-                                               repeats=True, pre_dame = 2)
-    
-    return_df =  dame_algorithm.algo1(df, treatment_column_name, weight_array,
-                                outcome_column_name, True,
-                                df_holdout, ate, repeats)
-    
-    
-    
+    return_df =  flame_algorithm.flame_generic(df, treatment_column_name, weight_array,
+                                               outcome_column_name, adaptive_weights,
+                                               df_holdout, repeats, pre_dame)
     return return_df
 
 def mmg_of_unit(return_df, unit_id, file_name):
@@ -168,8 +107,24 @@ def mmg_of_unit(return_df, unit_id, file_name):
     
     Args:
         return_df: The return value from DAME above
-        unit_id: the unit aiming to find the mmg of
+        unit_id(int): the unit aiming to find the mmg of
         file_name: The csv file containing all of the original data.
     """
     df = pd.read_csv(file_name)
     return query_mmg.find(return_df, unit_id, df)
+
+def ate_of_unit(return_df, unit_id, file_name, treatment_column_name, outcome_column_name):
+    """
+    This function allows a user to find the main matched group of a particular
+    unit, after the main DAME algorithm has already been run and all matches
+    have been found. 
+    
+    Args:
+        return_df: The return value from DAME above
+        unit_id: the unit aiming to find the mmg of
+        file_name: The csv file containing all of the original data.
+    """
+    df_mmg = mmg_of_unit(return_df, unit_id, file_name)
+    
+    df_all = pd.read_csv(file_name)
+    return query_ate.find(df_mmg, unit_id, df_all, treatment_column_name, outcome_column_name)

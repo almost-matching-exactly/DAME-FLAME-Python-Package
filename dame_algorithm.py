@@ -10,8 +10,8 @@ import pandas as pd
 import itertools
 import grouped_mr
 import generate_new_active_sets
-import evaluation
 from sklearn.linear_model import Ridge
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
 
 def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
@@ -32,7 +32,6 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
     """
-    
     curr_covar_set = set()
     best_pe = 1000000000
     if adaptive_weights == False:
@@ -85,14 +84,17 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
                 len(X_treated.columns) == 0 or len(X_control.columns) == 0):
                 return False, False
             
+            if adaptive_weights == "ridge":
+                clf = Ridge(alpha=0.1)
+            elif adaptive_weights == "decision tree":
+                clf = DecisionTreeRegressor()
+            
             # Calculate treated MSE
-            clf = Ridge(alpha=0.1)
             clf.fit(X_treated, Y_treated) 
             predicted = clf.predict(X_treated)
             MSE_treated = mean_squared_error(Y_treated, predicted)
             
             # Calculate control MSE
-            clf = Ridge(alpha=0.1)
             clf.fit(X_control, Y_control) 
             predicted = clf.predict(X_control)
             MSE_control = mean_squared_error(Y_control, predicted)
@@ -103,13 +105,14 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
             if PE < best_pe:
                 best_pe = PE
                 curr_covar_set = s
-                
+    
+    print("curr_covar_set", curr_covar_set)
     return curr_covar_set, best_pe
 
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
           outcome_column_name = "outcome", adaptive_weights=False,
-          df_holdout="", ate=False, repeats=True, want_pe=False):
+          df_holdout="", repeats=True, want_pe=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -131,8 +134,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
         ate: Bool, whether to output the ATE value for the matches.
-        repeats: Bool, whether or not values for whom a MMG has been found can
-            be used again and placed in an auxiliary matched group.
+        repeats (bool): Provided by user, whether or not values for whom a MMG 
+            has been found can be used again and placed in an auxiliary group.
         want_pe (bool): Whether or not we want predictive error of each match
 
     Returns:
@@ -181,7 +184,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
     h = 1 # The iteration number
     
-    # Her, we begin the iterative dropping procedure of DAME
+    # Here, we begin the iterative dropping procedure of DAME
     while True:
         # Iterates while there is at least one treatment unit to match in
                 
@@ -242,15 +245,6 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
 
         # end loop. 
     
-    # Calculate ATE if needed.
-    '''
-    # TODO: there's a bug here. 
-    if ate == True:
-        ate = evaluation.calc_ate(return_covs_list, return_matched_group, 
-                            return_matched_data, df_all, 
-                            treatment_column_name, 
-                            outcome_column_name)
-    '''    
     if want_pe == True:
         return return_matches, return_pe
     return return_matches
