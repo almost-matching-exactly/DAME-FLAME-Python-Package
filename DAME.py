@@ -81,10 +81,10 @@ def DAME(input_data = False,
 
     return return_df
 
-def FLAME(file_name = 'sample4.csv', 
+def FLAME(input_data=False, 
          treatment_column_name = 'treated', weight_array = [0],
          outcome_column_name='outcome',
-         adaptive_weights=False, holdout_file_name='sample4.csv',
+         adaptive_weights=False, holdout_data=False,
          repeats=True, pre_dame=False, early_stop_iterations=False, 
          early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
          want_bf=False, early_stop_bf=False):
@@ -99,7 +99,7 @@ def FLAME(file_name = 'sample4.csv',
         See DAME above.
     """
     
-    df, df_holdout = data_cleaning.read_files(file_name, holdout_file_name)
+    df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
         
     data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name)
@@ -116,7 +116,7 @@ def FLAME(file_name = 'sample4.csv',
                                                want_bf, early_stop_bf)
     return return_df
 
-def mmg_of_unit(return_df, unit_id, file_name):
+def mmg_of_unit(return_df, unit_id, input_data):
     """
     This function allows a user to find the main matched group of a particular
     unit, after the main DAME algorithm has already been run and all matches
@@ -127,10 +127,13 @@ def mmg_of_unit(return_df, unit_id, file_name):
         unit_id(int): the unit aiming to find the mmg of
         file_name: The csv file containing all of the original data.
     """
-    df = pd.read_csv(file_name)
+    if type(input_data) == pd.core.frame.DataFrame:
+        df = input_data
+    else:
+        df = pd.read_csv(file_name)
     return query_mmg.find(return_df, unit_id, df)
 
-def ate_of_unit(return_df, unit_id, file_name, treatment_column_name, outcome_column_name):
+def ate_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name):
     """
     This function allows a user to find the main matched group of a particular
     unit, after the main DAME algorithm has already been run and all matches
@@ -141,7 +144,11 @@ def ate_of_unit(return_df, unit_id, file_name, treatment_column_name, outcome_co
         unit_id: the unit aiming to find the mmg of
         file_name: The csv file containing all of the original data.
     """
-    df_mmg = mmg_of_unit(return_df, unit_id, file_name)
+    df_mmg = mmg_of_unit(return_df, unit_id, input_data)
     
-    df_all = pd.read_csv(file_name)
-    return query_ate.find(df_mmg, unit_id, df_all, treatment_column_name, outcome_column_name)
+    if type(input_data) == pd.core.frame.DataFrame:
+        df = input_data
+    else:
+        df = pd.read_csv(input_data)
+        
+    return query_ate.find(df_mmg, unit_id, df, treatment_column_name, outcome_column_name)
