@@ -25,11 +25,13 @@ import query_mmg
 import query_ate
 import flame_algorithm
 
-def DAME(file_name = 'sample4.csv', 
+def DAME(input_data = False,
          treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
          outcome_column_name='outcome',
-         adaptive_weights=False, holdout_file_name=False,
-         repeats=True, want_pe=False):
+         adaptive_weights=False, holdout_data=False,
+         repeats=True, want_pe=False, early_stop_iterations=False, 
+         early_stop_unmatched_c=False, early_stop_unmatched_t=False,
+         verbose=0, want_bf=False, early_stop_bf=False):
     """
     This function kicks off the DAME algorithm
 
@@ -47,16 +49,23 @@ def DAME(file_name = 'sample4.csv',
             or false (default) if decide to drop weights
             based on the weights given in the weight_array
         holdout_file_name: If doing an adaptive_weights version, for training
-        ate: Bool, whether to output the ATE value for the matches.
         repeats: Bool, whether or not values for whom a MMG has been found can
             be used again and placed in an auxiliary matched group.
+        early_stop_iterations (optional int): If provided, a number of iterations 
+            to hard stop the algorithm after.
+        early_stop_unmatched_c or early_stop_unmatched_t (optional float, 
+            from 0.0 - 1.0): If provided, a fraction of unmatched control/
+            treatment units. When threshold met, hard stop the algo.
+        verbose (default: False, 0): If 1, provides iteration num, if 2 provides
+            iteration number and number of units left to match on every 10th iter,
+            if 3 does this print on every iteration. 
 
     Returns:
         return_df: df of units with the column values of their main matched
             group, with "*"s in place for the columns not in their MMG
     """
     
-    df, df_holdout = data_cleaning.read_files(file_name, holdout_file_name)
+    df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
         
     data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name)
@@ -66,7 +75,9 @@ def DAME(file_name = 'sample4.csv',
    
     return_df =  dame_algorithm.algo1(df, treatment_column_name, weight_array,
                                 outcome_column_name, adaptive_weights,
-                                df_holdout, repeats, want_pe)
+                                df_holdout, repeats, want_pe, early_stop_iterations,
+                                early_stop_unmatched_c, early_stop_unmatched_t,
+                                verbose, want_bf, early_stop_bf)
 
     return return_df
 
@@ -74,7 +85,9 @@ def FLAME(file_name = 'sample4.csv',
          treatment_column_name = 'treated', weight_array = [0],
          outcome_column_name='outcome',
          adaptive_weights=False, holdout_file_name='sample4.csv',
-         repeats=True, pre_dame=False):
+         repeats=True, pre_dame=False, early_stop_iterations=False, 
+         early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
+         want_bf=False, early_stop_bf=False):
     """
     This function kicks off the FLAME algorithm.
     
@@ -96,7 +109,11 @@ def FLAME(file_name = 'sample4.csv',
     
     return_df =  flame_algorithm.flame_generic(df, treatment_column_name, weight_array,
                                                outcome_column_name, adaptive_weights,
-                                               df_holdout, repeats, pre_dame)
+                                               df_holdout, repeats, pre_dame, 
+                                               early_stop_iterations, 
+                                               early_stop_unmatched_c,
+                                               early_stop_unmatched_t, verbose,
+                                               want_bf, early_stop_bf)
     return return_df
 
 def mmg_of_unit(return_df, unit_id, file_name):

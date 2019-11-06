@@ -25,3 +25,25 @@ def create_data():
             df.loc[i] = treat_values + [1] + list(np.random.normal(loc=1, size=1))
             
     return df
+
+# Get 1000 rows of data chopped up from the 30k one. Add a few columns so its 
+# 20 columns instead of 15
+    
+def create_1k():
+    old = pd.read_csv('old-dame-code-input-df.csv')
+    old_holdout = pd.read_csv('old-dame-code-input-holdout.csv')
+    df = pd.DataFrame(columns=['0',	'1',	'2'	, '3',	'4',	'5',	'6'	, '7', \
+                               '8',	'9', 	\
+                               'outcome', 	'treated'])
+    df_holdout = pd.DataFrame(columns=['0',	'1',	'2'	, '3',	'4',	'5',	'6'	, '7', \
+                               '8',	'9', 	\
+                               'outcome', 	'treated'])
+    for i in range(1000):
+        # randomly grab a number from 0 to 30,000 to read in. 
+        #try:
+        df.loc[i] = old.loc[random.randrange(0,30000)]
+        df_holdout.loc[i] = old_holdout.loc[random.randrange(0,30000)]
+        #except KeyError:
+        #    continue 
+        
+    return df, df_holdout

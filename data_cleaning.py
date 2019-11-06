@@ -6,17 +6,34 @@
 import pandas as pd
 import sys
 
-def read_files(file_name, holdout_file_name):
-    try:
-        df = pd.read_csv(file_name)
-        if holdout_file_name != False:
-            df_holdout = pd.read_csv(holdout_file_name)
-        else:
-            # the default df_holdout if it's not provided is the df
-            df_holdout = df
-    except ValueError:
-        print('Files could not be found')
+def read_files(input_data, holdout_data):
+    
+    # Read the input data
+    if type(input_data) == pd.core.frame.DataFrame:
+        df = input_data
+        
+    elif input_data == False:
+        print("Need to specify either csv file name or pandas data frame in \
+              parameter 'input_data'")
         sys.exit(1)
+    else:
+        try:
+            df = pd.read_csv(input_data)
+        except ValueError:
+            print('Files could not be found')
+            sys.exit(1)
+            
+    # Now read the holdout data
+    if type(holdout_data) == pd.core.frame.DataFrame:
+        df_holdout = holdout_data
+    elif holdout_data == False:
+        df_holdout = df # default if it's not provided is the df. 
+    else:
+        try:
+            df_holdout = pd.read_csv(holdout_data)
+        except ValueError:
+            print('Files could not be found')
+            sys.exit(1)
     
     return df, df_holdout
 

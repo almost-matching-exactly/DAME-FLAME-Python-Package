@@ -26,9 +26,6 @@ def decide_drop(all_covs, consider_dropping, prev_dropped, df_all,
     for possible_drop in consider_dropping:
         # S is the frozenset of covars we drop. We try dropping each one
         s = prev_dropped.union(set(possible_drop))
-        print(df_holdout.columns.difference(
-                                   [outcome_column_name, 
-                                    treatment_column_name] + list(s)))
         
         #X-treated is the df that has rows where treated col = 1 and
         # all cols except: outcome/treated/the covs being dropped
@@ -80,8 +77,10 @@ def decide_drop(all_covs, consider_dropping, prev_dropped, df_all,
     return best_drop, best_pe
 
 def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_name, 
-                  adaptive_weights,
-                  df_holdout, repeats=True, pre_dame=False):
+                  adaptive_weights, df_holdout, repeats=True, pre_dame=False, 
+                  early_stop_iterations=False, early_stop_unmatched_c=False,
+                  early_stop_unmatched_t=False, verbose=0, want_bf = False,
+                  early_stop_bf = False):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -98,6 +97,7 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
     return_covs_list = [] # each index is that iteration's cov list matched on
     return_pe= [] # list of predictive errors, 
                   # one for each item in return_covs_list
+    return_bf = []
                   
     return_matches = pd.DataFrame(columns=all_covs)
     
@@ -122,8 +122,10 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
     
     
     h = 1 # The iteration number
+    tot_treated = df_all[treatment_column_name].sum()
+    tot_control = len(df_all) - tot_treated
     
-    consider_dropping = set(frozenset([i]) for i in all_covs)
+    consider_dropping = set(i for i in all_covs)
     prev_dropped = set()
     
     # Here, we begin the iterative dropping procedure of FLAME
@@ -136,9 +138,32 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
                 break
         except TypeError:
             break
+        
+        # Hard stop criteria: exceeded the number of iters user asked for?
+        if (early_stop_iterations != False and early_stop_iterations == h):
+            print("We stopped before doing iteration number: ", h)
+            break
+        
+        # Hard stop criteria: met the threshold of unmatched items to stop?
+        unmatched_treated = df_unmatched[treatment_column_name].sum()
+        unmatched_control = len(df_unmatched) - unmatched_treated
+        if (early_stop_unmatched_t != False and \
+            unmatched_treated/tot_treated < early_stop_unmatched_t):
+            print("We stopped the algorithm when ",
+                  unmatched_treated/tot_treated, "of the treated units \
+                  remained unmatched")
+            break
+        elif (early_stop_unmatched_c != False and \
+            unmatched_control/tot_control < early_stop_unmatched_c):
+            print("We stopped the algorithm when ",
+                  unmatched_control/tot_control, "of the control units \
+                  remained unmatched")
+            break
+        
                 
-        # quit if there are covariate sets to choose from
+        # quit if there are no more covariate sets to choose from
         if (len(consider_dropping) == 0):
+            print("No more covariate sets to consider dropping")
             break
         
         # We find curr_covar_set, the best covariate to drop. 
@@ -153,15 +178,26 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
         
         return_pe.append(pe)                
         
-        covs_match_on = list(set(all_covs)-new_drop-prev_dropped)
-        
-        return_covs_list.append(covs_match_on)
-        
+        covs_match_on = list(set(all_covs)-set(new_drop)-prev_dropped)
+                
         matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
                                                      covs_match_on, all_covs,
                                                      treatment_column_name, 
                                                      outcome_column_name,
                                                      return_matches)
+        
+        if (want_bf == True):
+            # compute balancing factor
+            mg_treated = matched_rows[treatment_column_name].sum()
+            mg_control = len(matched_rows) - mg_treated
+            available_treated = df_unmatched[treatment_column_name].sum()
+            available_control = len(df_unmatched) - available_treated
+            bf = mg_treated/available_treated + mg_control/available_control
+            return_bf.append(bf)
+            
+            if bf < early_stop_bf:
+                print("We stopped matching with a balancing factor of ", bf)
+                break
        
         consider_dropping = consider_dropping.difference([new_drop]) 
         prev_dropped.add(new_drop)
@@ -173,7 +209,22 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
             df_all = df_unmatched
 
         h += 1
-        print("iteration number: ", h)
+        
+        # End of iter. Prints output based on verbose. 
+        if verbose == 1:
+            print("Iteration number: ", h)
+        if ((verbose == 2 and (h%10==0)) or verbose == 3):
+            print("Iteration number: ", h)
+            if (early_stop_unmatched_t == False and early_stop_unmatched_c == False):
+                unmatched_treated = df_unmatched[treatment_column_name].sum()
+                unmatched_control = len(df_unmatched) - unmatched_treated
+            print("Unmatched treated units: ", unmatched_treated)
+            print("Unmatched control units: ", unmatched_control)
+            print("Predictive error of most this iteration: ", pe)
+            if want_bf == True:
+                print("Balancing Factor of this iteration: ", bf)
+       
+        # Do we switch to DAME?
         if (pre_dame != False and pre_dame <= h):
             
             # drop the columns that have already been matched on

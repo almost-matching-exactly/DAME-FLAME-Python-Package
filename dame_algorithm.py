@@ -111,7 +111,10 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
           outcome_column_name = "outcome", adaptive_weights=False,
-          df_holdout="", repeats=True, want_pe=False):
+          df_holdout="", repeats=True, want_pe=False, 
+          early_stop_iterations=False, 
+          early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
+          want_bf=False, early_stop_bf=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -132,10 +135,21 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
-        ate: Bool, whether to output the ATE value for the matches.
         repeats (bool): Provided by user, whether or not values for whom a MMG 
             has been found can be used again and placed in an auxiliary group.
         want_pe (bool): Whether or not we want predictive error of each match
+        early_stop_iterations (optional int): If provided, a number of iterations 
+            to hard stop the algorithm after. 
+        early_stop_unmatched_t (optional float, from 0.0 - 1.0): If provided, a 
+            fraction of unmatched units. When % unmatched treated vals equal or
+            below this threshold, hard stop the algo
+        early_stop_unmatched_c (optional float, from 0.0 - 1.0): If provided, a 
+            fraction of unmatched units. When % unmatched control vals equal or
+            below this threshold, hard stop the algo
+        want_bf (bool): Whether to compute and output the balancing factor of 
+            each group. 
+        early_stop_bf (float): If provided, any balancing factor below this
+            will hard stop the algo. 
 
     Returns:
         return_matches: df of units with the column values of their main matched
@@ -156,6 +170,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     # Initialize return values
     if want_pe == True:
         return_pe = []
+    if want_bf == True:
+        return_bf = []
     return_matches = pd.DataFrame(columns=all_covs)
     
     # As an initial step, we attempt to match on all covariates
@@ -182,11 +198,13 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     processed_covar_sets = set() 
         
     h = 1 # The iteration number
+    tot_treated = df_all[treatment_column_name].sum()
+    tot_control = len(df_all) - tot_treated
     
     # Here, we begin the iterative dropping procedure of DAME
     while True:
+        
         # Iterates while there is at least one treatment unit to match in
-                
         try:
             if (1 not in df_unmatched[treatment_column_name].values or \
                 0 not in df_unmatched[treatment_column_name].values):
@@ -194,6 +212,28 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                 break
         except TypeError:
             break
+        
+        # Hard stop criteria: exceeded the number of iters user asked for?
+        if (early_stop_iterations != False and early_stop_iterations == h):
+            print("We stopped before doing iteration number: ", h)
+            break
+        
+        # Hard stop criteria: met the threshold of unmatched items to stop?
+        if (early_stop_unmatched_t != False or early_stop_unmatched_c != False):
+            unmatched_treated = df_unmatched[treatment_column_name].sum()
+            unmatched_control = len(df_unmatched) - unmatched_treated
+            if (early_stop_unmatched_t != False and \
+                unmatched_treated/tot_treated < early_stop_unmatched_t):
+                print("We stopped the algorithm when ",
+                      unmatched_treated/tot_treated, "of the treated units \
+                      remained unmatched")
+                break
+            if (early_stop_unmatched_c != False and \
+                unmatched_control/tot_control < early_stop_unmatched_c):
+                print("We stopped the algorithm when ",
+                      unmatched_control/tot_control, "of the control units \
+                      remained unmatched")
+                break
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
@@ -219,6 +259,19 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                                                      treatment_column_name, 
                                                      outcome_column_name,
                                                      return_matches)
+        if (want_bf == True):
+            # compute balancing factor
+            mg_treated = matched_rows[treatment_column_name].sum()
+            mg_control = len(matched_rows) - mg_treated
+            available_treated = df_unmatched[treatment_column_name].sum()
+            available_control = len(df_unmatched) - available_treated
+            bf = mg_treated/available_treated + mg_control/available_control
+            return_bf.append(bf)
+            
+            if bf < early_stop_bf:
+                print("We stopped matching with a balancing factor of ", bf)
+                break
+            
         # Generate new active sets
         Z_h = generate_new_active_sets.algo3GenerateNewActiveSets(
                 curr_covar_set, processed_covar_sets)
@@ -240,9 +293,21 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             df_all = df_unmatched
 
         h += 1
-        print("Iteration number: ", h)
-
-        # end loop. 
+        # End of iter. Decide what to print to user depending on verbose var. 
+        if verbose == 1:
+            print("Iteration number: ", h)
+        if ((verbose == 2 and (h%10==0)) or verbose == 3):
+            print("Iteration number: ", h)
+            if (early_stop_unmatched_t == False and early_stop_unmatched_c == False):
+                unmatched_treated = df_unmatched[treatment_column_name].sum()
+                unmatched_control = len(df_unmatched) - unmatched_treated
+            print("Unmatched treated units: ", unmatched_treated)
+            print("Unmatched control units: ", unmatched_control)
+            print("Predictive error of most this iteration: ", pe)
+            if want_bf == True:
+                print("Balancing factor of this iteration: ", bf)
+        
+    # end loop. 
     
     if want_pe == True:
         return return_matches, return_pe
