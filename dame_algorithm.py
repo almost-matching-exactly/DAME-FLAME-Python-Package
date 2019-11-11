@@ -172,7 +172,9 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         return_pe = []
     if want_bf == True:
         return_bf = []
-    return_matches = pd.DataFrame(columns=all_covs)
+    
+    # Just updated this 11/11 (todo remove comment if this works)
+    return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     
     # As an initial step, we attempt to match on all covariates
     

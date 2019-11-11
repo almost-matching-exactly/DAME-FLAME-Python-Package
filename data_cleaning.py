@@ -26,8 +26,10 @@ def read_files(input_data, holdout_data):
     # Now read the holdout data
     if type(holdout_data) == pd.core.frame.DataFrame:
         df_holdout = holdout_data
+    elif type(holdout_data) == float and holdout_data <= 1.0 and holdout_data > 0.0:
+            df_holdout = df.sample(frac=holdout_data)
     elif holdout_data == False:
-        df_holdout = df # default if it's not provided is the df. 
+        df_holdout = df.sample(frac=0.1) # default if it's not provided is the df. 
     else:
         try:
             df_holdout = pd.read_csv(holdout_data)

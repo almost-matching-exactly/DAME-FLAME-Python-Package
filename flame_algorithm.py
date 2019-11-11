@@ -9,6 +9,9 @@ from sklearn.linear_model import Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
 
+# delete this one later:
+import time
+
 import grouped_mr
 import dame_algorithm
 
@@ -99,7 +102,8 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
                   # one for each item in return_covs_list
     return_bf = []
                   
-    return_matches = pd.DataFrame(columns=all_covs)
+    # todo delete this comment later -- justupdated line
+    return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     
     # As an initial step, we attempt to match on all covariates
     
@@ -128,6 +132,8 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
     consider_dropping = set(i for i in all_covs)
     prev_dropped = set()
     
+    start_time = time.time()
+    
     # Here, we begin the iterative dropping procedure of FLAME
     while True:
         # Iterates while there are units to match to match in
@@ -145,20 +151,21 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        unmatched_treated = df_unmatched[treatment_column_name].sum()
-        unmatched_control = len(df_unmatched) - unmatched_treated
-        if (early_stop_unmatched_t != False and \
-            unmatched_treated/tot_treated < early_stop_unmatched_t):
-            print("We stopped the algorithm when ",
-                  unmatched_treated/tot_treated, "of the treated units \
-                  remained unmatched")
-            break
-        elif (early_stop_unmatched_c != False and \
-            unmatched_control/tot_control < early_stop_unmatched_c):
-            print("We stopped the algorithm when ",
-                  unmatched_control/tot_control, "of the control units \
-                  remained unmatched")
-            break
+        if (early_stop_unmatched_t != False or early_stop_unmatched_c != False):
+            unmatched_treated = df_unmatched[treatment_column_name].sum()
+            unmatched_control = len(df_unmatched) - unmatched_treated
+            if (early_stop_unmatched_t != False and \
+                unmatched_treated/tot_treated < early_stop_unmatched_t):
+                print("We stopped the algorithm when ",
+                      unmatched_treated/tot_treated, "of the treated units \
+                      remained unmatched")
+                break
+            elif (early_stop_unmatched_c != False and \
+                unmatched_control/tot_control < early_stop_unmatched_c):
+                print("We stopped the algorithm when ",
+                      unmatched_control/tot_control, "of the control units \
+                      remained unmatched")
+                break
         
                 
         # quit if there are no more covariate sets to choose from
@@ -167,25 +174,22 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
             break
         
         # We find curr_covar_set, the best covariate to drop. 
+        
         new_drop, pe = decide_drop(all_covs, consider_dropping, prev_dropped, 
                                      df_all, 
                                      treatment_column_name, outcome_column_name,
                                      df_holdout, adaptive_weights)
-        
         # Check for error in above step:
         if (new_drop == False):
             break
         
         return_pe.append(pe)                
-        
         covs_match_on = list(set(all_covs)-set(new_drop)-prev_dropped)
-                
         matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
                                                      covs_match_on, all_covs,
                                                      treatment_column_name, 
                                                      outcome_column_name,
-                                                     return_matches)
-        
+                                                     return_matches, start_time)
         if (want_bf == True):
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
@@ -198,13 +202,11 @@ def flame_generic(df_all, treatment_column_name, weight_array, outcome_column_na
             if bf < early_stop_bf:
                 print("We stopped matching with a balancing factor of ", bf)
                 break
-       
         consider_dropping = consider_dropping.difference([new_drop]) 
         prev_dropped.add(new_drop)
-        
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
- 
+        
         if repeats == False:
             df_all = df_unmatched
 

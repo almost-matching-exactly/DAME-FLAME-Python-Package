@@ -8,9 +8,13 @@ import numpy as np
 import itertools
 import flame_group_by
 
+# todo; Delete later:
+import time
+
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
-                    outcome_column_name, return_groups):    
-    '''
+                    outcome_column_name, return_groups, start_time=0):    
+    # todo; DOn't forget to remove start_time!
+    ''' 
     Input: 
         df_all: The dataframe of all of the data
             df_unmatched: The dataframe ofjust hte unmatched data, a subset of df
@@ -27,19 +31,17 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     # This is the max of all of the columns. assuming they're 
     # ordered from least to greatest. 
     covs_max_list = [max(df_unmatched[x])+1 for x in covs_match_on]
-    
     # Form groups on D by exact matching on Js.  
     df_all_without_outcome = df_all.drop([outcome_column_name], axis=1)
     matched_units, bi = flame_group_by.match_ng(df_all_without_outcome, covs_match_on, 
                                                 covs_max_list, 
                                                 treatment_column_name)
-        
+
     # Find newly matched units and their main matched groups.
     
   
     # These are the rows of the ones that have been matched: 
     matched_rows = df_all.loc[matched_units, :].copy()
-    
     matched_rows['b_i'] = bi
             
     # These are the unique values in the bi col. length = number of groups
@@ -54,7 +56,6 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
         # ones for whom this is their main matched group. 
                 
         newly_matched = [i for i in units_in_g if i in df_unmatched.index]
-        
         # Only need to proceed to fill in the return table if someone's MMG found. 
         if len(newly_matched) != 0:
             # What does the group look like? eg [1,2,*,1]
@@ -67,9 +68,19 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
                     group_covs.append(temp_row_in_group[col])
                 else:
                     group_covs.append('*')
-                
-            # add that group to the newly matched units to our new dataframe 
-            for unit_id in newly_matched: 
-                return_groups.loc[unit_id] = group_covs
+            # add that group to the newly matched units to our new dataframe
+            
+            # THIS is whats slowest, so now we're trying to speed it up:
+            #for unit_id in newly_matched: 
+            #    return_groups.loc[unit_id] = group_covs
+            
+            
+            return_groups.loc[newly_matched,:] = group_covs
+            
+            # OTHER IDEA: 
+            # store the bi in a column with df_all and also a column for "pair" with another
+            # persons unit id. 
+            # don't update that when someone gets added to an auxiliary matched group
+            # then at the end, iterate through it and create the nicely formatteed output. 
         
     return matched_rows, return_groups
