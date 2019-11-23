@@ -20,7 +20,6 @@ def find(mmg_of_unit, unit_id, df_all, treatment_col, outcome_col):
         mmg_matches: the subset of df_all with only units that in the mmg
     '''
     
-    print("mmg_of_unit", mmg_of_unit)
     avg_effect_untreated = 0
     
     df_mmg = df_all.loc[mmg_of_unit.index][:]

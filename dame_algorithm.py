@@ -8,14 +8,15 @@ This file implements Algorithm 1 in the paper.
 import numpy as np
 import pandas as pd
 import itertools
+
 import grouped_mr
 import generate_new_active_sets
-from sklearn.linear_model import Ridge
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import mean_squared_error
+import flame_dame_helpers
+
+
 
 def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
-                treatment_column_name, outcome_column_name, df_holdout):
+                treatment_column_name, outcome_column_name, df_holdout, alpha_given):
     """ This is a helper function to Algorithm 1 in the paper. 
     
     Args:
@@ -59,47 +60,13 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         for s in active_covar_sets:
             # S is the frozenset of covars we drop. We try dropping each one
             
-            #X-treated is the df that has rows where treated col = 1 and
-            # all cols except: outcome/treated/the covs being dropped
-            X_treated = df_holdout.loc[df_holdout[treatment_column_name]==1, 
-                               df_holdout.columns.difference(
-                                       [outcome_column_name, 
-                                        treatment_column_name] + list(s))]
-            #X-control is the df that has rows where treated col = 0 and
-            # all cols except: outcome/treated/the covs being dropped
-            X_control = df_holdout.loc[df_holdout[treatment_column_name]==0, 
-                               df_holdout.columns.difference(
-                                       [outcome_column_name, 
-                                        treatment_column_name] + list(s))]
-    
-            Y_treated = df_holdout.loc[df_holdout[treatment_column_name]==1, 
-                                       outcome_column_name]
-            
-            Y_control = df_holdout.loc[df_holdout[treatment_column_name]==0, 
-                                       outcome_column_name]
-            
-            # error check. If this is true, we stop matching. 
-            if (len(X_treated)==0 or len(X_control) == 0 or \
-                len(Y_treated) == 0 or len(Y_control) ==0 or \
-                len(X_treated.columns) == 0 or len(X_control.columns) == 0):
+            PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout, 
+                                                          treatment_column_name, 
+                                       outcome_column_name, s, adaptive_weights,
+                                       alpha_given)
+            # error check
+            if PE == False:
                 return False, False
-            
-            if adaptive_weights == "ridge":
-                clf = Ridge(alpha=0.1)
-            elif adaptive_weights == "decision tree":
-                clf = DecisionTreeRegressor()
-            
-            # Calculate treated MSE
-            clf.fit(X_treated, Y_treated) 
-            predicted = clf.predict(X_treated)
-            MSE_treated = mean_squared_error(Y_treated, predicted)
-            
-            # Calculate control MSE
-            clf.fit(X_control, Y_control) 
-            predicted = clf.predict(X_control)
-            MSE_control = mean_squared_error(Y_control, predicted)
-        
-            PE = MSE_treated + MSE_control
             
             # Use the smallest PE as the covariate set to drop.
             if PE < best_pe:
@@ -110,11 +77,12 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
 
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
-          outcome_column_name = "outcome", adaptive_weights=False,
+          outcome_column_name = "outcome", adaptive_weights=False, alpha = 0.1,
           df_holdout="", repeats=True, want_pe=False, 
           early_stop_iterations=False, 
           early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
-          want_bf=False, early_stop_bf=False):
+          want_bf=False, early_stop_bf=False, early_stop_pe=False,
+          missing_holdout_replace=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -132,6 +100,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             weights based on a ridge regression on hold-out training set
             or false (default) if decide to drop weights
             based on the weights given in the weight_array
+        alpha (float): for ridge regression.
         df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
             There are no changes made to this throughout the code. Used only in
             testing/training for adaptive_weights version.
@@ -148,8 +117,13 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             below this threshold, hard stop the algo
         want_bf (bool): Whether to compute and output the balancing factor of 
             each group. 
-        early_stop_bf (float): If provided, any balancing factor below this
+        early_stop_bf (float/bool): If provided, any balancing factor below this
             will hard stop the algo. 
+        early_stop_pe (float/bool): If provided/not False, any PE below this
+            will hard stop the algo. 
+        missing_holdout_replace (bool/float): Default false. If int, the number of
+            imputations that MICE needs to do on the holdout dataset, which
+            has NaNs in it that need to be replaced. 
 
     Returns:
         return_matches: df of units with the column values of their main matched
@@ -157,21 +131,15 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     """
     
     # Initialize variables. These are all moving/temporary throughout algo
-    matched_groups = [] # This is a list of df's. Will be replaced for new output.
     all_covs = df_all.columns.tolist()
     all_covs.remove(treatment_column_name) # This is J in the paper
     all_covs.remove(outcome_column_name)
     df_unmatched = df_all.copy(deep=True) # This is df_h in the paper    
     all_covs_max_list = [max(df_all[x])+1 for x in all_covs] 
-    
-    # Indexes the group numbers throughout. 
-    group_index = 0
-                  
+                      
     # Initialize return values
-    if want_pe == True:
-        return_pe = []
-    if want_bf == True:
-        return_bf = []
+    return_pe = []
+    return_bf = []
     
     # Just updated this 11/11 (todo remove comment if this works)
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
@@ -189,7 +157,17 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     
     if repeats == False:
         df_all = df_unmatched
-    
+        
+    # set up all the extra dfs if needed
+    if missing_holdout_replace != False:
+        # now df_holdout is actually an array of imputed datasets
+        df_holdout = flame_dame_helpers.create_mice_dfs(df_holdout, missing_holdout_replace)
+    else:
+        # df_holdout is type array regardless, just size 1 and equal to itself
+        # if not doing mice. 
+        x = list()
+        x.append(df_holdout)
+        df_holdout = x
     # Here we initializing variables for the iterative portion of the code.
     # active_covar_sets indicates the sets elibible to be dropped. In the
     # paper, this is lambda_h. curr_covar_sets is the covariates chosen to be
@@ -208,8 +186,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # Iterates while there is at least one treatment unit to match in
         try:
-            if (1 not in df_unmatched[treatment_column_name].values or \
-                0 not in df_unmatched[treatment_column_name].values):
+            if (1 not in df_unmatched[treatment_column_name].values): #or \
+                #0 not in df_unmatched[treatment_column_name].values):
                 print("We finished with no more units to match")
                 break
         except TypeError:
@@ -239,20 +217,22 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
+            print("We stopped after considering all covariate set options")
             break
         
         # We find curr_covar_set, the best covariate set to drop. 
         curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
-                                     adaptive_weights, df_all, 
-                                     treatment_column_name, outcome_column_name,
-                                     df_holdout)
+                                         adaptive_weights, df_all, 
+                                         treatment_column_name, outcome_column_name,
+                                         df_holdout, alpha)
         
         # Check for error in above step:
         if (curr_covar_set == False):
+            print("we stopped when the holdout set was not large enough or there \
+                  was nothing left to match")
             break
         
-        if want_pe == True:
-            return_pe.append(pe)              
+        return_pe.append(pe)              
         
         covs_match_on = list(set(all_covs)-curr_covar_set)
                 
@@ -261,7 +241,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                                                      treatment_column_name, 
                                                      outcome_column_name,
                                                      return_matches)
-        if (want_bf == True):
+        
+        # It's probably slow to compute this if people don't want it, so will
+        # want to add this, I think. 
+        if (want_bf == True or early_stop_pe != False):
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
@@ -273,6 +256,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             if bf < early_stop_bf:
                 print("We stopped matching with a balancing factor of ", bf)
                 break
+        
+        if early_stop_pe != False:
+            if pe <= early_stop_pe:
+                print('We stopped matching with a pe of ', pe)
+                break
+            
             
         # Generate new active sets
         Z_h = generate_new_active_sets.algo3GenerateNewActiveSets(
@@ -310,7 +299,11 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                 print("Balancing factor of this iteration: ", bf)
         
     # end loop. 
-    
+    return_matches = return_matches.dropna(axis=0) #drop rows with nan, dont return unmatched stuff
+    return_package = [return_matches]
     if want_pe == True:
-        return return_matches, return_pe
-    return return_matches
+        return_package.append(return_pe)
+    if want_bf == True:
+        return_package.append(return_bf)
+        
+    return return_package

@@ -50,28 +50,6 @@ Code organization:
 Some test cases are in *_test.py
 The main starting point is DAME.py. After cleaning, then it goes to dame_algorithm.py, which starts off the algorithm, and this calls other files. 
 
-Here's my remaining todo list:
 
 
-(Easy)
-2. Allow for users to enter option for possible early stopping conditions based on weight or number of units being low
-3. Allow user to input alpha options for decision trees
-
-
-userxtmp/user/
-nohup command &
-"no hangup" so exiting out of terminal keeps it running
-command can be my start.py whihc has a main funciton and a datetime to run my python file. 
-can print output to the file. 
-request@cs.duke.edu
-ssh to login@cs.duke.edu on mobaxterm
-$ ssh linux
-in login1@linux > cd /usr/xtmp/nrg18/
-
-to copy files over from laptop to ssh dir, use mobaxterm on my personal laptop to go into the directory Duke and then do a command:
-$ scp -r CynthiaResearch/ nrg18@login.cs.duke.edu:/usr/xtmp/nrg18
-
-
-This command is behaing oddly:
-x = DAME(file_name='old-dame-code-input-df.csv', treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_file_name='old-dame-code-input-holdout.csv', repeats=True, want_pe=False)
 
