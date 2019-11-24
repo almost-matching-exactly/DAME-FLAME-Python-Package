@@ -147,12 +147,12 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
             for item_num in range(len(df[col])):
                 if math.isnan(missing_indicator) == False:
                     if df[col][item_num] == missing_indicator:
-                        df[col][item_num] = max_val + 1
+                        df.loc[item_num, col] = max_val + 1
                         max_val += 1
                 else:
                     # Have to do them separately because nan == nan is false always.
                     if math.isnan(df[col][item_num]) == True:
-                        df[col][item_num] = max_val + 1
+                        df.loc[item_num, col] = max_val + 1
                         max_val += 1
                     
     return df
@@ -182,12 +182,12 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     '''
     mice_on_matching = False
     mice_on_holdout = False
-    
-    if missing_data_replace == 0 and missing_holdout_replace == 0:
-        if df.isnull().values.any() or df_holdout.isnull().values.any():
-            print('Invalid input error. There are missing values in the data \
-                  frame. Please specify a missing data handling method.')
-            sys.exit(1)
+    print("hi: ", df.isnull().values.any())
+    if missing_data_replace == 0 and df.isnull().values.any() == True:
+        print('There is missing data in this dataset. The default missing \
+              data handling is being done, so we are not matching on \
+              any missing values in the matching set')
+        missing_data_replace = 2
             
         # TODO: iterate through all the columns and check for non-integer values
         # and then replace them with nan if needed. 
@@ -199,17 +199,24 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
                           missing_indicator)
         
     if missing_data_replace == 2:
-        # so. I'm pretty sure that replacing with unique larges will trip up
-        # in the matching step. 
+        # so replacing with large unique values will only work if columns 
+        # are in order!!
         
         df = replace_unique_large(df, treatment_column_name, outcome_column_name,
                              missing_indicator)
         
         
     if missing_data_replace == 3:
-        # this means do mice ugh. 
-        df  = df.replace(missing_indicator, np.nan)
-        mice_on_matching = missing_data_imputations
+        # this means do mice but only if theres something actually missing. 
+        df = df.replace(missing_indicator, np.nan)
+        if df.isnull().values.any() == True:
+            mice_on_matching = missing_data_imputations
+    
+    if missing_holdout_replace == 0 and df_holdout.isnull().values.any() == True:
+        print('There is missing data in this dataset. The default missing \
+              data handling is being done, so we are running MICE on 10 \
+              imputed holdout datasets')
+        missing_holdout_replace = 2
     
     if missing_holdout_replace == 1:
         df_holdout = drop_missing(df_holdout, treatment_column_name, 
@@ -218,7 +225,12 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     if missing_holdout_replace == 2:
         # this means do mice ugh lol. 
         df_holdout = df_holdout.replace(missing_indicator, np.nan)
-        mice_on_holdout = missing_holdout_imputations
+        print('df_holdout')
+        # but if there is actually nothing missing in the dataset, then dont
+        # need to do this. 
+        if df_holdout.isnull().values.any() == True:
+            print("I should be true")
+            mice_on_holdout = missing_holdout_imputations
     
     return df, df_holdout, mice_on_matching, mice_on_holdout
 
@@ -248,6 +260,9 @@ def process_input_file(df, treatment_column_name, outcome_column_name):
     max_column_size = 1
     for col_name in df.columns:
         if (col_name != treatment_column_name) and (col_name != outcome_column_name):
+            # Todo: before, this was df[col_name].unique().max(), which I removed when it didnt work
+            # this seems to work, but I wonder if it's a happy accident
+            # because, https://stackoverflow.com/questions/21319929/how-to-determine-whether-a-pandas-column-contains-a-particular-value
             if df[col_name].max() >= max_column_size:
                 max_column_size = df[col_name].max()
             else:
