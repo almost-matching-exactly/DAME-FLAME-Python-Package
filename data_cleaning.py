@@ -124,7 +124,7 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
                   must have the same number of columns')
             sys.exit(1)
         # make sure that the holdout columns match the df columns.
-        if (False in (df_holdout.columns == df.columns)):
+        if (set(df_holdout.columns) != set(df.columns)):
             # they don't match
             print('Invalid input error. The holdout and main dataset \
                   must have the same columns')
@@ -206,6 +206,9 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
                              missing_indicator)
         
         
+        # Reorder if they're not in order:
+        df = df.loc[:, df.max().sort_values(ascending=True).index]
+        
     if missing_data_replace == 3:
         # this means do mice but only if theres something actually missing. 
         df = df.replace(missing_indicator, np.nan)
@@ -234,7 +237,7 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     
     return df, df_holdout, mice_on_matching, mice_on_holdout
 
-def process_input_file(df, treatment_column_name, outcome_column_name):
+def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_weights):
     '''
     This function processes the parameters passed to DAME/FLAME that are 
     directly the input file.
@@ -256,19 +259,24 @@ def process_input_file(df, treatment_column_name, outcome_column_name):
         print('Invalid input error. Treatment column must have 0 and 1 values')
         sys.exit(1)
         
-    # Ensure that the columns are sorted in order: binary, tertary, etc
-    max_column_size = 1
-    for col_name in df.columns:
-        if (col_name != treatment_column_name) and (col_name != outcome_column_name):
-            # Todo: before, this was df[col_name].unique().max(), which I removed when it didnt work
-            # this seems to work, but I wonder if it's a happy accident
-            # because, https://stackoverflow.com/questions/21319929/how-to-determine-whether-a-pandas-column-contains-a-particular-value
-            if df[col_name].max() >= max_column_size:
-                max_column_size = df[col_name].max()
-            else:
-                print('Invalid input error. Dataframe column size must be in \
-                      increasing order from left to right.')
-                sys.exit(1)
+    if adaptive_weights == False:
+        # Ensure that the columns are sorted in order: binary, tertary, etc
+        max_column_size = 1
+        for col_name in df.columns:
+            if (col_name != treatment_column_name) and (col_name != outcome_column_name):
+                # Todo: before, this was df[col_name].unique().max(), which I removed when it didnt work
+                # this seems to work, but I wonder if it's a happy accident
+                # because, https://stackoverflow.com/questions/21319929/how-to-determine-whether-a-pandas-column-contains-a-particular-value
+                if df[col_name].max() >= max_column_size:
+                    max_column_size = df[col_name].max()
+                else:
+                    print('Invalid input error. Dataframe column size must be in \
+                          increasing order from left to right.')
+                    sys.exit(1)
+    
+    else:
+        # Reorder if they're not in order:
+        df = df.loc[:, df.max().sort_values(ascending=True).index]
                 
         
         

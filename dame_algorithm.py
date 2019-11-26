@@ -162,7 +162,6 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     if missing_holdout_replace != False:
         # now df_holdout is actually an array of imputed datasets
         df_holdout = flame_dame_helpers.create_mice_dfs(df_holdout, missing_holdout_replace)
-        print("**", df_holdout)
     else:
         # df_holdout is type array regardless, just size 1 and equal to itself
         # if not doing mice. 
@@ -296,7 +295,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                 unmatched_control = len(df_unmatched) - unmatched_treated
             print("Unmatched treated units: ", unmatched_treated)
             print("Unmatched control units: ", unmatched_control)
-            print("Predictive error of most this iteration: ", pe)
+            print("Predictive error of covariates chosen this iteration: ", pe)
             print("Number of matches made in this iteration: ", 
                   prev_iter_num_unmatched - len(df_unmatched))
             print("Number of matches made so far: ", len(df_all) - len(df_unmatched))

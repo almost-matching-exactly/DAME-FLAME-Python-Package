@@ -92,11 +92,10 @@ def DAME(input_data = False,
     df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
         
     df = data_cleaning.process_input_file(df, treatment_column_name,
-                                     outcome_column_name)
+                                     outcome_column_name, adaptive_weights)
 
     data_cleaning.check_parameters(adaptive_weights, weight_array, df_holdout, 
                                    df, alpha)
-    print('pre missing')
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
                                                    df_holdout, missing_indicator, 
                                                    missing_data_replace,
@@ -105,15 +104,13 @@ def DAME(input_data = False,
                                                    missing_data_imputations,
                                                    treatment_column_name,
                                                    outcome_column_name)
-    print('post missing')
+    
     early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
             early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
             early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
             early_stop_bf, early_stop_bf_frac)
    
     if (mice_on_matching == False):
-        print(df_holdout)
-        print("*", df)
         return dame_algorithm.algo1(df, treatment_column_name, weight_array,
                                     outcome_column_name, adaptive_weights, alpha,
                                     df_holdout, repeats, want_pe, early_stop_iterations,
@@ -166,7 +163,7 @@ def FLAME(input_data = False,
     df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
         
     df = data_cleaning.process_input_file(df, treatment_column_name,
-                                     outcome_column_name)
+                                     outcome_column_name, adaptive_weights)
 
     data_cleaning.check_parameters(adaptive_weights, weight_array, 
                                                 df_holdout, df, alpha)

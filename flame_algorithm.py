@@ -216,7 +216,7 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
                 unmatched_control = len(df_unmatched) - unmatched_treated
             print("Unmatched treated units: ", unmatched_treated)
             print("Unmatched control units: ", unmatched_control)
-            print("Predictive error of most this iteration: ", pe)
+            print("Predictive error of covariates chosen this iteration: ", pe)
             if want_bf == True:
                 print("Balancing Factor of this iteration: ", bf)
        
