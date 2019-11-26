@@ -2,6 +2,7 @@
 <!-- Comment hi.  -->
 # DAME (Dynamic Almost Matching Exactly) and FLAME (Flast Large-scale Almost Matching Exactly)
 --------------------------------------------------
+This code is still experimental. Please report any bugs. 
 
 ## Overview of the DAME and FLAME algorithms
 
