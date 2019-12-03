@@ -2,6 +2,8 @@
 <!-- Comment hi.  -->
 # DAME (Dynamic Almost Matching Exactly) and FLAME (Flast Large-scale Almost Matching Exactly)
 --------------------------------------------------
+Code owned/written by Neha Gupta, Cynthia Rudin, Sudeepa Roy, Alex Volfovsky of Duke University.
+
 This code is still experimental. Please report any bugs. 
 
 ## Overview of the DAME and FLAME algorithms
@@ -18,14 +20,14 @@ For more details about these algorithms, please refer to their papers: [FLAME: A
 
 ## Installation
 
-``` r
-# This is all wrong. Update once I have it deployed and a link to show off. 
+``` Python
+# This will be updated once it's on PyPi.
 
-# Download from CRAN
-install.packages("FLAME")
+# Download from PyPi
+install.packages("")
 
 # Download from GitHub
-devtools::install_github("chiarui424/FLAME") 
+devtools::install_github("") 
 ```
 
 ## Required data format
