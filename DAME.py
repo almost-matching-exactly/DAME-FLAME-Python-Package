@@ -31,21 +31,7 @@ import sys
 import pandas as pd
 
 
-def DAME(df,
-         df_holdout,
-         dame_config=None,
-
-         treatment_column_name="treated", weight_array=[0.25, 0.05, 0.7],
-         outcome_column_name='outcome',
-         adaptive_weights=False, alpha=0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False,
-         early_stop_unmatched_c=False, early_stop_un_c_frac=0.1,
-         early_stop_unmatched_t=False, early_stop_un_t_frac=0.1,
-         early_stop_pe=False, early_stop_pe_frac=0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac=0.01,
-         missing_indicator=np.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations=10,
-         missing_data_imputations=0):
+def _DAME(df, df_holdout, dame_config=None):
     """
     This function kicks off the DAME algorithm
 
@@ -93,6 +79,8 @@ def DAME(df,
     # need config
     assert dame_config is not None, "specify DAME configs!"
 
+    # set missing indicator
+    missing_indicator = np.nan
     # process inputs
     df = data_cleaning.process_input_file(
         df, treatment_column_name, outcome_column_name, adaptive_weights
@@ -148,12 +136,13 @@ def DAME(df,
         return return_array
 
 
-def run_DAME(input_data, holdout_data, config_path="dame.conf"):
+def DAME(input_data, holdout_data, config_params=None, config_path="dame.conf"):
     """DAME wrapper."""
     # read config
-    config = configparser.ConfigParser()
-    config.read(config_path)
-    config_params = dict(config["params"])
+    if config_params is None:
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        config_params = dict(config["params"])
 
     # process inputs - todo finish this
     if type(input_data) == pd.core.frame.DataFrame:
@@ -185,7 +174,7 @@ def run_DAME(input_data, holdout_data, config_path="dame.conf"):
             sys.exit(1)
 
     # run DAME routine
-    result = DAME(
+    result = _DAME(
         df, df_holdout, dame_config=config_params
     )
 
