@@ -45,7 +45,7 @@ def DAME(df,
     This function kicks off the DAME algorithm
 
     Args:
-        input_data: The csv file with the data being matched or df. 
+        input_data: The DataFrame with the data being matched or df. 
         treatment_column_name: Indicates the name
             of the column that contains the binary indicator for whether each
             row is a treatment group or not.
@@ -57,7 +57,7 @@ def DAME(df,
             based on the weights given in the weight_array, or 'ridge', or 
             'decision tree'.
         alpha (float): This is the alpha for ridge regression 
-        holdout_data: If doing an adaptive_weights version, for training
+        holdout_data: DataFrame - if doing an adaptive_weights version, for training
         repeats: Bool, whether or not values for whom a MMG has been found can
             be used again and placed in an auxiliary matched group.
         early_stop_iterations (optional int): If provided, a number of iterations 
