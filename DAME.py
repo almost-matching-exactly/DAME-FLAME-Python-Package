@@ -22,27 +22,24 @@ outcome_column_name='outcome', adaptive_weights='ridge',
 holdout_data='sample5.csv', repeats=True, want_pe=False)
 
 """
-import pandas as pd
 import numpy as np
-import argparse
 import data_cleaning
 import dame_algorithm
-import query_mmg
-import query_ate
-import flame_algorithm
 import flame_dame_helpers
 
-def DAME(input_data = False,
-         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
+
+def DAME(df,
+         holdout_df,
+         treatment_column_name="treated", weight_array=[0.25, 0.05, 0.7],
          outcome_column_name='outcome',
-         adaptive_weights=False, alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
-         early_stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         early_stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
-         early_stop_pe = False, early_stop_pe_frac = 0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01,
+         adaptive_weights=False, alpha=0.1, holdout_data=False,
+         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False,
+         early_stop_unmatched_c=False, early_stop_un_c_frac=0.1,
+         early_stop_unmatched_t=False, early_stop_un_t_frac=0.1,
+         early_stop_pe=False, early_stop_pe_frac=0.01,
+         want_bf=False, early_stop_bf=False, early_stop_bf_frac=0.01,
          missing_indicator=np.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations = 10,
+         missing_holdout_replace=0, missing_holdout_imputations=10,
          missing_data_imputations=0):
     """
     This function kicks off the DAME algorithm
@@ -88,9 +85,7 @@ def DAME(input_data = False,
         return_df: df of units with the column values of their main matched
             group, with "*"s in place for the columns not in their MMG
     """
-    
-    df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
-        
+
     df = data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name, adaptive_weights)
 
@@ -137,157 +132,6 @@ def DAME(input_data = False,
                                     mice_on_holdout))
         return return_array
 
-def FLAME(input_data = False,
-         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
-         outcome_column_name='outcome',
-         adaptive_weights=False, alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
-         early_stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         early_stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
-         early_stop_pe = False, early_stop_pe_frac = 0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01, 
-         pre_dame=False, missing_indicator=np.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations = 10,
-         missing_data_imputations=0):
-    """
-    This function kicks off the FLAME algorithm.
-    
-    Args:
-        See DAME above.
-        pre_dame (int, False): Indicates whether to switch to dame and after
-            int number of iterations. 
-    Returns:
-        See DAME above.
-    """
-    
-    df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
-        
-    df = data_cleaning.process_input_file(df, treatment_column_name,
-                                     outcome_column_name, adaptive_weights)
 
-    data_cleaning.check_parameters(adaptive_weights, weight_array, 
-                                                df_holdout, df, alpha)
-    
-    df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
-                                                   df_holdout, missing_indicator, 
-                                                   missing_data_replace,
-                                                   missing_holdout_replace, 
-                                                   missing_holdout_imputations,
-                                                   missing_data_imputations,
-                                                   treatment_column_name,
-                                                   outcome_column_name)
-
-    early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
-            early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
-            early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
-            early_stop_bf, early_stop_bf_frac)
-    
-    if (mice_on_matching == False):
-        return flame_algorithm.flame_generic(df, treatment_column_name, weight_array,
-                                outcome_column_name, adaptive_weights, alpha,
-                                df_holdout, repeats, want_pe, early_stop_iterations,
-                                early_stop_unmatched_c, early_stop_unmatched_t,
-                                verbose, want_bf, early_stop_bf, early_stop_pe, 
-                                pre_dame, mice_on_holdout)
-    else:
-        # this would mean we need to run mice on the matching data, which means
-        # that we have to run algo1 multiple times
-        print("Warning: You have opted to run MICE on the matching dataset. \
-              This is slow, and not recommended. We recommend that instead, \
-              you run the algorithm and skip matching on missing data points, \
-              with the parameter missing_data_replace=2.")
-        
-        # first we get the imputed datasets
-        df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_matching)
-        return_array = []
-        for i in range(len(df_array)):
-            return_array.append(flame_algorithm.flame_generic(df, treatment_column_name, weight_array,
-                                outcome_column_name, adaptive_weights, alpha,
-                                df_holdout, repeats, want_pe, early_stop_iterations,
-                                early_stop_unmatched_c, early_stop_unmatched_t,
-                                verbose, want_bf, early_stop_bf, early_stop_pe, 
-                                pre_dame, mice_on_holdout))
-            
-        return return_array
-
-def mmg_of_unit(return_df, unit_id, input_data, output_style=1):
-    """
-    This function allows a user to find the main matched group of a particular
-    unit, after the main DAME algorithm has already been run and all matches
-    have been found. 
-    
-    Args:
-        return_df: The return value from DAME above
-        unit_id(int): the unit aiming to find the mmg of
-        file_name: The csv file containing all of the original data.
-        output_style: 1 if you want just the covariates matched on, and 2 if
-        you want all of the attributes listed. 
-    """
-    if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
-    else:
-        df = pd.read_csv(return_df)
-        
-    mmg_df = query_mmg.find(return_df, unit_id, df)
-    if output_style == 2:
-        return input_data.loc[mmg_df.index]
-    else:
-        # so now we need to filter on just the ones we want. 
-        if ("*" in return_df.loc[unit_id].unique()):
-            # this means there is a star and it needs to be filtered. 
-            my_series = return_df.loc[unit_id]
-            star_cols = my_series[my_series == "*"].index
-            non_star_cols = input_data.columns.difference(star_cols)
-            return input_data[non_star_cols].loc[mmg_df.index]
-        
-
-def te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name):
-    """
-    This function allows a user to find the main matched group of a particular
-    unit, after the main DAME algorithm has already been run and all matches
-    have been found. 
-    
-    Args:
-        return_df: The return value from DAME above
-        unit_id: the unit aiming to find the mmg of. Type int.
-        file_name: The csv file containing all of the original data.
-    """
-    df_mmg = mmg_of_unit(return_df, unit_id, input_data)
-    
-    if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
-    else:
-        df = pd.read_csv(return_df)
-        
-    return query_ate.find(df_mmg, unit_id, df, treatment_column_name, outcome_column_name)
-
-##### These are fancy versions of the above functions for pretty prints, etc ######
-
-def mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name):
-    """
-    Fancy version of above function.
-    """
-    df_mmg = mmg_of_unit(return_df, unit_id, input_data)
-    
-    if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
-    else:
-        df = pd.read_csv(return_df)
-        
-    return df_mmg, query_ate.find(df_mmg, unit_id, df, treatment_column_name, outcome_column_name)
-
-def print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outcome_column_name):
-    """
-    Fancy version of above function.
-    """
-    df_mmg = mmg_of_unit(return_df, unit_id, input_data)
-    
-    if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
-    else:
-        df = pd.read_csv(return_df)
-        
-    print("This is the Main Matched Group of unit", unit_id, ":")
-    print(df_mmg)
-    print("This is the treatment effect of unit", unit_id, ":")
-    print(unit_id)
+def run_DAME():
+    pass
