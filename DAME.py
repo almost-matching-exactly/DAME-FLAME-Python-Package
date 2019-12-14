@@ -83,25 +83,37 @@ def _DAME(df, df_holdout, dame_config=None):
     missing_indicator = np.nan
     # process inputs
     df = data_cleaning.process_input_file(
-        df, treatment_column_name, outcome_column_name, adaptive_weights
+        df,
+        dame_config["treatment_column_name"],
+        dame_config["output_column_name"],
+        bool(dame_config["adaptive_weights"])
     )
+
+    weights = [float(i) for i in dame_config["weight_array"].split(",")]
 
     # check parameters
     data_cleaning.check_parameters(
-        adaptive_weights, weight_array, df_holdout, df, alpha
+        bool(dame_config["adaptive_weights"]),
+        weights,
+        df_holdout,
+        df,
+        dame_config["alpha"]
     )
 
     # check missings
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(
         df,
-        df_holdout, missing_indicator,
-        missing_data_replace,
-        missing_holdout_replace,
-        missing_holdout_imputations,
-        missing_data_imputations,
-        treatment_column_name,
-        outcome_column_name
+        df_holdout,
+        missing_indicator,
+        int(dame_config["missing_data_replace"]),
+        int(dame_config["missing_holdout_replace"]),
+        int(dame_config["missing_holdout_imputations"]),
+        int(dame_config["missing_data_imputations"]),
+        dame_config["treatment_column_name"],
+        dame_config["outcome_column_name"]
     )
+
+    ### TODO: keep going with the params!!!
 
     early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
             early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
