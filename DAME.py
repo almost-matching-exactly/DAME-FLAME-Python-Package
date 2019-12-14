@@ -26,10 +26,15 @@ import numpy as np
 import data_cleaning
 import dame_algorithm
 import flame_dame_helpers
+import configparser
+import sys
+import pandas as pd
 
 
 def DAME(df,
-         holdout_df,
+         df_holdout,
+         dame_config=None,
+
          treatment_column_name="treated", weight_array=[0.25, 0.05, 0.7],
          outcome_column_name='outcome',
          adaptive_weights=False, alpha=0.1, holdout_data=False,
@@ -85,26 +90,36 @@ def DAME(df,
         return_df: df of units with the column values of their main matched
             group, with "*"s in place for the columns not in their MMG
     """
+    # need config
+    assert dame_config is not None, "specify DAME configs!"
 
-    df = data_cleaning.process_input_file(df, treatment_column_name,
-                                     outcome_column_name, adaptive_weights)
+    # process inputs
+    df = data_cleaning.process_input_file(
+        df, treatment_column_name, outcome_column_name, adaptive_weights
+    )
 
-    data_cleaning.check_parameters(adaptive_weights, weight_array, df_holdout, 
-                                   df, alpha)
-    df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
-                                                   df_holdout, missing_indicator, 
-                                                   missing_data_replace,
-                                                   missing_holdout_replace, 
-                                                   missing_holdout_imputations,
-                                                   missing_data_imputations,
-                                                   treatment_column_name,
-                                                   outcome_column_name)
-    
+    # check parameters
+    data_cleaning.check_parameters(
+        adaptive_weights, weight_array, df_holdout, df, alpha
+    )
+
+    # check missings
+    df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(
+        df,
+        df_holdout, missing_indicator,
+        missing_data_replace,
+        missing_holdout_replace,
+        missing_holdout_imputations,
+        missing_data_imputations,
+        treatment_column_name,
+        outcome_column_name
+    )
+
     early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
             early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
             early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
             early_stop_bf, early_stop_bf_frac)
-   
+
     if (mice_on_matching == False):
         return dame_algorithm.algo1(df, treatment_column_name, weight_array,
                                     outcome_column_name, adaptive_weights, alpha,
@@ -133,5 +148,45 @@ def DAME(df,
         return return_array
 
 
-def run_DAME():
-    pass
+def run_DAME(input_data, holdout_data, config_path="dame.conf"):
+    """DAME wrapper."""
+    # read config
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    config_params = dict(config["params"])
+
+    # process inputs - todo finish this
+    if type(input_data) == pd.core.frame.DataFrame:
+        df = input_data
+
+    elif input_data == False:
+        print("Need to specify either csv file name or pandas data frame in \
+              parameter 'input_data'")
+        sys.exit(1)
+    else:
+        try:
+            df = pd.read_csv(input_data)
+        except ValueError:
+            print('Files could not be found')
+            sys.exit(1)
+
+    # Now read the holdout data
+    if type(holdout_data) == pd.core.frame.DataFrame:
+        df_holdout = holdout_data
+    elif type(holdout_data) == float and holdout_data <= 1.0 and holdout_data > 0.0:
+            df_holdout = df.sample(frac=holdout_data)
+    elif holdout_data == False:
+        df_holdout = df.sample(frac=0.1) # default if it's not provided is the df. 
+    else:
+        try:
+            df_holdout = pd.read_csv(holdout_data)
+        except ValueError:
+            print('Files could not be found')
+            sys.exit(1)
+
+    # run DAME routine
+    result = DAME(
+        df, df_holdout, dame_config=config_params
+    )
+
+    return result
