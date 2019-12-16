@@ -15,7 +15,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer    
 
 def find_pe_for_covar_set(df_holdout, treatment_column_name, 
-                          outcome_column_name, s, adaptive_weights,
+                          outcome_column_name, s, adaptive_weight_strategy,
                           alpha_given):
     '''
     this is a helper function to decide_drop that will find pe of a given s
@@ -29,9 +29,9 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
         if type(X_treated) == bool:
             return False
         
-        if adaptive_weights == "ridge":
+        if adaptive_weight_strategy == "ridge":
             clf = Ridge(alpha=alpha_given)
-        elif adaptive_weights == "decision tree":
+        elif adaptive_weight_strategy == "decision tree":
             clf = DecisionTreeRegressor()
         
         # Calculate treated MSE

@@ -15,8 +15,9 @@ import flame_dame_helpers
 
 
 
-def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
-                treatment_column_name, outcome_column_name, df_holdout, alpha_given):
+def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights,
+                adaptive_weights_strategy, df, treatment_column_name,
+                outcome_column_name, df_holdout, alpha_given):
     """ This is a helper function to Algorithm 1 in the paper. 
     
     Args:
@@ -35,7 +36,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
     """
     curr_covar_set = set()
     best_pe = 1000000000
-    if adaptive_weights == False:
+    if adaptive_weights is False:
         # We iterate
         # through all active covariate sets and find the total weight of each 
         # For each possible covariate set, temp_weight counts 
@@ -62,7 +63,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
             
             PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout, 
                                                           treatment_column_name, 
-                                       outcome_column_name, s, adaptive_weights,
+                                       outcome_column_name, s, adaptive_weights_strategy,
                                        alpha_given)
             # error check
             if PE == False:
@@ -72,12 +73,13 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
             if PE < best_pe:
                 best_pe = PE
                 curr_covar_set = s
-    
+
     return curr_covar_set, best_pe
 
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
-          outcome_column_name = "outcome", adaptive_weights=False, alpha = 0.1,
+          outcome_column_name = "outcome", adaptive_weights=False,
+          adaptive_weights_strategy="ridge", alpha = 0.1,
           df_holdout="", repeats=True, want_pe=False, 
           early_stop_iterations=False, 
           early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
@@ -223,9 +225,9 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # We find curr_covar_set, the best covariate set to drop. 
         curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
-                                         adaptive_weights, df_all, 
-                                         treatment_column_name, outcome_column_name,
-                                         df_holdout, alpha)
+                                         adaptive_weights, adaptive_weights_strategy,
+                                         df_all, treatment_column_name,
+                                         outcome_column_name, df_holdout, alpha)
         
         # Check for error in above step:
         if (curr_covar_set == False):
