@@ -22,6 +22,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     '''
     pe_array = []
     for i in range(len(df_holdout)):
+        
         X_treated, X_control, Y_treated, Y_control = separate_dfs(df_holdout[i], 
             treatment_column_name, outcome_column_name, s)
     

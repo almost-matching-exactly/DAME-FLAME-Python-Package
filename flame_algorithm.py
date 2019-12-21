@@ -230,9 +230,11 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
             
             
             # call dame algorithm
+            print("Moving to DAME algorithm")
             return_matches_dame = dame_algorithm.algo1(df_all, treatment_column_name, 
                                                        weights,outcome_column_name, 
-                                                       adaptive_weights, df_holdout, 
+                                                       adaptive_weights, alpha,
+                                                       df_holdout, 
                                                        repeats, want_pe, 
                                                        early_stop_iterations, 
                                                        early_stop_unmatched_c, 

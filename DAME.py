@@ -263,10 +263,13 @@ def te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_co
 
 ##### These are fancy versions of the above functions for pretty prints, etc ######
 
-def mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name):
+def mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name, return_vals=1):
     """
     Fancy version of above function.
     """
+    if return_vals == 0:
+        return print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
+    
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
     
     if type(input_data) == pd.core.frame.DataFrame:

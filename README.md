@@ -5,9 +5,11 @@
 
 ## Overview of the DAME and FLAME algorithms
 
-The **FLAME** algorithm provides a fast and large-scale matching approach to causal inference. **FLAME** creates matches that include as many covariates as possible, and iteratively drops covariates that are successively less useful for predicting outcomes based on matching quality. Currently the `FLAME` package applies to categorical data. 
+The **FLAME** algorithm provides a fast and large-scale matching approach to causal inference. **FLAME** quickly creates matches that include as many covariates as possible by iteratively dropping covariates that are successively less useful for predicting outcomes based on matching quality. 
 
-The **DAME** algorithm provides high-quality interpretable matches in causal inference for categorical data. **DAME** creates matches of units that include as many covariates as possible by creating a heirarchy of covariate combinations on which to match, in the process solving an optimization problem for each unit in order to construct optimal matches. 
+The **DAME** algorithm provides high-quality interpretable matches in causal inference. **DAME** creates matches of units that include as many covariates as possible by creating a heirarchy of covariate combinations on which to match, in the process solving an optimization problem for each unit in order to construct optimal matches. 
+
+Both **DAME** and **FLAME** are available for categorical covariates only. 
 
 A **Hybrid FLAME-DAME** algorithm will use FLAME to quickly remove less relevant features, and then switch to DAME for its high-quality interpretable matches. This is recommended for datasets with many features. It scales well, without noticable loss in the quality of matches. 
 
@@ -29,7 +31,7 @@ devtools::install_github("chiarui424/FLAME")
 
 ## Required data format
 
-The `DAME-FLAME` package requires input data to have specific format. The input data can be either a file, or a **Python Pandas Data Frame**. However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to input data columns, the input data must contain (1) An outcome variable as an *integer* or *float* data type, and (2) A variable specifying whether a unit is treated or control (treated = 1, control = 0) as an *integer* data type.There are no requirements for input data column names or order of columns. Below is an example of input data with n units and m covariates.
+The `DAME-FLAME` package requires input data to have specific format. The input data can be either a file, or a **Python Pandas Data Frame**. However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to input data columns, the input data must contain (1) A column indicating the outcome variable as an *integer* or *float* data type, and (2) A column specifying whether a unit is treated or control (treated = 1, control = 0) as an *integer* data type. There are no requirements for input data column names or order of columns. Below is an example of input data with n units and m covariates.
 
 
 *Column-name / unit-id*  | x_1 | x_2 |...| x_m | outcome | treated
@@ -52,9 +54,9 @@ The holdout training set, if provided, should also follow the same format.
 
 ## Example
 
-We run DAME function with the following command. The required input is only the input data, as a csv file, or a Python data frame. In this example, we provide: (1) input data, (2) the name of the outcome column, and (3) the name of the treatment column.
+We run the DAME function with the following basic command. In this example, we provide only the basic inputs: (1) input data as a dataframe or file, (2) the name of the outcome column, and (3) the name of the treatment column.
 
-The model defaulted to a ridge regression  computation of the best covariate set to match on, with an alpha of 0.1, and used 10% of the input data as the holdout data. 
+Thus the model defaults to a ridge regression  computation of the best covariate set to match on, with an alpha of 0.1, and uses 10% of the input data as the holdout data. 
 
 ```Python
 result = DAME(input_data=sample_df, treatment_column_name="treated", outcome_column_name="outcome")
@@ -64,9 +66,9 @@ print(result[0])
 #> 1  1  5 
 #> 3  1  * 
 ```
-result is a list of size 1, where the element in the list is of type **Data Frame**. The dataframe contains the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is noted with a " * " character. 
+result is a list of size 1, where the only element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
-To find the main matched group of a unit after DAME has been run, use the function *mmg_of_unit*
+To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
 
 ```Python
 mmg = mmg_of_unit(result[0], 3, sample_df, output_style=2)
@@ -88,7 +90,7 @@ print(te)
 ```
 
 
-## Parameters and Defaults
+## DAME and FLAME Parameters and Defaults
 
 ```Python
 DAME(input_data,
@@ -219,3 +221,33 @@ If this is true, then if the covariate set chosen to match on has a balancing fa
 
 **early_stop_bf_frac**: float, optional (default=0.01)  
 If early_stop_bf is true, then if the covariate set chosen to match on has a balancing factor lower than this value, then the algorithm will stop.
+
+## Additional Functions Parameters and Defaults
+
+
+```Python
+# The main matched group of a unit
+mmg_of_unit(return_df, unit_id, input_data, output_style=1)
+
+# The treatment effect of a unit
+te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
+
+# Both the main matched group and the treatment effect of a unit 
+mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name, return_vals=0)
+```
+
+### Parameters 
+
+**return_df**: Python Pandas Datframe, required (no default).
+This is the dataframe containing all of the matches, or the first and main output from `FLAME` or `DAME`
+
+**unit_id**: int, required (no default).
+This is the unit for which the main matched group or treatment effect is being calculated
+
+**output_style**: int, optional (default=1):
+In the mmg_of_unit function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ' * ' character in the column for each unit that was not matched on that covariate.
+If this value is 2, then the dataframe will contain complete values and no ' * ' characters.
+
+**return_vals**: int, optional (default=0):
+In mmg_and_te_of_unit, if this is 1 then the values will print in a pretty way rather than outputting. 
+

@@ -251,7 +251,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             mg_control = len(matched_rows) - mg_treated
             available_treated = df_unmatched[treatment_column_name].sum()
             available_control = len(df_unmatched) - available_treated
-            bf = mg_treated/available_treated + mg_control/available_control
+            if available_treated != 0 and available_control != 0:
+                bf = mg_treated/available_treated + mg_control/available_control
+            else:
+                bf = np.nan
             return_bf.append(bf)
             
             if bf < early_stop_bf:

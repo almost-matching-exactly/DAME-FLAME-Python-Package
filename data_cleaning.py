@@ -15,8 +15,8 @@ def read_files(input_data, holdout_data):
         df = input_data
         
     elif input_data == False:
-        print("Need to specify either csv file name or pandas data frame in \
-              parameter 'input_data'")
+        print("Need to specify either csv file name or pandas data frame in "\
+              "parameter 'input_data'")
         sys.exit(1)
     else:
         try:
@@ -54,24 +54,24 @@ def check_stops(early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatch
     if early_stop_unmatched_t == True:
         early_stop_unmatched_t = early_stop_un_t_frac
     if early_stop_un_t_frac > 1.0 or early_stop_un_t_frac < 0.0:
-        print('The value provided for the early stopping critera of proportion \
-              of unmatched treatment units needs to be between 0.0 and 1.0')
+        print('The value provided for the early stopping critera of proportion'\
+              ' of unmatched treatment units needs to be between 0.0 and 1.0')
         sys.exit(1)
     if early_stop_un_c_frac > 1.0 or early_stop_un_c_frac < 0.0:
-        print('The value provided for the early stopping critera of proportion \
-              of unmatched control units needs to be between 0.0 and 1.0')
+        print('The value provided for the early stopping critera of proportion'\
+              ' of unmatched control units needs to be between 0.0 and 1.0')
         sys.exit(1)
     if early_stop_pe == True:
         early_stop_pe = early_stop_pe_frac
     if early_stop_pe_frac > 1.0 or early_stop_pe_frac < 0.0:
-        print('The value provided for the early stopping critera of PE \
-             needs to be between 0.0 and 1.0')
+        print('The value provided for the early stopping critera of PE '\
+             'needs to be between 0.0 and 1.0')
         sys.exit(1)
     if early_stop_bf == True:
         early_stop_bf = early_stop_bf_frac
     if early_stop_bf_frac > 1.0 or early_stop_bf_frac < 0.0:
-        print('The value provided for the early stopping critera of BF \
-             needs to be between 0.0 and 1.0')
+        print('The value provided for the early stopping critera of BF '\
+             'needs to be between 0.0 and 1.0')
         sys.exit(1)
         
         
@@ -91,8 +91,8 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
         # Subtracting 2 because one col is the treatment and one is outcome. 
         if len(weight_array) != (len(df.columns)-2):
             print(len(weight_array), len(df.columns))
-            print('Invalid input error. Weight array size not equal to number \
-                  of columns in dataframe')
+            print('Invalid input error. Weight array size not equal to number '\
+                  'of columns in dataframe')
             sys.exit(1)
         
         # Confirm that weights in weight vector add to 1.
@@ -106,28 +106,28 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
     else:
         # make sure that the alpha is valid if it's a ridge regression. 
         if adaptive_weights == 'ridge' and (alpha >= 1.0 or alpha <= 0.0):
-            print('Invalid input error. The alpha needs to be between 1.0 \
-                  and 0.0 for ridge regressions.')
+            print('Invalid input error. The alpha needs to be between 1.0 '\
+                  'and 0.0 for ridge regressions.')
             sys.exit(1)
             
         
         # make sure that adaptive_weights is a valid value.
         if (adaptive_weights != "ridge" and adaptive_weights != "decision tree"):
-            print('Invalid input error. The adaptive weights value must be\
-                  either False, with a provided weight array, or must be \
-                  decision tree, or ridge')
+            print('Invalid input error. The adaptive weights value must be'\
+                  'either False, with a provided weight array, or must be '\
+                  'decision tree, or ridge')
             sys.exit(1)
         
         # make sure the two dfs have the same number of columns first:
         if (len(df.columns) != len(df_holdout.columns)):
-            print('Invalid input error. The holdout and main dataset \
-                  must have the same number of columns')
+            print('Invalid input error. The holdout and main dataset '\
+                  'must have the same number of columns')
             sys.exit(1)
         # make sure that the holdout columns match the df columns.
         if (set(df_holdout.columns) != set(df.columns)):
             # they don't match
-            print('Invalid input error. The holdout and main dataset \
-                  must have the same columns')
+            print('Invalid input error. The holdout and main dataset '\
+                  'must have the same columns')
             sys.exit(1)
                 
             
@@ -182,11 +182,10 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     '''
     mice_on_matching = False
     mice_on_holdout = False
-    print("hi: ", df.isnull().values.any())
     if missing_data_replace == 0 and df.isnull().values.any() == True:
-        print('There is missing data in this dataset. The default missing \
-              data handling is being done, so we are not matching on \
-              any missing values in the matching set')
+        print('There is missing data in this dataset. The default missing '\
+              'data handling is being done, so we are not matching on '\
+              'any missing values in the matching set')
         missing_data_replace = 2
             
         # TODO: iterate through all the columns and check for non-integer values
@@ -216,9 +215,9 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
             mice_on_matching = missing_data_imputations
     
     if missing_holdout_replace == 0 and df_holdout.isnull().values.any() == True:
-        print('There is missing data in this dataset. The default missing \
-              data handling is being done, so we are running MICE on 10 \
-              imputed holdout datasets')
+        print('There is missing data in this dataset. The default missing '\
+              'data handling is being done, so we are running MICE on 10 '\
+              'imputed holdout datasets')
         missing_holdout_replace = 2
     
     if missing_holdout_replace == 1:
@@ -232,7 +231,6 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
         # but if there is actually nothing missing in the dataset, then dont
         # need to do this. 
         if df_holdout.isnull().values.any() == True:
-            print("I should be true")
             mice_on_holdout = missing_holdout_imputations
     
     return df, df_holdout, mice_on_matching, mice_on_holdout
@@ -270,8 +268,8 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
                 if df[col_name].max() >= max_column_size:
                     max_column_size = df[col_name].max()
                 else:
-                    print('Invalid input error. Dataframe column size must be in \
-                          increasing order from left to right.')
+                    print('Invalid input error. Dataframe column size must be '\
+                          'in increasing order from left to right.')
                     sys.exit(1)
     
     else:
