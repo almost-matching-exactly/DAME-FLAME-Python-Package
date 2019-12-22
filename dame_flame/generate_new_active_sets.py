@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import itertools
 
 def algo3GenerateNewActiveSets(newly_dropped, prev_processed):

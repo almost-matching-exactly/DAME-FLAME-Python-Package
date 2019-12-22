@@ -24,13 +24,13 @@ holdout_data='sample5.csv', repeats=True, want_pe=False)
 """
 import pandas as pd
 import numpy as np
-import argparse
-import data_cleaning
-import dame_algorithm
-import query_mmg
-import query_ate
-import flame_algorithm
-import flame_dame_helpers
+
+from . import data_cleaning
+from . import dame_algorithm
+from . import query_mmg
+from . import query_ate
+from . import flame_algorithm
+from . import flame_dame_helpers
 
 def DAME(input_data = False,
          treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
@@ -285,12 +285,9 @@ def print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outc
     """
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
     
-    if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
-    else:
-        df = pd.read_csv(return_df)
-        
+    te = te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
+    
     print("This is the Main Matched Group of unit", unit_id, ":")
     print(df_mmg)
     print("This is the treatment effect of unit", unit_id, ":")
-    print(unit_id)
+    print(te)

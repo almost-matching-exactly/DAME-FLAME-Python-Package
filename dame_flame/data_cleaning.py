@@ -90,13 +90,11 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
         # Confirm that weight array has the right number of values in it
         # Subtracting 2 because one col is the treatment and one is outcome. 
         if len(weight_array) != (len(df.columns)-2):
-            print(len(weight_array), len(df.columns))
             print('Invalid input error. Weight array size not equal to number '\
                   'of columns in dataframe')
             sys.exit(1)
         
         # Confirm that weights in weight vector add to 1.
-        print(sum(weight_array))
         if abs(sum(weight_array) - 1.0) >= 0.001:
             # I do this weird operation instead of seeing if it equals one
             # to avoid floatig point addition errors that can occur. 
