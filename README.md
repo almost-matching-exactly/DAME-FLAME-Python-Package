@@ -59,7 +59,7 @@ We run the DAME function with the following basic command. In this example, we p
 Thus the model defaults to a ridge regression  computation of the best covariate set to match on, with an alpha of 0.1, and uses 10% of the input data as the holdout data. 
 
 ```Python
-result = DAME(input_data=sample_df, treatment_column_name="treated", outcome_column_name="outcome")
+result = dame_flame.DAME_FLAME.DAME(input_data=sample_df, treatment_column_name="treated", outcome_column_name="outcome")
 print(result[0])
 #>    x1 x2 
 #> 0  1  * 
@@ -71,7 +71,7 @@ result is a list of size 1, where the only element in the list is of type **Data
 To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
 
 ```Python
-mmg = mmg_of_unit(result[0], 3, sample_df, output_style=2)
+mmg = dame_flame.DAME_FLAME.mmg_of_unit(result[0], 3, sample_df, output_style=2)
 print(mmg)
 
 #>    x1 outcome treated 
@@ -84,7 +84,7 @@ To find the treatment effect of a unit, use the function *te_of_unit*
 
 
 ```Python
-te = te_of_unit(result[0], 3, sample_df, output_style=2)
+te = dame_flame.DAME_FLAME.te_of_unit(result[0], 3, sample_df, output_style=2)
 print(te)
 #> 1.7
 ```
