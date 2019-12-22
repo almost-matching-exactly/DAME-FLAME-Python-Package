@@ -26,7 +26,7 @@ For more details about these algorithms, please refer to their papers: [FLAME: A
 import dame_flame
 
 # Run DAME
-x = dame_flame.DAME_FLAME.DAME(input_data=r"C:\Users\Neha\Documents\Duke\CynthiaResearch\dame-flame-package\dame_flame\data\sample.csv",treatment_column_name='treated', outcome_column_name='outcome',weight_array=[0.5, 0.5])
+x = dame_flame.DAME_FLAME.DAME(input_data=r"sample.csv",treatment_column_name='treated', outcome_column_name='outcome',weight_array=[0.5, 0.5])
 ```
 
 ## Required data format
