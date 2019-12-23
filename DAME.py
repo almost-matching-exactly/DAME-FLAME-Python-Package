@@ -184,7 +184,17 @@ def _DAME(df, df_holdout, dame_config=None):
 
 
 def DAME(input_data, holdout_data=None, config_params=None, config_path="dame.conf"):
-    """DAME wrapper."""
+    """DAME wrapper.
+
+    Args:
+        input_data (pandas.DataFrame): input data
+        holdout_data (pandas.DataFrame | None): holdout data
+        config_params (dict | None): DAME configuration options
+        config_path (str): path to DAME configuration file
+
+    Returns:
+        result (list[pandas.DataFrame]): DAME results
+    """
     # read config
     if config_params is None:
         config = configparser.ConfigParser()
@@ -208,23 +218,10 @@ def DAME(input_data, holdout_data=None, config_params=None, config_path="dame.co
 
     # Now read the holdout data
     if holdout_data is None:
-        holdout_data = generate_holdout_data(
+        df_holdout = generate_holdout_data(
             input_data,
             holdout_frac=float(config_params["holdout_frac"])
         )
-
-    if type(holdout_data) == pd.core.frame.DataFrame:
-        df_holdout = holdout_data
-    elif type(holdout_data) == float and holdout_data <= 1.0 and holdout_data > 0.0:
-            df_holdout = df.sample(frac=holdout_data)
-    elif holdout_data == False:
-        df_holdout = df.sample(frac=0.1) # default if it's not provided is the df. 
-    else:
-        try:
-            df_holdout = pd.read_csv(holdout_data)
-        except ValueError:
-            print('Files could not be found')
-            sys.exit(1)
 
     # run DAME routine
     result = _DAME(
