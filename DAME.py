@@ -29,7 +29,7 @@ import flame_dame_helpers
 import configparser
 import sys
 import pandas as pd
-from data_cleaning import generate_holdout_data, check_stops
+from data_cleaning import generate_holdout_data, check_stops, check_parameters
 
 
 def _DAME(df, df_holdout, dame_config=None):
@@ -93,13 +93,13 @@ def _DAME(df, df_holdout, dame_config=None):
     weights = [float(i) for i in dame_config["weight_array"].split(",")]
 
     # check parameters
-    # data_cleaning.check_parameters(
-    #     bool(int(dame_config["adaptive_weights"])),
-    #     weights,
-    #     df_holdout,
-    #     df,
-    #     dame_config["alpha"]
-    # )
+    check_parameters(
+        bool(int(dame_config["adaptive_weights"])),
+        weights,
+        df_holdout,
+        df,
+        float(dame_config["alpha"])
+    )
 
     # check missings
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(
@@ -123,16 +123,16 @@ def _DAME(df, df_holdout, dame_config=None):
         float(dame_config["early_stop_bf_frac"])
     )
 
-    early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
-        bool(int(dame_config["early_stop_unmatched_c"])),
-        float(dame_config["early_stop_un_c_frac"]),
-        bool(int(dame_config["early_stop_unmatched_t"])),
-        float(dame_config["early_stop_un_t_frac"]),
-        bool(int(dame_config["early_stop_pe"])),
-        float(dame_config["early_stop_pe_frac"]),
-        bool(int(dame_config["early_stop_bf"])),
-        float(dame_config["early_stop_bf_frac"])
-    )
+    # early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
+    #     bool(int(dame_config["early_stop_unmatched_c"])),
+    #     float(dame_config["early_stop_un_c_frac"]),
+    #     bool(int(dame_config["early_stop_unmatched_t"])),
+    #     float(dame_config["early_stop_un_t_frac"]),
+    #     bool(int(dame_config["early_stop_pe"])),
+    #     float(dame_config["early_stop_pe_frac"]),
+    #     bool(int(dame_config["early_stop_bf"])),
+    #     float(dame_config["early_stop_bf_frac"])
+    # )
 
     if mice_on_matching is False:
         return dame_algorithm.algo1(

@@ -72,41 +72,28 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
     This function processes the parameters that were passed to DAME/FLAME
     that aren't directly the input file or related to stop_criteria. 
     '''
-            
-    # Checks on the weight array...if the weight array needs to exist
-    if adaptive_weights == False:
-        
+
+    if adaptive_weights is False:
+
         # Confirm that weight array has the right number of values in it
-        # Subtracting 2 because one col is the treatment and one is outcome. 
-        if len(weight_array) != (len(df.columns)-2):
-            print(len(weight_array), len(df.columns))
-            print('Invalid input error. Weight array size not equal to number \
-                  of columns in dataframe')
-            sys.exit(1)
-        
-        # Confirm that weights in weight vector add to 1.
-        print(sum(weight_array))
-        if abs(sum(weight_array) - 1.0) >= 0.001:
-            # I do this weird operation instead of seeing if it equals one
-            # to avoid floatig point addition errors that can occur. 
-            print('Invalid input error. Weight array values must sum to 1.0')
-            sys.exit(1)
-            
+        # Subtracting 2 because one col is the treatment and one is outcome.
+        assert len(weight_array) == (len(df.columns) - 2), \
+            "Weight array must be of length {0}".format(len(df.columns) - 1)
+        # I do this weird operation instead of seeing if it equals one
+        # to avoid floatig point addition errors that can occur.
+        assert abs(sum(weight_array) - 1.0) < 0.001, \
+            "Weight array values must sum to 1.0"
+
     else:
-        # make sure that the alpha is valid if it's a ridge regression. 
-        if adaptive_weights == 'ridge' and (alpha >= 1.0 or alpha <= 0.0):
-            print('Invalid input error. The alpha needs to be between 1.0 \
-                  and 0.0 for ridge regressions.')
-            sys.exit(1)
-            
-        
+        # make sure that the alpha is valid if it's a ridge regression.
+        assert_positive_less_than_one(
+            alpha,
+            "alpha must be between 0 and 1"
+        )
         # make sure that adaptive_weights is a valid value.
-        if (adaptive_weights != "ridge" and adaptive_weights != "decision tree"):
-            print('Invalid input error. The adaptive weights value must be\
-                  either False, with a provided weight array, or must be \
-                  decision tree, or ridge')
-            sys.exit(1)
-        
+        assert adaptive_weights in ["ridge", "decision_tree"], \
+            "Adaptive weights must be ridge or decision tree"
+
         # make sure the two dfs have the same number of columns first:
         if (len(df.columns) != len(df_holdout.columns)):
             print('Invalid input error. The holdout and main dataset \
@@ -118,9 +105,7 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
             print('Invalid input error. The holdout and main dataset \
                   must have the same columns')
             sys.exit(1)
-                
-            
-    return
+
 
 def replace_unique_large(df, treatment_column_name, outcome_column_name,
                          missing_indicator):
