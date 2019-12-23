@@ -17,6 +17,8 @@ def generate_holdout_data(input_data, holdout_frac=0.10):
     Returns:
          (pandas.DataFrame): holdout data
     """
+    assert holdout_frac > 0 and holdout_frac < 1, \
+        "Invalid holdout data fraction specified"
     return input_data.sample(frac=holdout_frac)
 
 
