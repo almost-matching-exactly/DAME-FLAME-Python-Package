@@ -8,6 +8,18 @@ import numpy as np
 import sys
 import math
 
+
+def generate_holdout_data(input_data, holdout_frac=0.10):
+    """Generates holdout data based on input data.
+    Args:
+        input_data (pandas.DataFrame): input data
+
+    Returns:
+         (pandas.DataFrame): holdout data
+    """
+    return input_data.sample(frac=holdout_frac)
+
+
 def read_files(input_data, holdout_data):
     
     # Read the input data
@@ -24,7 +36,7 @@ def read_files(input_data, holdout_data):
         except ValueError:
             print('Files could not be found')
             sys.exit(1)
-            
+
     # Now read the holdout data
     if type(holdout_data) == pd.core.frame.DataFrame:
         df_holdout = holdout_data
