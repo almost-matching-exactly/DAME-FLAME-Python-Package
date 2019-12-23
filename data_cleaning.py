@@ -143,14 +143,11 @@ def drop_missing(df, treatment_column_name, outcome_column_name, missing_indicat
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)
         df = df.dropna()
-    
-    return df
-    
 
-def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
-                   missing_holdout_replace, missing_holdout_imputations,
-                   missing_data_imputations, treatment_column_name, 
-                   outcome_column_name):
+    return df
+
+
+def process_missing_data(df, df_holdout, dame_config):
     '''
     This function deals with all the missing data related stuff
     '''
@@ -162,20 +159,18 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
               data handling is being done, so we are not matching on \
               any missing values in the matching set')
         missing_data_replace = 2
-            
         # TODO: iterate through all the columns and check for non-integer values
         # and then replace them with nan if needed. 
         # df['hi'] = pd.to_numeric(df['hi'], errors='coerce')
 
-    
     if missing_data_replace == 1:
         df = drop_missing(df, treatment_column_name, outcome_column_name,
                           missing_indicator)
-        
+
     if missing_data_replace == 2:
         # so replacing with large unique values will only work if columns 
         # are in order!!
-        
+
         df = replace_unique_large(df, treatment_column_name, outcome_column_name,
                              missing_indicator)
         

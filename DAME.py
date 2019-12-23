@@ -102,16 +102,10 @@ def _DAME(df, df_holdout, dame_config=None):
     )
 
     # check missings
-    df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(
+    df, df_holdout, mice_on_matching, mice_on_holdout = check_missings(
         df,
         df_holdout,
-        missing_indicator,
-        int(dame_config["missing_data_replace"]),
-        int(dame_config["missing_holdout_replace"]),
-        int(dame_config["missing_holdout_imputations"]),
-        int(dame_config["missing_data_imputations"]),
-        dame_config["treatment_column_name"],
-        dame_config["outcome_column_name"]
+        dame_config
     )
 
     # check stops - this requires that you have valid stop values set, even if you
@@ -123,37 +117,11 @@ def _DAME(df, df_holdout, dame_config=None):
         float(dame_config["early_stop_bf_frac"])
     )
 
-    # early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(
-    #     bool(int(dame_config["early_stop_unmatched_c"])),
-    #     float(dame_config["early_stop_un_c_frac"]),
-    #     bool(int(dame_config["early_stop_unmatched_t"])),
-    #     float(dame_config["early_stop_un_t_frac"]),
-    #     bool(int(dame_config["early_stop_pe"])),
-    #     float(dame_config["early_stop_pe_frac"]),
-    #     bool(int(dame_config["early_stop_bf"])),
-    #     float(dame_config["early_stop_bf_frac"])
-    # )
-
     if mice_on_matching is False:
         return dame_algorithm.algo1(
             df,
-            dame_config["treatment_column_name"],
-            weights,
-            dame_config["outcome_column_name"],
-            bool(int(dame_config["adaptive_weights"])),
-            dame_config["adaptive_weight_strategy"],
-            float(dame_config["alpha"]),
             df_holdout,
-            bool(int(dame_config["repeats"])),
-            bool(int(dame_config["want_pe"])),
-            bool(int(dame_config["early_stop_iterations"])),
-            bool(int(dame_config["early_stop_unmatched_c"])),
-            bool(int(dame_config["early_stop_unmatched_t"])),
-            int(dame_config["verbose"]),
-            bool(int(dame_config["want_bf"])),
-            bool(int(dame_config["early_stop_bf"])),
-            bool(int(dame_config["early_stop_pe"])),
-            mice_on_holdout
+            dame_config
         )
     else:
         # this would mean we need to run mice on the matching data, which means
@@ -166,27 +134,12 @@ def _DAME(df, df_holdout, dame_config=None):
         # first we get the imputed datasets
         df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_matching)
         return_array = []
-        for i in range(len(df_array)):
+        for df in df_array:
             return_array.append(
                 dame_algorithm.algo1(
-                    df_array[i],
-                    dame_config["treatment_column_name"],
-                    weights,
-                    dame_config["outcome_column_name"],
-                    bool(int(dame_config["adaptive_weights"])),
-                    dame_config["adaptive_weight_strategy"],
-                    float(dame_config["alpha"]),
+                    df,
                     df_holdout,
-                    bool(int(dame_config["repeats"])),
-                    bool(int(dame_config["want_pe"])),
-                    bool(int(dame_config["early_stop_iterations"])),
-                    bool(int(dame_config["early_stop_unmatched_c"])),
-                    bool(int(dame_config["early_stop_unmatched_t"])),
-                    int(dame_config["verbose"]),
-                    bool(int(dame_config["want_bf"])),
-                    bool(int(dame_config["early_stop_bf"])),
-                    bool(int(dame_config["early_stop_pe"])),
-                    mice_on_holdout
+                    dame_config
                 )
             )
         return return_array
