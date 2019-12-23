@@ -29,7 +29,7 @@ import flame_dame_helpers
 import configparser
 import sys
 import pandas as pd
-from data_cleaning import generate_holdout_data
+from data_cleaning import generate_holdout_data, check_stops
 
 
 def _DAME(df, df_holdout, dame_config=None):
@@ -112,6 +112,15 @@ def _DAME(df, df_holdout, dame_config=None):
         int(dame_config["missing_data_imputations"]),
         dame_config["treatment_column_name"],
         dame_config["outcome_column_name"]
+    )
+
+    # check stops - this requires that you have valid stop values set, even if you
+    # are not stopping early
+    check_stops(
+        float(dame_config["early_stop_un_c_frac"]),
+        float(dame_config["early_stop_un_t_frac"]),
+        float(dame_config["early_stop_pe_frac"]),
+        float(dame_config["early_stop_bf_frac"])
     )
 
     early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf = data_cleaning.check_stops(

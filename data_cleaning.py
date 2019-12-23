@@ -3,10 +3,14 @@
 
 @author: Neha
 """
-import pandas as pd
 import numpy as np
 import sys
 import math
+
+
+def assert_positive_less_than_one(value, error_message):
+    """Helper for checking that a value is 0<v<1."""
+    assert value > 0 and value < 1, error_message
 
 
 def generate_holdout_data(input_data, holdout_frac=0.10):
@@ -17,46 +21,50 @@ def generate_holdout_data(input_data, holdout_frac=0.10):
     Returns:
          (pandas.DataFrame): holdout data
     """
-    assert holdout_frac > 0 and holdout_frac < 1, \
-        "Invalid holdout data fraction specified"
+    assert_positive_less_than_one(
+        holdout_frac,
+        "invalid holdout fraction specified"
+    )
     return input_data.sample(frac=holdout_frac)
 
 
-def check_stops(early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
-            early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, early_stop_bf,
-            early_stop_bf_frac):
-    '''
-    This function checks the parameters passed to DAME/FLAME relating to early 
-    stopping
-    '''
-    
-    if early_stop_unmatched_c == True:
-        early_stop_unmatched_c = early_stop_un_c_frac
-    if early_stop_unmatched_t == True:
-        early_stop_unmatched_t = early_stop_un_t_frac
-    if early_stop_un_t_frac > 1.0 or early_stop_un_t_frac < 0.0:
-        print('The value provided for the early stopping critera of proportion \
-              of unmatched treatment units needs to be between 0.0 and 1.0')
-        sys.exit(1)
-    if early_stop_un_c_frac > 1.0 or early_stop_un_c_frac < 0.0:
-        print('The value provided for the early stopping critera of proportion \
-              of unmatched control units needs to be between 0.0 and 1.0')
-        sys.exit(1)
-    if early_stop_pe == True:
-        early_stop_pe = early_stop_pe_frac
-    if early_stop_pe_frac > 1.0 or early_stop_pe_frac < 0.0:
-        print('The value provided for the early stopping critera of PE \
-             needs to be between 0.0 and 1.0')
-        sys.exit(1)
-    if early_stop_bf == True:
-        early_stop_bf = early_stop_bf_frac
-    if early_stop_bf_frac > 1.0 or early_stop_bf_frac < 0.0:
-        print('The value provided for the early stopping critera of BF \
-             needs to be between 0.0 and 1.0')
-        sys.exit(1)
-        
-        
-    return early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf
+def check_stops(
+        early_stop_un_c_frac,
+        early_stop_un_t_frac, early_stop_pe_frac,
+        early_stop_bf_frac):
+    """
+    This function checks the parameters passed to DAME/FLAME relating to early
+    stopping.
+
+    Args:
+        early_stop_un_c_frac (float)
+        early_stop_un_t_frac (float)
+        early_stop_pe_frac (float)
+        early_stop_bf_frac (float)
+
+    Returns:
+        None
+    """
+    assert_positive_less_than_one(
+        early_stop_un_t_frac,
+        "invalid early_top_un_t_frac specified"
+    )
+
+    assert_positive_less_than_one(
+        early_stop_un_c_frac,
+        "invalid early_stop_un_c_frac specified"
+    )
+
+    assert_positive_less_than_one(
+        early_stop_pe_frac,
+        "invalid early_stop_pe_frac specified"
+    )
+
+    assert_positive_less_than_one(
+        early_stop_bf_frac,
+        "invalid early_stop_bf_frac specified"
+    )
+
 
 def check_parameters(adaptive_weights, weight_array, df_holdout, df,
                      alpha):
