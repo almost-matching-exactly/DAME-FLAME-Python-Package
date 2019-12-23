@@ -29,6 +29,7 @@ import flame_dame_helpers
 import configparser
 import sys
 import pandas as pd
+from data_cleaning import generate_holdout_data
 
 
 def _DAME(df, df_holdout, dame_config=None):
@@ -182,7 +183,7 @@ def _DAME(df, df_holdout, dame_config=None):
         return return_array
 
 
-def DAME(input_data, holdout_data, config_params=None, config_path="dame.conf"):
+def DAME(input_data, holdout_data=None, config_params=None, config_path="dame.conf"):
     """DAME wrapper."""
     # read config
     if config_params is None:
@@ -206,6 +207,12 @@ def DAME(input_data, holdout_data, config_params=None, config_path="dame.conf"):
             sys.exit(1)
 
     # Now read the holdout data
+    if holdout_data is None:
+        holdout_data = generate_holdout_data(
+            input_data,
+            holdout_frac=float(config_params["holdout_frac"])
+        )
+
     if type(holdout_data) == pd.core.frame.DataFrame:
         df_holdout = holdout_data
     elif type(holdout_data) == float and holdout_data <= 1.0 and holdout_data > 0.0:

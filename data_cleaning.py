@@ -22,39 +22,6 @@ def generate_holdout_data(input_data, holdout_frac=0.10):
     return input_data.sample(frac=holdout_frac)
 
 
-def read_files(input_data, holdout_data):
-    
-    # Read the input data
-    if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
-        
-    elif input_data == False:
-        print("Need to specify either csv file name or pandas data frame in \
-              parameter 'input_data'")
-        sys.exit(1)
-    else:
-        try:
-            df = pd.read_csv(input_data)
-        except ValueError:
-            print('Files could not be found')
-            sys.exit(1)
-
-    # Now read the holdout data
-    if type(holdout_data) == pd.core.frame.DataFrame:
-        df_holdout = holdout_data
-    elif type(holdout_data) == float and holdout_data <= 1.0 and holdout_data > 0.0:
-            df_holdout = df.sample(frac=holdout_data)
-    elif holdout_data == False:
-        df_holdout = df.sample(frac=0.1) # default if it's not provided is the df. 
-    else:
-        try:
-            df_holdout = pd.read_csv(holdout_data)
-        except ValueError:
-            print('Files could not be found')
-            sys.exit(1)
-    
-    return df, df_holdout
-
 def check_stops(early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
             early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, early_stop_bf,
             early_stop_bf_frac):
