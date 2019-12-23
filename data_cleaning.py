@@ -95,16 +95,11 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
             "Adaptive weights must be ridge or decision tree"
 
         # make sure the two dfs have the same number of columns first:
-        if (len(df.columns) != len(df_holdout.columns)):
-            print('Invalid input error. The holdout and main dataset \
-                  must have the same number of columns')
-            sys.exit(1)
+        assert len(df.columns) == len(df_holdout.columns), \
+            "Holdout and main dataset must have same number of columns"
         # make sure that the holdout columns match the df columns.
-        if (set(df_holdout.columns) != set(df.columns)):
-            # they don't match
-            print('Invalid input error. The holdout and main dataset \
-                  must have the same columns')
-            sys.exit(1)
+        assert set(df_holdout.columns) == set(df.columns), \
+            "Holdout and main dataset must have same columns"
 
 
 def replace_unique_large(df, treatment_column_name, outcome_column_name,

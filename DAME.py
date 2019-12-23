@@ -102,7 +102,7 @@ def _DAME(df, df_holdout, dame_config=None):
     )
 
     # check missings
-    df, df_holdout, mice_on_matching, mice_on_holdout = check_missings(
+    df, df_holdout, mice_on_matching, mice_on_holdout = process_missing_data(
         df,
         df_holdout,
         dame_config
