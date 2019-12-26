@@ -11,7 +11,7 @@ import itertools
 
 import grouped_mr
 import generate_new_active_sets
-import flame_dame_helpers
+from flame_dame_helpers import find_pe_for_covar_set
 
 
 
@@ -61,7 +61,7 @@ def decide_drop(all_covs, active_covar_sets, df, df_holdout, dame_config):
         for s in active_covar_sets:
             # S is the frozenset of covars we drop. We try dropping each one
 
-            PE = flame_dame_helpers.find_pe_for_covar_set(
+            PE = find_pe_for_covar_set(
                 df_holdout,
                 s,
                 dame_config
@@ -238,7 +238,7 @@ def algo1(df_all, df_holdout, dame_config):
         )
 
         # Check for error in above step:
-        if (curr_covar_set == False):
+        if (curr_covar_set is False):
             print("we stopped when the holdout set was not large enough or there \
                   was nothing left to match")
             break
@@ -247,80 +247,93 @@ def algo1(df_all, df_holdout, dame_config):
         covs_match_on = list(set(all_covs) - curr_covar_set)
 
         matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
-            df_all, df_unmatched, 
-            covs_match_on, all_covs,
-            treatment_column_name, 
-            outcome_column_name,
-            return_matches
+            df_all,
+            df_unmatched,
+            covs_match_on,
+            all_covs,
+            return_matches,
+            dame_config
         )
 
         # It's probably slow to compute this if people don't want it, so will
-        # want to add this, I think. 
-        if (want_bf == True or early_stop_pe != False):
+        # want to add this, I think.
+        want_bf = int(dame_config["want_bf"])
+        early_stop_pe = int(dame_config["early_stop_pe"])
+        cond = (want_bf or not early_stop_pe)
+        if cond:
+            treatment_column_name = dame_config["treatment_column_name"]
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
             available_treated = df_unmatched[treatment_column_name].sum()
             available_control = len(df_unmatched) - available_treated
-            bf = mg_treated/available_treated + mg_control/available_control
+            bf = mg_treated / available_treated + mg_control / available_control
             return_bf.append(bf)
-            
-            if bf < early_stop_bf:
+
+            if bf < float(dame_config["early_stop_bf_frac"]):
                 print("We stopped matching with a balancing factor of ", bf)
                 break
-        
-        if early_stop_pe != False:
+
+        if early_stop_pe:
             if pe <= early_stop_pe:
                 print('We stopped matching with a pe of ', pe)
                 break
-            
-            
+
         # Generate new active sets
         Z_h = generate_new_active_sets.algo3GenerateNewActiveSets(
-                curr_covar_set, processed_covar_sets)
-        
+            curr_covar_set,
+            processed_covar_sets
+        )
+
         # Remove curr_covar_set from the set of active sets
-        active_covar_sets = active_covar_sets.difference([curr_covar_set]) 
+        active_covar_sets = active_covar_sets.difference([curr_covar_set])
 
         # Update the set of active sets
         active_covar_sets = active_covar_sets.union(Z_h)
-        
+
         # Update the set of already processed covariate-sets. This works bc
         # processed_covar_sets is type set, but curr_covar_set is type frozenset
         processed_covar_sets.add(curr_covar_set)
-        
+
         # Remove matches.
-        df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
- 
-        if repeats == False:
+        df_unmatched = df_unmatched.drop(
+            matched_rows.index, errors='ignore'
+        )
+
+        if not int(dame_config["repeats"]):
             df_all = df_unmatched
 
         h += 1
-        # End of iter. Decide what to print to user depending on verbose var. 
+        # End of iter. Decide what to print to user depending on verbose var.
+        verbose = int(dame_config["verbose"])
         if verbose == 1:
             print("Iteration number: ", h)
-        if ((verbose == 2 and (h%10==0)) or verbose == 3):
+        if ((verbose == 2 and (h % 10 == 0)) or verbose == 3):
             print("Iteration number: ", h)
-            if (early_stop_unmatched_t == False and early_stop_unmatched_c == False):
+            not_early_stops = (
+                not int(dame_config["early_stop_unmatched_t"]) and
+                not int(dame_config["early_stop_unmatched_c"])
+            )
+            if not_early_stops:
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
                 unmatched_control = len(df_unmatched) - unmatched_treated
             print("Unmatched treated units: ", unmatched_treated)
             print("Unmatched control units: ", unmatched_control)
             print("Predictive error of covariates chosen this iteration: ", pe)
-            print("Number of matches made in this iteration: ", 
+            print("Number of matches made in this iteration: ",
                   prev_iter_num_unmatched - len(df_unmatched))
             print("Number of matches made so far: ", len(df_all) - len(df_unmatched))
-            if want_bf == True:
+            if want_bf is True:
                 print("Balancing factor of this iteration: ", bf)
-                
+
             prev_iter_num_unmatched = len(df_unmatched)
-        
-    # end loop. 
-    return_matches = return_matches.dropna(axis=0) #drop rows with nan, dont return unmatched stuff
+
+    # end loop.
+    return_matches = return_matches.dropna(axis=0)  # drop rows with nan, dont return unmatched stuff
     return_package = [return_matches]
-    if want_pe == True:
+    if want_pe is True:
         return_package.append(return_pe)
-    if want_bf == True:
+    if want_bf is True:
         return_package.append(return_bf)
-        
+
     return return_package
