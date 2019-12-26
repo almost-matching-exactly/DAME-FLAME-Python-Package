@@ -15,11 +15,9 @@ import flame_dame_helpers
 
 
 
-def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights,
-                adaptive_weights_strategy, df, treatment_column_name,
-                outcome_column_name, df_holdout, alpha_given):
+def decide_drop(all_covs, active_covar_sets, df, df_holdout, dame_config):
     """ This is a helper function to Algorithm 1 in the paper. 
-    
+
     Args:
         all_covs: This is an array of just the cov column names. 
             Not including treat/outcome
@@ -36,39 +34,42 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights,
     """
     curr_covar_set = set()
     best_pe = 1000000000
-    if adaptive_weights is False:
+    weights = [float(i) for i in dame_config["weight_array"].split(",")]
+
+    if not int(dame_config["adaptive_weights"]):
         # We iterate
-        # through all active covariate sets and find the total weight of each 
-        # For each possible covariate set, temp_weight counts 
+        # through all active covariate sets and find the total weight of each
+        # For each possible covariate set, temp_weight counts
         # the total weight of the covs that are going to get used in the match,
-        # or the ones *not* in that  possible cov set. 
+        # or the ones *not* in that  possible cov set.
         max_weight = 0
-        for s in active_covar_sets: # s is a set to consider dropping
+        for s in active_covar_sets:  # s is a set to consider dropping
             temp_weight = 0
             for cov_index in range(len(all_covs)):  # iter through all covars
-                if all_covs[cov_index] not in s:    
+                if all_covs[cov_index] not in s:
                     # if an item not in s, add weight. finding impact of drop s
                     temp_weight += weights[cov_index]
             if temp_weight >= max_weight:
                 max_weight = temp_weight
-                curr_covar_set = s # This is the items we will drop, that will
-                # not get used in the match. 
+                curr_covar_set = s  # This is the items we will drop, that will
+                # not get used in the match.
         best_pe = max_weight
-                
+
     else:
-        # Iterate through all of the active_covar_sets and drop one at a time, 
-        # and drop the one with the highest match quality score 
+        # Iterate through all of the active_covar_sets and drop one at a time,
+        # and drop the one with the highest match quality score
         for s in active_covar_sets:
             # S is the frozenset of covars we drop. We try dropping each one
-            
-            PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout, 
-                                                          treatment_column_name, 
-                                       outcome_column_name, s, adaptive_weights_strategy,
-                                       alpha_given)
+
+            PE = flame_dame_helpers.find_pe_for_covar_set(
+                df_holdout,
+                s,
+                dame_config
+            )
             # error check
-            if PE == False:
+            if PE is False:
                 return False, False
-            
+
             # Use the smallest PE as the covariate set to drop.
             if PE < best_pe:
                 best_pe = PE
@@ -77,14 +78,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights,
     return curr_covar_set, best_pe
 
 
-def algo1(df_all, treatment_column_name = "T", weights = [],
-          outcome_column_name = "outcome", adaptive_weights=False,
-          adaptive_weights_strategy="ridge", alpha = 0.1,
-          df_holdout="", repeats=True, want_pe=False, 
-          early_stop_iterations=False, 
-          early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
-          want_bf=False, early_stop_bf=False, early_stop_pe=False,
-          missing_holdout_replace=False):
+def algo1(df_all, df_holdout, dame_config):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -131,120 +125,135 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         return_matches: df of units with the column values of their main matched
             group, with "*"s in place for the columns not in their MMG
     """
-    
+
     # Initialize variables. These are all moving/temporary throughout algo
     all_covs = df_all.columns.tolist()
-    all_covs.remove(treatment_column_name) # This is J in the paper
-    all_covs.remove(outcome_column_name)
-    df_unmatched = df_all.copy(deep=True) # This is df_h in the paper    
-    all_covs_max_list = [max(df_all[x])+1 for x in all_covs] 
-                      
+    # This is J in the paper
+    all_covs.remove(dame_config["treatment_column_name"])
+    all_covs.remove(dame_config["outcome_column_name"])
+    # This is df_h in the paper
+    df_unmatched = df_all.copy(deep=True)
+    # all_covs_max_list = [max(df_all[x])+1 for x in all_covs]
+
     # Initialize return values
     return_pe = []
     return_bf = []
-    
+
     # Just updated this 11/11 (todo remove comment if this works)
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
-    
+
     # As an initial step, we attempt to match on all covariates
-    
     covs_match_on = all_covs
     matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
-            df_all, df_all, covs_match_on, all_covs, treatment_column_name, 
-            outcome_column_name, return_matches)
-    
-    
+        df_all, df_all, covs_match_on, all_covs, dame_config, return_matches
+    )
+
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
-    
-    if repeats == False:
+
+    if not int(dame_config["repeats"]):
         df_all = df_unmatched
-        
+
     # set up all the extra dfs if needed
-    if missing_holdout_replace != False:
+    if not int(dame_config["missing_holdout_replace"]):
         # now df_holdout is actually an array of imputed datasets
-        df_holdout = flame_dame_helpers.create_mice_dfs(df_holdout, missing_holdout_replace)
+        df_holdout = flame_dame_helpers.create_mice_dfs(
+            df_holdout, bool(int(dame_config["missing_holdout_replace"]))
+        )
     else:
         # df_holdout is type array regardless, just size 1 and equal to itself
-        # if not doing mice. 
+        # if not doing mice.
         x = list()
         x.append(df_holdout)
         df_holdout = x
     # Here we initializing variables for the iterative portion of the code.
     # active_covar_sets indicates the sets elibible to be dropped. In the
     # paper, this is lambda_h. curr_covar_sets is the covariates chosen to be
-    # dropped. In the paper, this is s*h. processed_covar_sets is the already 
-    # processed sets from previous iterations. In the paper, it's delta_h. 
-    
-    active_covar_sets = set(frozenset([i]) for i in all_covs) 
-    processed_covar_sets = set() 
-        
-    h = 1 # The iteration number
-    tot_treated = df_all[treatment_column_name].sum()
+    # dropped. In the paper, this is s*h. processed_covar_sets is the already
+    # processed sets from previous iterations. In the paper, it's delta_h.
+
+    active_covar_sets = set(frozenset([i]) for i in all_covs)
+    processed_covar_sets = set()
+
+    h = 1  # The iteration number
+    tot_treated = df_all[dame_config["treatment_column_name"]].sum()
     tot_control = len(df_all) - tot_treated
-    prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
-    
+    prev_iter_num_unmatched = len(df_unmatched)  # this is for output progress
+
     # Here, we begin the iterative dropping procedure of DAME
     while True:
-        
+
         # Iterates while there is at least one treatment unit to match in
         try:
-            if (1 not in df_unmatched[treatment_column_name].values): #or \
-                #0 not in df_unmatched[treatment_column_name].values):
+            if (1 not in df_unmatched[dame_config["treatment_column_name"]].values):  # or
+                # 0 not in df_unmatched[treatment_column_name].values):
                 print("We finished with no more units to match")
                 break
         except TypeError:
             break
-        
+
+        early_stop_iterations = int(dame_config["early_stop_iterations"])
         # Hard stop criteria: exceeded the number of iters user asked for?
-        if (early_stop_iterations != False and early_stop_iterations == h):
+        if (early_stop_iterations > 0 and early_stop_iterations == h):
             print("We stopped before doing iteration number: ", h)
             break
-        
+
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        if (early_stop_unmatched_t != False or early_stop_unmatched_c != False):
-            unmatched_treated = df_unmatched[treatment_column_name].sum()
+        stopping_cond = (
+            not int(dame_config["early_stop_unmatched_t"]) or
+            not dame_config["early_stop_unmatched_c"]
+        )
+        if stopping_cond:
+            unmatched_treated = df_unmatched[
+                dame_config["treatment_column_name"]
+            ].sum()
             unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stop_unmatched_t != False and \
-                unmatched_treated/tot_treated < early_stop_unmatched_t):
-                print("We stopped the algorithm when ",
-                      unmatched_treated/tot_treated, "of the treated units \
-                      remained unmatched")
+            if (int(dame_config["early_stop_unmatched_t"]) and
+                unmatched_treated / tot_treated < float(dame_config["early_stop_un_t_frac"])):
+                # stop the algorithm
+                print(
+                    "Algorithm stopped when {0} of the treated units remained unmatched".format(
+                        unmatched_treated / tot_treated
+                    )
+                )
                 break
-            if (early_stop_unmatched_c != False and \
-                unmatched_control/tot_control < early_stop_unmatched_c):
-                print("We stopped the algorithm when ",
-                      unmatched_control/tot_control, "of the control units \
-                      remained unmatched")
+            if (int(dame_config["early_stop_unmatched_c"]) and
+                unmatched_control / tot_control < dame_config["early_stop_un_c_frac"]):
+                # stop the algorithm
+                print(
+                    "Algorithm stopped when {0} of the treated units remained unmatched".format(
+                        unmatched_control / tot_control
+                    )
+                )
                 break
-        
+
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
             print("We stopped after considering all covariate set options")
             break
-        
+
         # We find curr_covar_set, the best covariate set to drop. 
-        curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
-                                         adaptive_weights, adaptive_weights_strategy,
-                                         df_all, treatment_column_name,
-                                         outcome_column_name, df_holdout, alpha)
-        
+        curr_covar_set, pe = decide_drop(
+            all_covs, active_covar_sets, df_all, df_holdout, dame_config
+        )
+
         # Check for error in above step:
         if (curr_covar_set == False):
             print("we stopped when the holdout set was not large enough or there \
                   was nothing left to match")
             break
-        
-        return_pe.append(pe)              
-        
-        covs_match_on = list(set(all_covs)-curr_covar_set)
-                
-        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
-                                                     covs_match_on, all_covs,
-                                                     treatment_column_name, 
-                                                     outcome_column_name,
-                                                     return_matches)
-        
+
+        return_pe.append(pe)
+        covs_match_on = list(set(all_covs) - curr_covar_set)
+
+        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
+            df_all, df_unmatched, 
+            covs_match_on, all_covs,
+            treatment_column_name, 
+            outcome_column_name,
+            return_matches
+        )
+
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think. 
         if (want_bf == True or early_stop_pe != False):

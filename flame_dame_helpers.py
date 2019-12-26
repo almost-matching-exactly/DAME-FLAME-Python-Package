@@ -14,39 +14,46 @@ from sklearn.metrics import mean_squared_error
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer    
 
-def find_pe_for_covar_set(df_holdout, treatment_column_name, 
-                          outcome_column_name, s, adaptive_weight_strategy,
-                          alpha_given):
+
+def find_pe_for_covar_set(df_holdout, s, dame_config):
     '''
     this is a helper function to decide_drop that will find pe of a given s
     '''
+    treatment_column_name = dame_config["treatment_column_name"]
+    outcome_column_name = dame_config["outcome_column_name"]
+    adaptive_weight_strategy = dame_config["adaptive_weight_strategy"]
+    alpha_given = dame_config["alpha"]
+
     pe_array = []
     for i in range(len(df_holdout)):
-        X_treated, X_control, Y_treated, Y_control = separate_dfs(df_holdout[i], 
-            treatment_column_name, outcome_column_name, s)
-    
+        X_treated, X_control, Y_treated, Y_control = separate_dfs(
+            df_holdout[i],
+            treatment_column_name,
+            outcome_column_name,
+            s
+        )
+
         # error check. If this is true, we stop matching.
         if type(X_treated) == bool:
             return False
-        
+
         if adaptive_weight_strategy == "ridge":
             clf = Ridge(alpha=alpha_given)
         elif adaptive_weight_strategy == "decision tree":
             clf = DecisionTreeRegressor()
-        
+
         # Calculate treated MSE
-        clf.fit(X_treated, Y_treated) 
+        clf.fit(X_treated, Y_treated)
         predicted = clf.predict(X_treated)
         MSE_treated = mean_squared_error(Y_treated, predicted)
-        
+
         # Calculate control MSE
-        clf.fit(X_control, Y_control) 
+        clf.fit(X_control, Y_control)
         predicted = clf.predict(X_control)
         MSE_control = mean_squared_error(Y_control, predicted)
-    
+
         pe_array.append(MSE_treated + MSE_control)
-        
-    
+
     PE = np.mean(pe_array)
     return PE
 
