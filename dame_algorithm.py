@@ -11,7 +11,7 @@ import itertools
 
 import grouped_mr
 import generate_new_active_sets
-from flame_dame_helpers import find_pe_for_covar_set
+from flame_dame_helpers import find_pe_for_covar_set, create_mice_dfs
 
 
 
@@ -157,7 +157,7 @@ def algo1(df_all, df_holdout, dame_config):
     # set up all the extra dfs if needed
     if not int(dame_config["missing_holdout_replace"]):
         # now df_holdout is actually an array of imputed datasets
-        df_holdout = flame_dame_helpers.create_mice_dfs(
+        df_holdout = create_mice_dfs(
             df_holdout, bool(int(dame_config["missing_holdout_replace"]))
         )
     else:
@@ -251,8 +251,8 @@ def algo1(df_all, df_holdout, dame_config):
             df_unmatched,
             covs_match_on,
             all_covs,
-            return_matches,
-            dame_config
+            dame_config,
+            return_matches
         )
 
         # It's probably slow to compute this if people don't want it, so will
@@ -331,9 +331,10 @@ def algo1(df_all, df_holdout, dame_config):
     # end loop.
     return_matches = return_matches.dropna(axis=0)  # drop rows with nan, dont return unmatched stuff
     return_package = [return_matches]
-    if want_pe is True:
+
+    if int(dame_config["want_pe"]):
         return_package.append(return_pe)
-    if want_bf is True:
+    if int(dame_config["want_bf"]):
         return_package.append(return_bf)
 
     return return_package

@@ -66,7 +66,7 @@ def check_stops(
     )
 
 
-def check_parameters(adaptive_weights, weight_array, df_holdout, df,
+def check_parameters(adaptive_weights, adaptive_weights_strategy, weight_array, df_holdout, df,
                      alpha):
     '''
     This function processes the parameters that were passed to DAME/FLAME
@@ -91,7 +91,7 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
             "alpha must be between 0 and 1"
         )
         # make sure that adaptive_weights is a valid value.
-        assert adaptive_weights in ["ridge", "decision_tree"], \
+        assert adaptive_weights_strategy in ["ridge", "decision_tree"], \
             "Adaptive weights must be ridge or decision tree"
 
         # make sure the two dfs have the same number of columns first:
@@ -149,7 +149,7 @@ def process_missing_data(df, df_holdout, dame_config):
     mice_on_matching = False
     mice_on_holdout = False
     print("hi: ", df.isnull().values.any())
-    if missing_data_replace == 0 and df.isnull().values.any() == True:
+    if int(dame_config["missing_data_replace"]) == 0 and df.isnull().values.any() == True:
         print('There is missing data in this dataset. The default missing \
               data handling is being done, so we are not matching on \
               any missing values in the matching set')
@@ -158,38 +158,39 @@ def process_missing_data(df, df_holdout, dame_config):
         # and then replace them with nan if needed. 
         # df['hi'] = pd.to_numeric(df['hi'], errors='coerce')
 
-    if missing_data_replace == 1:
+    if int(dame_config["missing_data_replace"]) == 1:
         df = drop_missing(df, treatment_column_name, outcome_column_name,
                           missing_indicator)
 
-    if missing_data_replace == 2:
+    if int(dame_config["missing_data_replace"]) == 2:
         # so replacing with large unique values will only work if columns 
         # are in order!!
 
         df = replace_unique_large(df, treatment_column_name, outcome_column_name,
                              missing_indicator)
-        
-        
+
+
         # Reorder if they're not in order:
         df = df.loc[:, df.max().sort_values(ascending=True).index]
         
-    if missing_data_replace == 3:
+    if int(dame_config["missing_data_replace"]) == 3:
         # this means do mice but only if theres something actually missing. 
         df = df.replace(missing_indicator, np.nan)
         if df.isnull().values.any() == True:
             mice_on_matching = missing_data_imputations
     
-    if missing_holdout_replace == 0 and df_holdout.isnull().values.any() == True:
+    if int(dame_config["missing_holdout_replace"]) == 0 and df_holdout.isnull().values.any() == True:
         print('There is missing data in this dataset. The default missing \
               data handling is being done, so we are running MICE on 10 \
               imputed holdout datasets')
-        missing_holdout_replace = 2
-    
-    if missing_holdout_replace == 1:
+        # mutate config
+        dame_config["missing_holdout_replace"] = "2"
+
+    if int(dame_config["missing_holdout_replace"]) == 1:
         df_holdout = drop_missing(df_holdout, treatment_column_name, 
                                   outcome_column_name, missing_indicator)
-        
-    if missing_holdout_replace == 2:
+
+    if int(dame_config["missing_holdout_replace"]) == 2:
         # this means do mice ugh lol. 
         df_holdout = df_holdout.replace(missing_indicator, np.nan)
         print('df_holdout')
@@ -198,31 +199,31 @@ def process_missing_data(df, df_holdout, dame_config):
         if df_holdout.isnull().values.any() == True:
             print("I should be true")
             mice_on_holdout = missing_holdout_imputations
-    
+
     return df, df_holdout, mice_on_matching, mice_on_holdout
 
 def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_weights):
     '''
     This function processes the parameters passed to DAME/FLAME that are 
     directly the input file.
-    
+
     '''
-    
+
     # Confirm that the treatment column name exists. 
     if treatment_column_name not in df.columns:
         print('Invalid input error. Treatment column name does not exist')
         sys.exit(1)
-        
+
     # Confirm that the outcome column name exists. 
     if outcome_column_name not in df.columns:
         print('Invalid input error. Outcome column name does not exist')
         sys.exit(1)
-        
+
     # column only has 0s and 1s. 
     if set(df[treatment_column_name].unique()) != {0,1}:
         print('Invalid input error. Treatment column must have 0 and 1 values')
         sys.exit(1)
-        
+
     if adaptive_weights == False:
         # Ensure that the columns are sorted in order: binary, tertary, etc
         max_column_size = 1
@@ -237,7 +238,7 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
                     print('Invalid input error. Dataframe column size must be in \
                           increasing order from left to right.')
                     sys.exit(1)
-    
+
     else:
         # Reorder if they're not in order:
         df = df.loc[:, df.max().sort_values(ascending=True).index]

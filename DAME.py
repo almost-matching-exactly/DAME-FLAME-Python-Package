@@ -29,7 +29,7 @@ import flame_dame_helpers
 import configparser
 import sys
 import pandas as pd
-from data_cleaning import generate_holdout_data, check_stops, check_parameters
+from data_cleaning import generate_holdout_data, check_stops, check_parameters, process_missing_data
 
 
 def _DAME(df, df_holdout, dame_config=None):
@@ -95,6 +95,7 @@ def _DAME(df, df_holdout, dame_config=None):
     # check parameters
     check_parameters(
         bool(int(dame_config["adaptive_weights"])),
+        dame_config["adaptive_weight_strategy"],
         weights,
         df_holdout,
         df,
@@ -181,7 +182,7 @@ def DAME(input_data, holdout_data=None, config_params=None, config_path="dame.co
     # Now read the holdout data
     if holdout_data is None:
         df_holdout = generate_holdout_data(
-            input_data,
+            df,
             holdout_frac=float(config_params["holdout_frac"])
         )
 

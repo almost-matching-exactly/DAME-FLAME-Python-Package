@@ -11,8 +11,7 @@ import flame_group_by
 # todo; Delete later:
 import time
 
-def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
-                    outcome_column_name, return_groups, start_time=0):    
+def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, dame_config, return_groups, start_time=0):    
     # todo; DOn't forget to remove start_time!
     ''' 
     Input: 
@@ -27,7 +26,8 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
             for the irrelevant ones. 
     
     '''
-    
+    outcome_column_name = dame_config["outcome_column_name"]
+    treatment_column_name = dame_config["treatment_column_name"]
     # This is the max of all of the columns. assuming they're 
     # ordered from least to greatest. 
     covs_max_list = [max(df_unmatched[x])+1 for x in covs_match_on]
