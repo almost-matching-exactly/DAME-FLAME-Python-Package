@@ -185,6 +185,15 @@ def DAME(input_data, holdout_data=None, config_params=None, config_path="dame.co
             df,
             holdout_frac=float(config_params["holdout_frac"])
         )
+    elif type(holdout_data) == pd.core.frame.DataFrame:
+        df_holdout = holdout_data
+
+    else:
+        try:
+            df_holdout = pd.read_csv(holdout_data)
+        except ValueError:
+            print('Files could not be found')
+            sys.exit(1)
 
     # run DAME routine
     result = _DAME(
