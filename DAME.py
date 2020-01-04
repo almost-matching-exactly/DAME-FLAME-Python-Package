@@ -152,7 +152,32 @@ def DAME(input_data, holdout_data=None, config_params=None, config_path="dame.co
     Args:
         input_data (pandas.DataFrame): input data
         holdout_data (pandas.DataFrame | None): holdout data
-        config_params (dict | None): DAME configuration options
+        config_params (dict of str -> str | None): DAME configuration options:
+            treatment_column_name=treated
+            weight_array=0.25,0.05,0.75
+            outcome_column_name=outcome
+            adaptive_weights=1
+            adaptive_weight_strategy=ridge
+            alpha=0.1
+            holdout_data=0
+            holdout_frac=0.1
+            repeats=0
+            verbose=0
+            want_pe=0
+            early_stop_iterations=0
+            early_stop_unmatched_c=0
+            early_stop_un_c_frac=0.1
+            early_stop_unmatched_t=0
+            early_stop_un_t_frac=0.1
+            early_stop_pe=0
+            early_stop_pe_frac=0.01
+            want_bf=0
+            early_stop_bf=0
+            early_stop_bf_frac=0.01
+            missing_data_replace=0
+            missing_holdout_replace=0
+            missing_holdout_imputations=10
+            missing_data_imputations=0
         config_path (str): path to DAME configuration file
 
     Returns:
