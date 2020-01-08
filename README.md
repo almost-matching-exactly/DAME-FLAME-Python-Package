@@ -31,7 +31,15 @@ x = dame_flame.DAME_FLAME.DAME(input_data=r"sample.csv",treatment_column_name='t
 
 ## Required data format
 
-The `DAME-FLAME` package requires input data to have specific format. The input data can be either a file, or a **Python Pandas Data Frame**. However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to input data columns, the input data must contain (1) A column indicating the outcome variable as an *integer* or *float* data type, and (2) A column specifying whether a unit is treated or control (treated = 1, control = 0) as an *integer* data type. There are no requirements for input data column names or order of columns. Below is an example of input data with n units and m covariates.
+The `DAME-FLAME` package requires the input data (parameter input_data) to have a specific format. The input data can be provided to the matching algorithms in one of two formats:
+1. a comma separated file, such as a csv file or txt file. 
+2. a Python Pandas Data Frame. 
+
+However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to covariates to be matched on, the input data must also contain: 
+1. A column indicating the outcome variable as an *integer* or *float* data. (parameter outcome_column_name)
+2. A column specifying whether a unit is treated or control. (treated = 1, control = 0) as an *integer* data type. (parameter treatment_column_name).
+
+There are no requirements for column names, or order of columns. Below is an example of input data with n units and m covariates.
 
 
 *Column-name / unit-id*  | x_1 | x_2 |...| x_m | outcome | treated

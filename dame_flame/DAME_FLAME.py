@@ -88,7 +88,7 @@ def DAME(input_data = False,
         return_df: df of units with the column values of their main matched
             group, with "*"s in place for the columns not in their MMG
     """
-    
+
     df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
         
     df = data_cleaning.process_input_file(df, treatment_column_name,
@@ -229,6 +229,10 @@ def mmg_of_unit(return_df, unit_id, input_data, output_style=1):
         df = pd.read_csv(return_df)
         
     mmg_df = query_mmg.find(return_df, unit_id, df)
+    if mmg_df == False:
+        print("This unit does not have any matches")
+        return False
+    
     if output_style == 2:
         return input_data.loc[mmg_df.index]
     else:
@@ -239,11 +243,14 @@ def mmg_of_unit(return_df, unit_id, input_data, output_style=1):
             star_cols = my_series[my_series == "*"].index
             non_star_cols = input_data.columns.difference(star_cols)
             return input_data[non_star_cols].loc[mmg_df.index]
+        else:
+            # nothing to filter out, so same result as output_style=2
+            return input_data.loc[mmg_df.index]
         
 
 def te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name):
     """
-    This function allows a user to find the main matched group of a particular
+    This function allows a user to find the treatment effect of a particular
     unit, after the main DAME algorithm has already been run and all matches
     have been found. 
     
@@ -253,6 +260,9 @@ def te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_co
         file_name: The csv file containing all of the original data.
     """
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
+    if mmg_df == False:
+        print("This unit does not have any matches, so can't find the treatment effect")
+        return False
     
     if type(input_data) == pd.core.frame.DataFrame:
         df = input_data
@@ -271,6 +281,9 @@ def mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, ou
         return print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
     
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
+    if df_mmg == False:
+        print("This unit does not have any matches")
+        return False
     
     if type(input_data) == pd.core.frame.DataFrame:
         df = input_data
@@ -284,6 +297,9 @@ def print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outc
     Fancy version of above function.
     """
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
+    if df_mmg == False:
+        print("This unit does not have any matches")
+        return False
     
     te = te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
     
