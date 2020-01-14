@@ -12,7 +12,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
 
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer    
+from sklearn.impute import IterativeImputer  
 
 def find_pe_for_covar_set(df_holdout, treatment_column_name, 
                           outcome_column_name, s, adaptive_weights,
@@ -52,7 +52,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     return PE
 
 def create_mice_dfs(df_holdout, num_imputes):
-    ''' 
+    '''
     This creates num_imputes number of imputed datasets
     '''
     df_holdout_array = []
@@ -63,7 +63,7 @@ def create_mice_dfs(df_holdout, num_imputes):
                                              columns=df_holdout.columns, index=df_holdout.index))
         
     return df_holdout_array
-
+    
 def separate_dfs(df_holdout, treatment_col_name, outcome_col_name,
                        covs_include):
     """

@@ -7,9 +7,9 @@ import pandas as pd
 # delete this one later:
 import time
 
-from . import grouped_mr
-from . import dame_algorithm
-from . import flame_dame_helpers
+import grouped_mr
+import dame_algorithm
+import flame_dame_helpers
 
 def decide_drop(all_covs, consider_dropping, prev_dropped, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
@@ -61,13 +61,11 @@ def decide_drop(all_covs, consider_dropping, prev_dropped, df_all,
             
     return best_drop, best_pe
 
-def flame_generic(df_all, treatment_column_name = "T", weights = [],
-          outcome_column_name = "outcome", adaptive_weights=False, alpha = 0.1,
-          df_holdout="", repeats=True, want_pe=False, 
-          early_stop_iterations=False, 
-          early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
-          want_bf=False, early_stop_bf=False, early_stop_pe=False,
-          pre_dame=False, missing_holdout_replace=False):
+def flame_generic(df_all, treatment_column_name, weights,
+                  outcome_column_name, adaptive_weights, alpha,
+                  df_holdout, repeats, want_pe,
+                  verbose, want_bf, missing_holdout_replace, early_stops,
+                  pre_dame):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -126,30 +124,33 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
     while True:
         # Iterates while there are units to match to match in
         try:
-            if (1 not in df_unmatched[treatment_column_name].values or \
-                0 not in df_unmatched[treatment_column_name].values):
+            if early_stops.unmatched_t == True and (1 not in df_unmatched[treatment_column_name].values): 
+                print("We finished with no more units to match")
+                break
+            
+            if early_stops.unmatched_c == True and (0 not in df_unmatched[treatment_column_name].values):
                 print("We finished with no more units to match")
                 break
         except TypeError:
             break
         
         # Hard stop criteria: exceeded the number of iters user asked for?
-        if (early_stop_iterations != False and early_stop_iterations == h):
+        if (early_stops.iterations != False and early_stops.iterations == h):
             print("We stopped before doing iteration number: ", h)
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        if (early_stop_unmatched_t != False or early_stop_unmatched_c != False):
+        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
             unmatched_treated = df_unmatched[treatment_column_name].sum()
             unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stop_unmatched_t != False and \
-                unmatched_treated/tot_treated < early_stop_unmatched_t):
+            if (early_stops.un_t_frac != False and \
+                unmatched_treated/tot_treated < early_stops.un_t_frac):
                 print("We stopped the algorithm when ",
                       unmatched_treated/tot_treated, "of the treated units \
                       remained unmatched")
                 break
-            elif (early_stop_unmatched_c != False and \
-                unmatched_control/tot_control < early_stop_unmatched_c):
+            elif (early_stops.un_c_frac != False and \
+                unmatched_control/tot_control < early_stops.un_c_frac):
                 print("We stopped the algorithm when ",
                       unmatched_control/tot_control, "of the control units \
                       remained unmatched")
@@ -181,7 +182,7 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
                                                      outcome_column_name,
                                                      return_matches, start_time)
         
-        if (want_bf == True or early_stop_pe != False):
+        if (want_bf == True or early_stops.bf != False):
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
@@ -190,7 +191,7 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
             bf = mg_treated/available_treated + mg_control/available_control
             return_bf.append(bf)
             
-            if bf < early_stop_bf:
+            if bf < early_stops.bf:
                 print("We stopped matching with a balancing factor of ", bf)
                 break
         
@@ -211,7 +212,7 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
             print("Iteration number: ", h)
-            if (early_stop_unmatched_t == False and early_stop_unmatched_c == False):
+            if (early_stops.un_t_frac == False and early_stops.un_c_frac == False):
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
                 unmatched_control = len(df_unmatched) - unmatched_treated
             print("Unmatched treated units: ", unmatched_treated)
@@ -236,12 +237,9 @@ def flame_generic(df_all, treatment_column_name = "T", weights = [],
                                                        adaptive_weights, alpha,
                                                        df_holdout, 
                                                        repeats, want_pe, 
-                                                       early_stop_iterations, 
-                                                       early_stop_unmatched_c, 
-                                                       early_stop_unmatched_t, 
-                                                       verbose, want_bf, 
-                                                       early_stop_bf, early_stop_pe,
-                                                       missing_holdout_replace)
+                                                       verbose, want_bf,
+                                                       missing_holdout_replace,
+                                                       early_stops)
             # when dame is done, we
             # return the matches we made here, plus the matches made in dame.
             

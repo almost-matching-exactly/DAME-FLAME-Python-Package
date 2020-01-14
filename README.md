@@ -31,15 +31,7 @@ x = dame_flame.DAME_FLAME.DAME(input_data=r"sample.csv",treatment_column_name='t
 
 ## Required data format
 
-The `DAME-FLAME` package requires the input data (parameter input_data) to have a specific format. The input data can be provided to the matching algorithms in one of two formats:
-1. a comma separated file, such as a csv file or txt file. 
-2. a Python Pandas Data Frame. 
-
-However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to covariates to be matched on, the input data must also contain: 
-1. A column indicating the outcome variable as an *integer* or *float* data. (parameter outcome_column_name)
-2. A column specifying whether a unit is treated or control. (treated = 1, control = 0) as an *integer* data type. (parameter treatment_column_name).
-
-There are no requirements for column names, or order of columns. Below is an example of input data with n units and m covariates.
+The `DAME-FLAME` package requires input data to have specific format. The input data can be either a file, or a **Python Pandas Data Frame**. However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to input data columns, the input data must contain (1) A column indicating the outcome variable as an *integer* or *float* data type, and (2) A column specifying whether a unit is treated or control (treated = 1, control = 0) as an *integer* data type. There are no requirements for input data column names or order of columns. Below is an example of input data with n units and m covariates.
 
 
 *Column-name / unit-id*  | x_1 | x_2 |...| x_m | outcome | treated
@@ -102,12 +94,12 @@ print(te)
 
 ```Python
 DAME(input_data,
-         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
+         treatment_column_name = 'treated', weight_array = False,
          outcome_column_name='outcome',
          adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
          repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
-         early_stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         early_stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
+         stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
+         stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
          want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01,
          missing_indicator=np.nan, missing_data_replace=0,
@@ -115,17 +107,17 @@ DAME(input_data,
          missing_data_imputations=0)
 
 FLAME(input_data,
-         treatment_column_name = 'treated', weight_array = [0.25, 0.05, 0.7],
+         treatment_column_name = 'treated', weight_array = False,
          outcome_column_name='outcome',
          adaptive_weights=False, alpha = 0.1, holdout_data=False,
          repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
-         early_stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         early_stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
+         stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
+         stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
          want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01, 
-         pre_dame=False, missing_indicator=np.nan, missing_data_replace=0,
+         missing_indicator=np.nan, missing_data_replace=0,
          missing_holdout_replace=0, missing_holdout_imputations = 10,
-         missing_data_imputations=0)
+         missing_data_imputations=0, pre_dame=False)
 ```
 
 ### Key parameters
@@ -206,17 +198,17 @@ If missing_data_replace=3, the number of imputations.
 **early_stop_iterations**: int, optional  (default=0)  
 If provided, a number of iterations after which to hard stop the algorithm
 
-**early_stop_unmatched_c**: bool, optional (default=False)  
-If True, then early_stop_un_c_frac provides a fraction of unmatched control units. After this threshold is met, the algorithm will stop. 
+**stop_unmatched_c**: bool, optional (default=False)  
+If True, then the algorithm terminates when there are no more control units to match. 
 
-**early_stop_unmatched_t**: bool, optional (default=False)  
-If True, then early_stop_un_t_frac provides a fraction of unmatched control units. After this threshold is met, the algorithm will stop. 
+**stop_unmatched_t**: bool, optional (default=True)  
+If True, then the algorithm terminates when there are no more treatment units to match. 
 
 **early_stop_un_c_frac**: float from 0.0 to 1.0, optional (default=0.1)  
-If early_stop_unmatched_c is True, this provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
+If this is True, it provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
 
 **early_stop_un_t_frac**: float from 0.0 to 1.0, optional (default=0.1)
-If early_stop_unmatched_t is True, this provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
+If this is True, it provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
 
 **early_stop_pe**: bool, optional (default=False)  
 If this is true, then if the covariate set chosen to match on has a predictive error lower than the parameter early_stop_pe_frac, the algorithm will stop. 
@@ -246,7 +238,7 @@ mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcom
 
 ### Parameters 
 
-**return_df**: Python Pandas Datframe, required (no default).
+**return_df**: Python Pandas Dataframe, required (no default).
 This is the dataframe containing all of the matches, or the first and main output from `FLAME` or `DAME`
 
 **unit_id**: int, required (no default).

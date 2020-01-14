@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 import itertools
 
-from . import grouped_mr
-from . import generate_new_active_sets
-from . import flame_dame_helpers
+import grouped_mr
+import generate_new_active_sets
+import flame_dame_helpers
 
 
 
@@ -59,13 +59,12 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         # and drop the one with the highest match quality score 
         for s in active_covar_sets:
             # S is the frozenset of covars we drop. We try dropping each one
-            
             PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout, 
                                                           treatment_column_name, 
                                        outcome_column_name, s, adaptive_weights,
                                        alpha_given)
-            # error check
-            if PE == False:
+            # error check...note that PE can be float(0), but not denote error
+            if PE == False and type(PE) == bool:
                 return False, False
             
             # Use the smallest PE as the covariate set to drop.
@@ -78,11 +77,8 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
 
 def algo1(df_all, treatment_column_name = "T", weights = [],
           outcome_column_name = "outcome", adaptive_weights=False, alpha = 0.1,
-          df_holdout="", repeats=True, want_pe=False, 
-          early_stop_iterations=False, 
-          early_stop_unmatched_c=False, early_stop_unmatched_t=False, verbose=0,
-          want_bf=False, early_stop_bf=False, early_stop_pe=False,
-          missing_holdout_replace=False):
+          df_holdout="", repeats=True, want_pe=False, verbose=0,
+          want_bf=False, missing_holdout_replace=False, early_stops=False):
     """This function does Algorithm 1 in the paper.
 
     Args:
@@ -107,23 +103,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         repeats (bool): Provided by user, whether or not values for whom a MMG 
             has been found can be used again and placed in an auxiliary group.
         want_pe (bool): Whether or not we want predictive error of each match
-        early_stop_iterations (optional int): If provided, a number of iterations 
-            to hard stop the algorithm after. 
-        early_stop_unmatched_t (optional float, from 0.0 - 1.0): If provided, a 
-            fraction of unmatched units. When % unmatched treated vals equal or
-            below this threshold, hard stop the algo
-        early_stop_unmatched_c (optional float, from 0.0 - 1.0): If provided, a 
-            fraction of unmatched units. When % unmatched control vals equal or
-            below this threshold, hard stop the algo
         want_bf (bool): Whether to compute and output the balancing factor of 
             each group. 
-        early_stop_bf (float/bool): If provided, any balancing factor below this
-            will hard stop the algo. 
-        early_stop_pe (float/bool): If provided/not False, any PE below this
-            will hard stop the algo. 
         missing_holdout_replace (bool/float): Default false. If int, the number of
             imputations that MICE needs to do on the holdout dataset, which
-            has NaNs in it that need to be replaced. 
+            has NaNs in it that need to be replaced.
+        early_stops (type EarlyStop): This is all of the possible stop criteria
 
     Returns:
         return_matches: df of units with the column values of their main matched
@@ -141,7 +126,6 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     return_pe = []
     return_bf = []
     
-    # Just updated this 11/11 (todo remove comment if this works)
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     
     # As an initial step, we attempt to match on all covariates
@@ -161,7 +145,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     # set up all the extra dfs if needed
     if missing_holdout_replace != False:
         # now df_holdout is actually an array of imputed datasets
-        df_holdout = flame_dame_helpers.create_mice_dfs(df_holdout, missing_holdout_replace)
+        df_holdout = flame_dame_helpers.create_mice_dfs(df_holdout, 
+                                                        missing_holdout_replace)
     else:
         # df_holdout is type array regardless, just size 1 and equal to itself
         # if not doing mice. 
@@ -185,35 +170,38 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
     # Here, we begin the iterative dropping procedure of DAME
     while True:
         
-        # Iterates while there is at least one treatment unit to match in
+        # Iterates until there are no more units to mach on. 
         try:
-            if (1 not in df_unmatched[treatment_column_name].values): #or \
-                #0 not in df_unmatched[treatment_column_name].values):
+            if early_stops.unmatched_t == True and (1 not in df_unmatched[treatment_column_name].values): 
+                print("We finished with no more units to match")
+                break
+            
+            if early_stops.unmatched_c == True and (0 not in df_unmatched[treatment_column_name].values):
                 print("We finished with no more units to match")
                 break
         except TypeError:
             break
         
         # Hard stop criteria: exceeded the number of iters user asked for?
-        if (early_stop_iterations != False and early_stop_iterations == h):
+        if (early_stops.iterations != False and early_stops.iterations == h):
             print("We stopped before doing iteration number: ", h)
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        if (early_stop_unmatched_t != False or early_stop_unmatched_c != False):
+        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
             unmatched_treated = df_unmatched[treatment_column_name].sum()
             unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stop_unmatched_t != False and \
-                unmatched_treated/tot_treated < early_stop_unmatched_t):
+            if (early_stops.un_t_frac != False and \
+                unmatched_treated/tot_treated < early_stops.un_t_frac):
                 print("We stopped the algorithm when ",
-                      unmatched_treated/tot_treated, "of the treated units \
-                      remained unmatched")
+                      unmatched_treated/tot_treated, "of the treated units "\
+                      "remained unmatched")
                 break
-            if (early_stop_unmatched_c != False and \
-                unmatched_control/tot_control < early_stop_unmatched_c):
+            if (early_stops.un_c_frac != False and \
+                unmatched_control/tot_control < early_stops.un_c_frac):
                 print("We stopped the algorithm when ",
-                      unmatched_control/tot_control, "of the control units \
-                      remained unmatched")
+                      unmatched_control/tot_control, "of the control units "\
+                      "remained unmatched")
                 break
         
         # quit if there are covariate sets to choose from
@@ -226,11 +214,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                                          adaptive_weights, df_all, 
                                          treatment_column_name, outcome_column_name,
                                          df_holdout, alpha)
-        
         # Check for error in above step:
         if (curr_covar_set == False):
-            print("we stopped when the holdout set was not large enough or there \
-                  was nothing left to match")
+            print("we stopped when the holdout set was not large enough or "\
+                  "there was nothing left to match")
             break
         
         return_pe.append(pe)              
@@ -245,7 +232,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think. 
-        if (want_bf == True or early_stop_pe != False):
+        if (want_bf == True or early_stops.bf != False):
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
@@ -257,12 +244,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                 bf = np.nan
             return_bf.append(bf)
             
-            if bf < early_stop_bf:
+            if bf < early_stops.bf:
                 print("We stopped matching with a balancing factor of ", bf)
                 break
         
-        if early_stop_pe != False:
-            if pe <= early_stop_pe:
+        if early_stops.pe != False:
+            if pe <= early_stops.pe:
                 print('We stopped matching with a pe of ', pe)
                 break
             
@@ -293,7 +280,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
             print("Iteration number: ", h)
-            if (early_stop_unmatched_t == False and early_stop_unmatched_c == False):
+            if (early_stops.un_t_frac == False and early_stops.un_c_frac == False):
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
                 unmatched_control = len(df_unmatched) - unmatched_treated
             print("Unmatched treated units: ", unmatched_treated)

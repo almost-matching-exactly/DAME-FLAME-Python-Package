@@ -5,7 +5,7 @@ Neha
 
 def find(mmg_of_unit, unit_id, df_all, treatment_col, outcome_col):
     ''' 
-    This function is used to find the main matched group of the unit_id
+    This function is used to find the treatment effect of the unit_id
     
     Args:
         match_result_df: The algorithm's pre-calculated dataframe with all 

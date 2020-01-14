@@ -3,10 +3,13 @@
 
 @author: Neha
 """
+
 import pandas as pd
 import numpy as np
 import sys
 import math
+
+from early_stops import EarlyStops
 
 def read_files(input_data, holdout_data):
     
@@ -30,8 +33,10 @@ def read_files(input_data, holdout_data):
         df_holdout = holdout_data
     elif type(holdout_data) == float and holdout_data <= 1.0 and holdout_data > 0.0:
             df_holdout = df.sample(frac=holdout_data)
+            
     elif holdout_data == False:
         df_holdout = df.sample(frac=0.1) # default if it's not provided is the df. 
+
     else:
         try:
             df_holdout = pd.read_csv(holdout_data)
@@ -41,18 +46,21 @@ def read_files(input_data, holdout_data):
     
     return df, df_holdout
 
-def check_stops(early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatched_t,
+def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
             early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, early_stop_bf,
-            early_stop_bf_frac):
+            early_stop_bf_frac, early_stop_iterations):
     '''
     This function checks the parameters passed to DAME/FLAME relating to early 
     stopping
     '''
+    early_stops_obj = EarlyStops()
     
-    if early_stop_unmatched_c == True:
-        early_stop_unmatched_c = early_stop_un_c_frac
-    if early_stop_unmatched_t == True:
-        early_stop_unmatched_t = early_stop_un_t_frac
+    # Validate
+    if (stop_unmatched_c == False and stop_unmatched_t == False):
+       print('Either stop_unmatched_c or stop_unmatched_t, or both'\
+             'must be true, so the algorithm terminates if there are no '\
+             'units left to match')
+       sys.exit(1)
     if early_stop_un_t_frac > 1.0 or early_stop_un_t_frac < 0.0:
         print('The value provided for the early stopping critera of proportion'\
               ' of unmatched treatment units needs to be between 0.0 and 1.0')
@@ -74,8 +82,23 @@ def check_stops(early_stop_unmatched_c, early_stop_un_c_frac, early_stop_unmatch
              'needs to be between 0.0 and 1.0')
         sys.exit(1)
         
+    if (type(early_stop_iterations) != int and early_stop_iterations != False):
+        print('The value provided for early_stop_iteration needs to be an '\
+              'integer number of iterations, or False if not stopping early '\
+              'based on the number of iterations')
+        sys.exit(1)
         
-    return early_stop_unmatched_c, early_stop_unmatched_t, early_stop_pe, early_stop_bf
+        
+    # Put all of those parameters into the object to return
+    early_stops_obj.unmatched_c = stop_unmatched_c
+    early_stops_obj.unmatched_t = stop_unmatched_t
+    early_stops_obj.un_c_frac = early_stop_un_c_frac
+    early_stops_obj.un_t_frac = early_stop_un_t_frac
+    early_stops_obj.pe = early_stop_pe
+    early_stops_obj.bf = early_stop_bf
+    early_stops_obj.iterations = early_stop_iterations
+    
+    return early_stops_obj
 
 def check_parameters(adaptive_weights, weight_array, df_holdout, df,
                      alpha):
@@ -103,9 +126,9 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
             
     else:
         # make sure that the alpha is valid if it's a ridge regression. 
-        if adaptive_weights == 'ridge' and (alpha >= 1.0 or alpha <= 0.0):
-            print('Invalid input error. The alpha needs to be between 1.0 '\
-                  'and 0.0 for ridge regressions.')
+        if adaptive_weights == 'ridge' and (alpha < 0.0):
+            print('Invalid input error. The alpha needs to be positive '\
+                  'for ridge regressions.')
             sys.exit(1)
             
         
@@ -225,7 +248,6 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     if missing_holdout_replace == 2:
         # this means do mice ugh lol. 
         df_holdout = df_holdout.replace(missing_indicator, np.nan)
-        print('df_holdout')
         # but if there is actually nothing missing in the dataset, then dont
         # need to do this. 
         if df_holdout.isnull().values.any() == True:

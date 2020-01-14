@@ -44,6 +44,8 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
                 s_e[e] += 1
                     
     # Step 6: omega is all the covariates not in s that have enough support
+    # .items() iterates through key,val pairs
+    # so dict_covars_eno is the dictionary of all covariates that have enough support
     dict_covars_eno = dict((key, val) for key, val in s_e.items() if val >= size_newly_dropped) 
     omega = set(dict_covars_eno.keys())
     omega = omega.difference(set_newly_dropped)
