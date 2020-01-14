@@ -232,7 +232,7 @@ def mmg_of_unit(return_df, unit_id, input_data, output_style=1):
         df = pd.read_csv(return_df)
         
     mmg_df = query_mmg.find(return_df, unit_id, df)
-    if mmg_df == False:
+    if type(mmg_df) == bool and mmg_df == False:
         print("This unit does not have any matches")
         return False
     
@@ -263,7 +263,7 @@ def te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_co
         file_name: The csv file containing all of the original data.
     """
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
-    if mmg_df == False:
+    if type(df_mmg) == bool and df_mmg == False:
         print("This unit does not have any matches, so can't find the "\
               "treatment effect")
         return False
@@ -285,7 +285,7 @@ def mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, ou
         return print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
     
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
-    if df_mmg == False:
+    if type(df_mmg) == bool and df_mmg == False:
         print("This unit does not have any matches")
         return False
     
@@ -301,7 +301,7 @@ def print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name, outc
     Fancy version of above function.
     """
     df_mmg = mmg_of_unit(return_df, unit_id, input_data)
-    if df_mmg == False:
+    if type(df_mmg) == bool and df_mmg == False:
         print("This unit does not have any matches")
         return False
     

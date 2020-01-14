@@ -26,7 +26,7 @@ For more details about these algorithms, please refer to their papers: [FLAME: A
 import dame_flame
 
 # Run DAME
-x = dame_flame.DAME_FLAME.DAME(input_data=r"sample.csv",treatment_column_name='treated', outcome_column_name='outcome',weight_array=[0.5, 0.5])
+dame_flame.DAME_FLAME.DAME(input_data=r"dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
 ```
 
 ## Required data format
@@ -59,34 +59,39 @@ We run the DAME function with the following basic command. In this example, we p
 Thus the model defaults to a ridge regression  computation of the best covariate set to match on, with an alpha of 0.1, and uses 10% of the input data as the holdout data. 
 
 ```Python
-result = dame_flame.DAME_FLAME.DAME(input_data=sample_df, treatment_column_name="treated", outcome_column_name="outcome")
+import pandas as pd
+import dame_flame
+
+df = pd.read_csv("dame_flame/data/sample.csv")
+result = dame_flame.DAME_FLAME.DAME(input_data=df, treatment_column_name="treated", outcome_column_name="outcome", holdout_data=1.0)
 print(result[0])
-#>    x1 x2 
-#> 0  1  * 
-#> 1  1  5 
-#> 3  1  * 
+#>   one two
+#> 1   1   1
+#> 2   1   *
+#> 3   1   1
+
 ```
 result is a list of size 1, where the only element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
 To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
 
 ```Python
-mmg = dame_flame.DAME_FLAME.mmg_of_unit(result[0], 3, sample_df, output_style=2)
+mmg = dame_flame.DAME_FLAME.mmg_of_unit(return_df=result[0], unit_id=2, input_data=df)
 print(mmg)
 
-#>    x1 outcome treated 
-#> 0  1     2       1
-#> 1  1     3       0
-#> 3  1     9       0
+#>   one  outcome  treated
+#> 1    1        2        0
+#> 2    1        1        1
+#> 3    1        1        1
 ```
 
-To find the treatment effect of a unit, use the function *te_of_unit*
+To find the treatment effect of a unit, in case of unit number 2, use the function *te_of_unit*
 
 
 ```Python
-te = dame_flame.DAME_FLAME.te_of_unit(result[0], 3, sample_df, output_style=2)
+te = dame_flame.DAME_FLAME.te_of_unit(return_df=result[0], unit_id=2, input_data=df, treatment_column_name='treated', outcome_column_name='outcome')
 print(te)
-#> 1.7
+#> -1.0
 ```
 
 
