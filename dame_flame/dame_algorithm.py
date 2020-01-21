@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 import itertools
 
-import grouped_mr
-import generate_new_active_sets
-import flame_dame_helpers
+from . import grouped_mr
+from . import generate_new_active_sets
+from . import flame_dame_helpers
 
 
 
@@ -173,18 +173,21 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # Iterates until there are no more units to mach on. 
         try:
             if early_stops.unmatched_t == True and (1 not in df_unmatched[treatment_column_name].values): 
-                print("We finished with no more units to match")
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                      "We finished with no more units to match")
                 break
             
             if early_stops.unmatched_c == True and (0 not in df_unmatched[treatment_column_name].values):
-                print("We finished with no more units to match")
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                      "We finished with no more units to match")
                 break
         except TypeError:
             break
         
         # Hard stop criteria: exceeded the number of iters user asked for?
         if (early_stops.iterations != False and early_stops.iterations == h):
-            print("We stopped before doing iteration number: ", h)
+            print((len(df_all) - len(df_unmatched)), "units matched. "\
+                  "We stopped before doing iteration number: ", h)
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
@@ -206,7 +209,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
-            print("We stopped after considering all covariate set options")
+            print((len(df_all) - len(df_unmatched)), "units matched. "\
+                  "We stopped after considering all covariate set options")
             break
         
         # We find curr_covar_set, the best covariate set to drop. 
@@ -216,7 +220,8 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
                                          df_holdout, alpha)
         # Check for error in above step:
         if (curr_covar_set == False):
-            print("we stopped when the holdout set was not large enough or "\
+            print((len(df_all) - len(df_unmatched)), "units matched. "\
+                  "We stopped when the holdout set was not large enough or "\
                   "there was nothing left to match")
             break
         
@@ -245,12 +250,14 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             return_bf.append(bf)
             
             if bf < early_stops.bf:
-                print("We stopped matching with a balancing factor of ", bf)
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                        "We stopped matching with a balancing factor of ", bf)
                 break
         
         if early_stops.pe != False:
             if pe <= early_stops.pe:
-                print('We stopped matching with a pe of ', pe)
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                        "We stopped matching with a pe of ", pe)
                 break
             
             
@@ -283,8 +290,12 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             if (early_stops.un_t_frac == False and early_stops.un_c_frac == False):
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
                 unmatched_control = len(df_unmatched) - unmatched_treated
-            print("Unmatched treated units: ", unmatched_treated)
-            print("Unmatched control units: ", unmatched_control)
+            total_treated = df_all[treatment_column_name].sum()
+            print("Unmatched treated units: ", unmatched_treated,
+                  "out of a total of ", total_treated, "treated units .")
+            print("Unmatched control units: ", unmatched_control,
+                  "out of a total of ", len(df_all)-total_treated, 
+                  "control units")
             print("Predictive error of covariates chosen this iteration: ", pe)
             print("Number of matches made in this iteration: ", 
                   prev_iter_num_unmatched - len(df_unmatched))

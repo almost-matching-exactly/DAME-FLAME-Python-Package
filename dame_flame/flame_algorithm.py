@@ -7,9 +7,9 @@ import pandas as pd
 # delete this one later:
 import time
 
-import grouped_mr
-import dame_algorithm
-import flame_dame_helpers
+from . import grouped_mr
+from . import dame_algorithm
+from . import flame_dame_helpers
 
 def decide_drop(all_covs, consider_dropping, prev_dropped, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
@@ -125,18 +125,21 @@ def flame_generic(df_all, treatment_column_name, weights,
         # Iterates while there are units to match to match in
         try:
             if early_stops.unmatched_t == True and (1 not in df_unmatched[treatment_column_name].values): 
-                print("We finished with no more units to match")
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                      "We finished with no more units to match")
                 break
             
             if early_stops.unmatched_c == True and (0 not in df_unmatched[treatment_column_name].values):
-                print("We finished with no more units to match")
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                      "We finished with no more units to match")
                 break
         except TypeError:
             break
         
         # Hard stop criteria: exceeded the number of iters user asked for?
         if (early_stops.iterations != False and early_stops.iterations == h):
-            print("We stopped before doing iteration number: ", h)
+            print((len(df_all) - len(df_unmatched)), "units matched. "\
+                  "We stopped before doing iteration number: ", h)
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
@@ -159,7 +162,8 @@ def flame_generic(df_all, treatment_column_name, weights,
                 
         # quit if there are no more covariate sets to choose from
         if (len(consider_dropping) == 0):
-            print("No more covariate sets to consider dropping")
+            print((len(df_all) - len(df_unmatched)), "units matched. "\
+                  "No more covariate sets to consider dropping")
             break
         
         # We find curr_covar_set, the best covariate to drop. 
@@ -192,7 +196,8 @@ def flame_generic(df_all, treatment_column_name, weights,
             return_bf.append(bf)
             
             if bf < early_stops.bf:
-                print("We stopped matching with a balancing factor of ", bf)
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                      "We stopped matching with a balancing factor of ", bf)
                 break
         
         # Update covariate groups for future iterations
@@ -231,7 +236,8 @@ def flame_generic(df_all, treatment_column_name, weights,
             
             
             # call dame algorithm
-            print("Moving to DAME algorithm")
+            print((len(df_all) - len(df_unmatched)), "units matched. "\
+                  "Moving to DAME algorithm")
             return_matches_dame = dame_algorithm.algo1(df_all, treatment_column_name, 
                                                        weights,outcome_column_name, 
                                                        adaptive_weights, alpha,

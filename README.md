@@ -1,6 +1,6 @@
 
 <!-- Comment hi.  -->
-# DAME (Dynamic Almost Matching Exactly) and FLAME (Flast Large-scale Almost Matching Exactly)
+# DAME (Dynamic Almost Matching Exactly) and FLAME (Fast Large-scale Almost Matching Exactly)
 --------------------------------------------------
 
 ## Overview of the DAME and FLAME algorithms
@@ -26,7 +26,7 @@ For more details about these algorithms, please refer to their papers: [FLAME: A
 import dame_flame
 
 # Run DAME
-dame_flame.DAME_FLAME.DAME(input_data=r"dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
+x = dame_flame.DAME_FLAME.DAME(input_data=r"dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
 ```
 
 ## Required data format
@@ -69,9 +69,8 @@ print(result[0])
 #> 1   1   1
 #> 2   1   *
 #> 3   1   1
-
 ```
-result is a list of size 1, where the only element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+result is a list of size 2 or 3, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
 To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
 
@@ -85,7 +84,7 @@ print(mmg)
 #> 3    1        1        1
 ```
 
-To find the treatment effect of a unit, in case of unit number 2, use the function *te_of_unit*
+To find the treatment effect of a unit, use the function *te_of_unit*
 
 
 ```Python
@@ -102,12 +101,12 @@ DAME(input_data,
          treatment_column_name = 'treated', weight_array = False,
          outcome_column_name='outcome',
          adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
+         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
+         stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
          want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01,
-         missing_indicator=np.nan, missing_data_replace=0,
+         missing_indicator=numpy.nan, missing_data_replace=0,
          missing_holdout_replace=0, missing_holdout_imputations = 10,
          missing_data_imputations=0)
 
@@ -115,12 +114,12 @@ FLAME(input_data,
          treatment_column_name = 'treated', weight_array = False,
          outcome_column_name='outcome',
          adaptive_weights=False, alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
+         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
+         stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
          want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01, 
-         missing_indicator=np.nan, missing_data_replace=0,
+         pre_dame=False, missing_indicator=numpy.nan, missing_data_replace=0,
          missing_holdout_replace=0, missing_holdout_imputations = 10,
          missing_data_imputations=0, pre_dame=False)
 ```
@@ -152,8 +151,9 @@ If doing an adaptive_weights version of DAME, this is used to decide what covari
 Whether or not values for whom a main matched has been found can be used again, and placed in an auxiliary matched group  
 
 
-**verbose**: int 0,1,2,3 (default=0)  
-Style of printout while algorithm runs. 
+**verbose**: int 0,1,2,3 (default=2)  
+Style of printout while algorithm runs.
+If 0, no output 
 If 1, provides iteration number 
 2 provides iteration number and number of units left to match on every 10th iteration
 3 does this print on every iteration. 
@@ -176,7 +176,7 @@ This is only an option for FLAME, and will allow a user to run the Hybrid-FLAME-
 
 
 
-**missing_indicator**: character, integer, np.nan, optional (default=np.nan)  
+**missing_indicator**: character, integer, numpy.nan, optional (default=numpy.nan)  
 This is the indicator for missing data in the dataset. 
 
 **missing_holdout_replace**: int 0,1,2, optional (default=0)  
@@ -214,6 +214,7 @@ If this is True, it provides a fraction of unmatched control/treatment units. Wh
 
 **early_stop_un_t_frac**: float from 0.0 to 1.0, optional (default=0.1)
 If this is True, it provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
+
 
 **early_stop_pe**: bool, optional (default=False)  
 If this is true, then if the covariate set chosen to match on has a predictive error lower than the parameter early_stop_pe_frac, the algorithm will stop. 

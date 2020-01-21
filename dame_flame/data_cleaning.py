@@ -9,7 +9,7 @@ import numpy as np
 import sys
 import math
 
-from early_stops import EarlyStops
+from . import early_stops
 
 def read_files(input_data, holdout_data):
     
@@ -53,7 +53,7 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     This function checks the parameters passed to DAME/FLAME relating to early 
     stopping
     '''
-    early_stops_obj = EarlyStops()
+    early_stops_obj = early_stops.EarlyStops()
     
     # Validate
     if (stop_unmatched_c == False and stop_unmatched_t == False):

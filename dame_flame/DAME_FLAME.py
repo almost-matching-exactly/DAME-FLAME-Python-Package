@@ -25,19 +25,19 @@ holdout_data='sample5.csv', repeats=True, want_pe=False)
 import pandas as pd
 import numpy as np
 
-import data_cleaning
-import dame_algorithm
-import query_mmg
-import query_ate
-import flame_algorithm
-import flame_dame_helpers
-from early_stops import EarlyStops
+from . import data_cleaning
+from . import dame_algorithm
+from . import query_mmg
+from . import query_ate
+from . import flame_algorithm
+from . import flame_dame_helpers
+from . import early_stops
 
 def DAME(input_data = False,
          treatment_column_name = 'treated', weight_array = False,
          outcome_column_name='outcome',
          adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
+         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
          stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
@@ -74,9 +74,9 @@ def DAME(input_data = False,
         early_stop_un_c_frac, early_stop_un_t_frac (optional float, 
             from 0.0 - 1.0): If provided, a fraction of unmatched control/
             treatment units. When threshold met, hard stop the algo.
-        verbose (default: False, 0): If 1, provides iteration num, if 2 provides
+        verbose (default: 2): If 1, provides iteration num, if 2 provides
             iteration number and number of units left to match on every 10th iter,
-            if 3 does this print on every iteration. 
+            if 3 does this print on every iteration. If 0, nothing. 
         missing_holdout_replace (0,1,2): default 0.
             if 0, assume no missing holdout data and proceed
             if 1, drop all missing_indicator values from holdout dataset
@@ -146,7 +146,7 @@ def FLAME(input_data = False,
          treatment_column_name = 'treated', weight_array = False,
          outcome_column_name='outcome',
          adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=0, want_pe=False, early_stop_iterations=False, 
+         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
          stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
