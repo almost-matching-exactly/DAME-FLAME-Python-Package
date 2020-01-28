@@ -165,7 +165,7 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
     # that are larger than max_val. 
     for col in df.columns:
         if col != treatment_column_name and col != outcome_column_name:
-            for item_num in range(len(df[col])):
+            for item_num in df.index.values:
                 if math.isnan(missing_indicator) == False:
                     if df[col][item_num] == missing_indicator:
                         df.loc[item_num, col] = max_val + 1
@@ -203,7 +203,7 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     '''
     mice_on_matching = False
     mice_on_holdout = False
-    if missing_data_replace == 0 and df.isnull().values.any() == True:
+    if (missing_data_replace == 0 and df.isnull().values.any() == True):
         print('There is missing data in this dataset. The default missing '\
               'data handling is being done, so we are not matching on '\
               'any missing values in the matching set')
@@ -274,7 +274,8 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
         
     # column only has 0s and 1s. 
     if set(df[treatment_column_name].unique()) != {0,1}:
-        print('Invalid input error. Treatment column must have 0 and 1 values')
+        print('Invalid input error. The treatment column must only have 0 and'\
+              ' 1 values')
         sys.exit(1)
         
     if adaptive_weights == False:
