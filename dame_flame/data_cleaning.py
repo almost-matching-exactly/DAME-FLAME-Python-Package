@@ -6,7 +6,6 @@
 
 import pandas as pd
 import numpy as np
-import sys
 import math
 
 from . import early_stops
@@ -18,15 +17,11 @@ def read_files(input_data, holdout_data):
         df = input_data
         
     elif input_data == False:
-        print("Need to specify either csv file name or pandas data frame in "\
-              "parameter 'input_data'")
-        sys.exit(1)
+        raise Exception("Need to specify either csv file name or pandas data "\
+                        "frame in parameter 'input_data'")
     else:
-        try:
-            df = pd.read_csv(input_data)
-        except ValueError:
-            print('Files could not be found')
-            sys.exit(1)
+        df = pd.read_csv(input_data)
+
             
     # Now read the holdout data
     if type(holdout_data) == pd.core.frame.DataFrame:
@@ -38,11 +33,7 @@ def read_files(input_data, holdout_data):
         df_holdout = df.sample(frac=0.1) # default if it's not provided is the df. 
 
     else:
-        try:
-            df_holdout = pd.read_csv(holdout_data)
-        except ValueError:
-            print('Files could not be found')
-            sys.exit(1)
+        df_holdout = pd.read_csv(holdout_data)
     
     return df, df_holdout
 
@@ -57,37 +48,35 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     
     # Validate
     if (stop_unmatched_c == False and stop_unmatched_t == False):
-       print('Either stop_unmatched_c or stop_unmatched_t, or both'\
+       raise Exception('Either stop_unmatched_c or stop_unmatched_t, or both'\
              'must be true, so the algorithm terminates if there are no '\
              'units left to match')
-       sys.exit(1)
+    
     if early_stop_un_t_frac > 1.0 or early_stop_un_t_frac < 0.0:
-        print('The value provided for the early stopping critera of proportion'\
-              ' of unmatched treatment units needs to be between 0.0 and 1.0')
-        sys.exit(1)
+        raise Exception('The value provided for the early stopping critera '\
+                        'of proportion of unmatched treatment units needs to '\
+                        'be between 0.0 and 1.0')
+        
     if early_stop_un_c_frac > 1.0 or early_stop_un_c_frac < 0.0:
-        print('The value provided for the early stopping critera of proportion'\
-              ' of unmatched control units needs to be between 0.0 and 1.0')
-        sys.exit(1)
+        raise Exception('The value provided for the early stopping critera '\
+                        'of proportion of unmatched control units needs to '\
+                        'be between 0.0 and 1.0')
+
     if early_stop_pe == True:
         early_stop_pe = early_stop_pe_frac
     if early_stop_pe_frac > 1.0 or early_stop_pe_frac < 0.0:
-        print('The value provided for the early stopping critera of PE '\
-             'needs to be between 0.0 and 1.0')
-        sys.exit(1)
+        raise Exception('The value provided for the early stopping critera of'\
+                        ' PE needs to be between 0.0 and 1.0')
     if early_stop_bf == True:
         early_stop_bf = early_stop_bf_frac
     if early_stop_bf_frac > 1.0 or early_stop_bf_frac < 0.0:
-        print('The value provided for the early stopping critera of BF '\
-             'needs to be between 0.0 and 1.0')
-        sys.exit(1)
+        raise Exception('The value provided for the early stopping critera of'\
+                        'BF needs to be between 0.0 and 1.0')
         
     if (type(early_stop_iterations) != int and early_stop_iterations != False):
-        print('The value provided for early_stop_iteration needs to be an '\
-              'integer number of iterations, or False if not stopping early '\
-              'based on the number of iterations')
-        sys.exit(1)
-        
+        raise Exception('The value provided for early_stop_iteration needs '\
+                        'to be an integer number of iterations, or False if '\
+                        'not stopping early based on the number of iterations')        
         
     # Put all of those parameters into the object to return
     early_stops_obj.unmatched_c = stop_unmatched_c
@@ -113,44 +102,40 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
         # Confirm that weight array has the right number of values in it
         # Subtracting 2 because one col is the treatment and one is outcome. 
         if len(weight_array) != (len(df.columns)-2):
-            print('Invalid input error. Weight array size not equal to number '\
-                  'of columns in dataframe')
-            sys.exit(1)
+            raise Exception('Invalid input error. Weight array size not equal'\
+                            ' to number of columns in dataframe')
         
         # Confirm that weights in weight vector add to 1.
         if abs(sum(weight_array) - 1.0) >= 0.001:
             # I do this weird operation instead of seeing if it equals one
             # to avoid floatig point addition errors that can occur. 
-            print('Invalid input error. Weight array values must sum to 1.0')
-            sys.exit(1)
+            raise Exception('Invalid input error. Weight array values must '\
+                            'sum to 1.0')
             
     else:
         # make sure that the alpha is valid if it's a ridge regression. 
         if adaptive_weights == 'ridge' and (alpha < 0.0):
-            print('Invalid input error. The alpha needs to be positive '\
-                  'for ridge regressions.')
-            sys.exit(1)
-            
+            raise Exception('Invalid input error. The alpha needs to be '\
+                            'positive for ridge regressions.')            
         
         # make sure that adaptive_weights is a valid value.
         if (adaptive_weights != "ridge" and adaptive_weights != "decision tree"):
-            print('Invalid input error. The adaptive weights value must be'\
-                  'either False, with a provided weight array, or must be '\
-                  'decision tree, or ridge')
-            sys.exit(1)
+            raise Exception("Invalid input error. The acceptable values for "\
+                            "the adaptive_weights parameter are 'ridge', "\
+                            "'decision tree', or 'False' along with a weight "\
+                            "array")
+
         
         # make sure the two dfs have the same number of columns first:
         if (len(df.columns) != len(df_holdout.columns)):
-            print('Invalid input error. The holdout and main dataset '\
-                  'must have the same number of columns')
-            sys.exit(1)
+            raise Exception('Invalid input error. The holdout and main '\
+                            'dataset must have the same number of columns')
+
         # make sure that the holdout columns match the df columns.
         if (set(df_holdout.columns) != set(df.columns)):
             # they don't match
-            print('Invalid input error. The holdout and main dataset '\
-                  'must have the same columns')
-            sys.exit(1)
-                
+            raise Exception('Invalid input error. The holdout and main '\
+                            'dataset must have the same columns')                
             
     return
 
@@ -264,19 +249,18 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
     
     # Confirm that the treatment column name exists. 
     if treatment_column_name not in df.columns:
-        print('Invalid input error. Treatment column name does not exist')
-        sys.exit(1)
+        raise Exception('Invalid input error. Treatment column name does not'\
+                        ' exist')
         
     # Confirm that the outcome column name exists. 
     if outcome_column_name not in df.columns:
-        print('Invalid input error. Outcome column name does not exist')
-        sys.exit(1)
+        raise Exception('Invalid input error. Outcome column name does not'\
+                        ' exist')
         
     # column only has 0s and 1s. 
     if set(df[treatment_column_name].unique()) != {0,1}:
-        print('Invalid input error. The treatment column must only have 0 and'\
-              ' 1 values')
-        sys.exit(1)
+        raise Exception('Invalid input error. All rows in the treatment '\
+                        'column must have either a 0 or a 1 value.')
         
     if adaptive_weights == False:
         # Ensure that the columns are sorted in order: binary, tertary, etc
@@ -289,9 +273,9 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
                 if df[col_name].max() >= max_column_size:
                     max_column_size = df[col_name].max()
                 else:
-                    print('Invalid input error. Dataframe column size must be '\
-                          'in increasing order from left to right.')
-                    sys.exit(1)
+                    raise Exception('Invalid input error. Dataframe column '\
+                                    'size must be in increasing order from '\
+                                    'left to right.')
     
     else:
         # Reorder if they're not in order:
