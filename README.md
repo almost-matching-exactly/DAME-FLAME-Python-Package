@@ -169,7 +169,7 @@ If true, the output will include the balancing factor of each iteration.
 
 **pre_dame**: bool, integer, optional (default=False)  
 This is only an option for FLAME, and will allow a user to run the Hybrid-FLAME-DAME algorithm. If an integer n is provided, then after n iterations of FLAME, the algorithm will switch to DAME.
-
+If the user enters 'True', then one iteration of FLAME will happen before switching to DAME. 
 
 
 ### Parameters related to missing data handling
@@ -210,10 +210,12 @@ If True, then the algorithm terminates when there are no more control units to m
 If True, then the algorithm terminates when there are no more treatment units to match. 
 
 **early_stop_un_c_frac**: float from 0.0 to 1.0, optional (default=0.1)  
-If this is True, it provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
+This provides a fraction of unmatched control units. When the threshold is met, the algorithm will stop iterating. 
+For example, an input dataset with 100 control units will stop when 10 control units are ummatched but 90 are matched.
 
 **early_stop_un_t_frac**: float from 0.0 to 1.0, optional (default=0.1)
-If this is True, it provides a fraction of unmatched control/treatment units. When threshold met, the algorithm with stop iterating.
+This provides a fraction of unmatched treatment units. When the threshold is met, the algorithm will stop iterating. 
+For example, an input dataset with 100 treatment units will stop when 10 control units are ummatched but 90 are matched.
 
 
 **early_stop_pe**: bool, optional (default=False)  

@@ -57,7 +57,9 @@ def create_mice_dfs(df_holdout, num_imputes):
     '''
     df_holdout_array = []
     for i in range(num_imputes):
-        imp = IterativeImputer(max_iter=10, random_state=i, sample_posterior=True)
+        imp = IterativeImputer(max_iter=10, random_state=i, 
+                               sample_posterior=True, 
+                               estimator=DecisionTreeRegressor())
         imp.fit(df_holdout)
         df_holdout_array.append(pd.DataFrame(data=np.round(imp.transform(df_holdout)), 
                                              columns=df_holdout.columns, index=df_holdout.index))
