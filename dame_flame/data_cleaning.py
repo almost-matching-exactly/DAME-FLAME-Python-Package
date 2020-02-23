@@ -21,7 +21,6 @@ def read_files(input_data, holdout_data):
                         "frame in parameter 'input_data'")
     else:
         df = pd.read_csv(input_data)
-
             
     # Now read the holdout data
     if type(holdout_data) == pd.core.frame.DataFrame:
@@ -34,6 +33,9 @@ def read_files(input_data, holdout_data):
 
     else:
         df_holdout = pd.read_csv(holdout_data)
+    
+    df.columns=map(str,df.columns)
+    df_holdout.columns = map(str, df_holdout.columns)
     
     return df, df_holdout
 
