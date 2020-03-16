@@ -39,7 +39,7 @@ def DAME(input_data = False,
          adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
          repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
+         stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
          early_stop_pe = False, early_stop_pe_frac = 0.01,
          want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01,
          missing_indicator=np.nan, missing_data_replace=0,
@@ -53,8 +53,8 @@ def DAME(input_data = False,
         treatment_column_name: Indicates the name
             of the column that contains the binary indicator for whether each
             row is a treatment group or not.
-        weights: As provided by the user, array of weights of all covariates 
-            that are in df_all. Only needed if adaptive_weights = True.
+        weight_array: As provided by the user, array of weights of all covariates 
+            that are in df_all. Only needed if adaptive_weights = False.
         outcome_column_name: Indicates the name
             of the column that contains the outcome values. 
         adaptive_weights: This is false (default) if decide to drop weights
@@ -100,8 +100,9 @@ def DAME(input_data = False,
     df = data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name, adaptive_weights)
 
-    data_cleaning.check_parameters(adaptive_weights, weight_array, df_holdout, 
-                                   df, alpha)
+    data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha, 
+                                   False, weight_array)
+    
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
                                                    df_holdout, missing_indicator, 
                                                    missing_data_replace,
@@ -142,18 +143,17 @@ def DAME(input_data = False,
         return return_array
     
     
-def FLAME(input_data = False,
-         treatment_column_name = 'treated', weight_array = False,
-         outcome_column_name='outcome',
-         adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
-         stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=True, early_stop_un_t_frac = 0.1,
-         early_stop_pe = False, early_stop_pe_frac = 0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01, 
-         missing_indicator=np.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations = 10,
-         missing_data_imputations=0, pre_dame=False):
+def FLAME(input_data = False, treatment_column_name = 'treated',
+         outcome_column_name='outcome', adaptive_weights='ridge', alpha = 0.1, 
+         holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+         early_stop_iterations=False, stop_unmatched_c=False, 
+         early_stop_un_c_frac = 0.1, stop_unmatched_t=False, 
+         early_stop_un_t_frac = 0.1, early_stop_pe = False, 
+         early_stop_pe_frac = 0.01, want_bf=False, early_stop_bf=False, 
+         early_stop_bf_frac = 0.01, missing_indicator=np.nan, 
+         missing_data_replace=0, missing_holdout_replace=0, 
+         missing_holdout_imputations = 10, missing_data_imputations=0, 
+         pre_dame=False, C=0.1):
     """
     This function kicks off the FLAME algorithm.
     
@@ -164,14 +164,15 @@ def FLAME(input_data = False,
     Returns:
         See DAME above.
     """
+    #TODO: error check/validate C. 
     
     df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
         
     df = data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name, adaptive_weights)
 
-    data_cleaning.check_parameters(adaptive_weights, weight_array, 
-                                                df_holdout, df, alpha)
+    data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha,
+                                   FLAME=True, weight_array=[])
     
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
                                                    df_holdout, missing_indicator, 
@@ -186,13 +187,13 @@ def FLAME(input_data = False,
             stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
             early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
             early_stop_bf, early_stop_bf_frac, early_stop_iterations)
-    
+
     if (mice_on_matching == False):
-        return flame_algorithm.flame_generic(df, treatment_column_name, weight_array,
+        return flame_algorithm.flame_generic(df, treatment_column_name,
                                 outcome_column_name, adaptive_weights, alpha,
                                 df_holdout, repeats, want_pe,
                                 verbose, want_bf, mice_on_holdout, early_stops,
-                                pre_dame)
+                                pre_dame, C)
     else:
         # this would mean we need to run mice on the matching data, which means
         # that we have to run algo1 multiple times
@@ -205,11 +206,10 @@ def FLAME(input_data = False,
         df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_matching)
         return_array = []
         for i in range(len(df_array)):
-            return_array.append(flame_algorithm.flame_generic(df, treatment_column_name, weight_array,
-                                outcome_column_name, adaptive_weights, alpha,
-                                df_holdout, repeats, want_pe,
-                                verbose, want_bf, mice_on_holdout, early_stops,
-                                pre_dame))
+            return_array.append(flame_algorithm.flame_generic(df, 
+                treatment_column_name, outcome_column_name, adaptive_weights, 
+                alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
+                mice_on_holdout, early_stops, pre_dame, C))
             
         return return_array
 

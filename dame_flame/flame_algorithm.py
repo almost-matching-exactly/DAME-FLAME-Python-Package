@@ -13,7 +13,7 @@ from . import flame_dame_helpers
 
 def decide_drop(all_covs, consider_dropping, prev_dropped, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
-                adaptive_weights, weights, alpha_given):
+                adaptive_weights, alpha_given, df_unmatched, return_matches, C):
     """
     This is the decide drop function. 
     """
@@ -21,51 +21,49 @@ def decide_drop(all_covs, consider_dropping, prev_dropped, df_all,
     # This is where we decide who to drop, and also compute the pe 
     # value that gets outputted in the list described in readme. 
     best_drop = 0
-    best_pe = 100000000
-    if adaptive_weights == False:
-        # todo: repetition in this function with dame. create helper.
-        # Iterate through covars, drop one at a time and sum weights.
-        max_weight = 0
-        for possible_drop in consider_dropping:
-            # S is the frozenset of covars we drop. We try dropping each one
-             s = prev_dropped.union([possible_drop])
-             temp_weight = 0
-             for cov_index in range(len(all_covs)):
-                 if all_covs[cov_index] not in s:
-                     # if an item not in s, add weight. finding impact of drop s
-                     temp_weight += weights[cov_index]
-             if temp_weight >= max_weight:
-                 max_weight = temp_weight
-                 best_drop = possible_drop # This is the items we will drop, that will
-                 # not get used in the match
-        best_pe = max_weight
+    best_mq = -100000
+    
+    for possible_drop in consider_dropping:
+        # S is the frozenset of covars we drop. We try dropping each one
+        s = prev_dropped.union(set(possible_drop))
+        
+        PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout_array, 
+                treatment_column_name, outcome_column_name, s, 
+                adaptive_weights, alpha_given)
+        
+        # error check
+        if PE == False:
+            return False, False
+        
+        # The dropping criteria for FLAME is max MQ
+        # MQ = C * BF - PE
+        
+        # do the hypothetical match
+        covs_match_on = list(set(all_covs)-set(possible_drop)-prev_dropped)
+        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, 
+                                        df_unmatched, covs_match_on, 
+                                        all_covs, treatment_column_name, 
+                                        outcome_column_name, 
+                                        return_matches)
+        
+        # find the BF for this covariate set's match. 
+        BF =  flame_dame_helpers.compute_bf(matched_rows, 
+                                            treatment_column_name, 
+                                            df_unmatched)
+        
+        # Use the largest MQ as the covariate set to drop.
+        MQ = C * BF - PE
+        if MQ > best_mq:
+            best_mq = MQ
+            best_pe = PE
+            best_drop = possible_drop
+            
+    return best_drop, best_pe, matched_rows, return_matches, BF
 
-                
-    else:
-        for possible_drop in consider_dropping:
-            # S is the frozenset of covars we drop. We try dropping each one
-            s = prev_dropped.union(set(possible_drop))
-            
-            PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout_array, 
-                                                          treatment_column_name, 
-                          outcome_column_name, s, adaptive_weights, alpha_given)
-            
-            # error check
-            if PE == False:
-                return False, False
-            
-            # Use the smallest PE as the covariate set to drop.
-            if PE < best_pe:
-                best_pe = PE
-                best_drop = possible_drop
-            
-    return best_drop, best_pe
-
-def flame_generic(df_all, treatment_column_name, weights,
-                  outcome_column_name, adaptive_weights, alpha,
-                  df_holdout, repeats, want_pe,
+def flame_generic(df_all, treatment_column_name, outcome_column_name, 
+                  adaptive_weights, alpha, df_holdout, repeats, want_pe,
                   verbose, want_bf, missing_holdout_replace, early_stops,
-                  pre_dame):
+                  pre_dame, C):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -81,7 +79,6 @@ def flame_generic(df_all, treatment_column_name, weights,
     return_pe= [] # list of predictive errors, 
     return_bf = []
                   
-    # todo delete this comment later -- justupdated line
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     
     # As an initial step, we attempt to match on all covariates
@@ -117,9 +114,7 @@ def flame_generic(df_all, treatment_column_name, weights,
     
     consider_dropping = set(i for i in all_covs)
     prev_dropped = set()
-    
-    start_time = time.time()
-    
+        
     # Here, we begin the iterative dropping procedure of FLAME
     while True:
         # Iterates while there are units to match to match in
@@ -149,14 +144,14 @@ def flame_generic(df_all, treatment_column_name, weights,
             if (early_stops.un_t_frac != False and \
                 unmatched_treated/tot_treated < early_stops.un_t_frac):
                 print("We stopped the algorithm when ",
-                      unmatched_treated/tot_treated, "of the treated units \
-                      remained unmatched")
+                      unmatched_treated/tot_treated, "of the treated units "\
+                      "remained unmatched")
                 break
             elif (early_stops.un_c_frac != False and \
                 unmatched_control/tot_control < early_stops.un_c_frac):
                 print("We stopped the algorithm when ",
-                      unmatched_control/tot_control, "of the control units \
-                      remained unmatched")
+                      unmatched_control/tot_control, "of the control units "\
+                      "remained unmatched")
                 break
         
                 
@@ -166,35 +161,23 @@ def flame_generic(df_all, treatment_column_name, weights,
                   "No more covariate sets to consider dropping")
             break
         
-        # We find curr_covar_set, the best covariate to drop. 
+        # We find the best covariate to drop, and the matches it results in
+        new_drop, pe, matched_rows, return_matches, bf = decide_drop(all_covs, 
+            consider_dropping, prev_dropped, df_all, treatment_column_name, 
+            outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
+            df_unmatched, return_matches, C)
         
-        new_drop, pe = decide_drop(all_covs, consider_dropping, prev_dropped, 
-                                     df_all, 
-                                     treatment_column_name, outcome_column_name,
-                                     df_holdout_array, adaptive_weights, weights,
-                                     alpha)
         # Check for error in above step:
         if (new_drop == False):
             break
         
         return_pe.append(pe)
-                
-        covs_match_on = list(set(all_covs)-set(new_drop)-prev_dropped)
-        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
-                                                     covs_match_on, all_covs,
-                                                     treatment_column_name, 
-                                                     outcome_column_name,
-                                                     return_matches, start_time)
         
-        if (want_bf == True or early_stops.bf != False):
-            # compute balancing factor
-            mg_treated = matched_rows[treatment_column_name].sum()
-            mg_control = len(matched_rows) - mg_treated
-            available_treated = df_unmatched[treatment_column_name].sum()
-            available_control = len(df_unmatched) - available_treated
-            bf = mg_treated/available_treated + mg_control/available_control
+        if (want_bf == True):
+            # if we need to track the bf, do so. 
             return_bf.append(bf)
             
+        if (early_stops.bf != False):
             if bf < early_stops.bf:
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We stopped matching with a balancing factor of ", bf)
@@ -239,7 +222,7 @@ def flame_generic(df_all, treatment_column_name, weights,
             print((len(df_all) - len(df_unmatched)), "units matched. "\
                   "Moving to DAME algorithm")
             return_matches_dame = dame_algorithm.algo1(df_all, treatment_column_name, 
-                                                       weights,outcome_column_name, 
+                                                       False,outcome_column_name, 
                                                        adaptive_weights, alpha,
                                                        df_holdout, 
                                                        repeats, want_pe, 

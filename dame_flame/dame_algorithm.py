@@ -75,7 +75,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
     return curr_covar_set, best_pe
 
 
-def algo1(df_all, treatment_column_name = "T", weights = [],
+def algo1(df_all, treatment_column_name = "T", weight_array = [],
           outcome_column_name = "outcome", adaptive_weights=False, alpha = 0.1,
           df_holdout="", repeats=True, want_pe=False, verbose=0,
           want_bf=False, missing_holdout_replace=False, early_stops=False):
@@ -88,7 +88,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         treatment_column_name: As provided by the user, this indicates the name
             of the column that contains the binary indicator for whether each
             row is a treatment group or not.
-        weights: As provided by the user, array of weights of all covariates 
+        weight_array: As provided by the user, array of weights of all covariates 
             that are in df_all.
         outcome_column_name: As provided by the user, this indicates the name
             of the column that contains the outcome values. 
@@ -114,7 +114,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         return_matches: df of units with the column values of their main matched
             group, with "*"s in place for the columns not in their MMG
     """
-    
+        
     # Initialize variables. These are all moving/temporary throughout algo
     all_covs = df_all.columns.tolist()
     all_covs.remove(treatment_column_name) # This is J in the paper
@@ -184,6 +184,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         except TypeError:
             break
         
+        if len(df_unmatched) == 0:
+            print("All units have been matched")
+            break
+        
         # Hard stop criteria: exceeded the number of iters user asked for?
         if (early_stops.iterations != False and early_stops.iterations == h):
             print((len(df_all) - len(df_unmatched)), "units matched. "\
@@ -214,10 +218,10 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
             break
         
         # We find curr_covar_set, the best covariate set to drop. 
-        curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, weights, 
-                                         adaptive_weights, df_all, 
-                                         treatment_column_name, outcome_column_name,
-                                         df_holdout, alpha)
+        curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, 
+            weight_array, adaptive_weights, df_all, treatment_column_name, 
+            outcome_column_name, df_holdout, alpha)
+        
         # Check for error in above step:
         if (curr_covar_set == False):
             print((len(df_all) - len(df_unmatched)), "units matched. "\
@@ -274,7 +278,7 @@ def algo1(df_all, treatment_column_name = "T", weights = [],
         # Update the set of already processed covariate-sets. This works bc
         # processed_covar_sets is type set, but curr_covar_set is type frozenset
         processed_covar_sets.add(curr_covar_set)
-        
+                
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
  

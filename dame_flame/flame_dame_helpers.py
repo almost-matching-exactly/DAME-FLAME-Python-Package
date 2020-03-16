@@ -14,6 +14,18 @@ from sklearn.metrics import mean_squared_error
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer  
 
+def compute_bf(matched_rows, treatment_column_name, df_unmatched):
+    '''
+    Helper function to compute the balancing factor
+    '''
+    
+    mg_treated = matched_rows[treatment_column_name].sum()
+    mg_control = len(matched_rows) - mg_treated
+    available_treated = df_unmatched[treatment_column_name].sum()
+    available_control = len(df_unmatched) - available_treated
+    return mg_treated/available_treated + mg_control/available_control
+    
+
 def find_pe_for_covar_set(df_holdout, treatment_column_name, 
                           outcome_column_name, s, adaptive_weights,
                           alpha_given):
@@ -34,6 +46,8 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             clf = Ridge(alpha=alpha_given)
         elif adaptive_weights == "decision tree":
             clf = DecisionTreeRegressor()
+        else:
+            return False
         
         # Calculate treated MSE
         clf.fit(X_treated, Y_treated) 

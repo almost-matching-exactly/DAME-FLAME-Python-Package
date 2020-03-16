@@ -48,11 +48,15 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     '''
     early_stops_obj = early_stops.EarlyStops()
     
+    # todo: pretty sure we don't need this one after thinking about it a bit
+    # but check with team. Because maybe you want to match as many as possible
+    # of both, and just stop when there's no more covar sets to check? 
+    
     # Validate
-    if (stop_unmatched_c == False and stop_unmatched_t == False):
-       raise Exception('Either stop_unmatched_c or stop_unmatched_t, or both'\
-             'must be true, so the algorithm terminates if there are no '\
-             'units left to match')
+    #if (stop_unmatched_c == False and stop_unmatched_t == False):
+    #   raise Exception('Either stop_unmatched_c or stop_unmatched_t, or both'\
+    #         ' must be true, so the algorithm terminates if there are no '\
+    #         'units left to match')
     
     if early_stop_un_t_frac > 1.0 or early_stop_un_t_frac < 0.0:
         raise Exception('The value provided for the early stopping critera '\
@@ -91,8 +95,8 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     
     return early_stops_obj
 
-def check_parameters(adaptive_weights, weight_array, df_holdout, df,
-                     alpha):
+def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME, 
+                     weight_array=[]):
     '''
     This function processes the parameters that were passed to DAME/FLAME
     that aren't directly the input file or related to stop_criteria. 
@@ -101,6 +105,10 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
     # Checks on the weight array...if the weight array needs to exist
     if adaptive_weights == False:
         
+        if FLAME == True:
+            raise Exception('adaptive-weights must be either ridge or '\
+                            ' decision-tree for FLAME algorithm')
+            
         # Confirm that weight array has the right number of values in it
         # Subtracting 2 because one col is the treatment and one is outcome. 
         if len(weight_array) != (len(df.columns)-2):
@@ -124,8 +132,8 @@ def check_parameters(adaptive_weights, weight_array, df_holdout, df,
         if (adaptive_weights != "ridge" and adaptive_weights != "decision tree"):
             raise Exception("Invalid input error. The acceptable values for "\
                             "the adaptive_weights parameter are 'ridge', "\
-                            "'decision tree', or 'False' along with a weight "\
-                            "array")
+                            "'decision tree', or, for DAME, adaptive-weights "\
+                            "may be 'False' along with a weight array")
 
         
         # make sure the two dfs have the same number of columns first:

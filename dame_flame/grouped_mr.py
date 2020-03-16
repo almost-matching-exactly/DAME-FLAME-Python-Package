@@ -8,7 +8,7 @@ import numpy as np
 from . import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
-                    outcome_column_name, return_groups, start_time=0):    
+                    outcome_column_name, return_groups):    
     # todo; DOn't forget to remove start_time!
     ''' 
     Input: 

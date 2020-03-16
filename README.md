@@ -50,7 +50,7 @@ The holdout training set, if provided, should also follow the same format.
 
 1.  `DAME-FLAME` requires installation of python, specifically with at least python 3.* version. If your computer system does not have python 3.*, install from [here](https://www.python.org/downloads/).
 
-2. Dependencies on the following packages: Pandas, Scikit learn, Numpy. If your python version does not have these pacakges, install from [here](https://packaging.python.org/tutorials/installing-packages/)
+2. Dependencies on the following packages: Pandas, Scikit learn, Numpy. If your python version does not have these packages, install from [here](https://packaging.python.org/tutorials/installing-packages/)
 
 ## Example
 
@@ -174,21 +174,29 @@ If the user enters 'True', then one iteration of FLAME will happen before switch
 
 ### Parameters related to missing data handling
 
+A variety of built-in options for missing data handling functionality is available to users.
 
+The fastest option is to exclude missing values for each unit in the matching dataset, and drop missing units entirely from the holdout dataset.
+The units with missing values would still be placed in a group, but the covariates for which they
+have missing data wouldn't be used to find their group. Holdout missing data would
+be dropped.  These are parameters missing_holdout_replace=1, missing_data_replace=2. 
+
+If missing data is detected, but the user has not specified a handling technique, then
+(does it quit?) 
 
 **missing_indicator**: character, integer, numpy.nan, optional (default=numpy.nan)  
 This is the indicator for missing data in the dataset. 
 
 **missing_holdout_replace**: int 0,1,2, optional (default=0)  
 if 0, assume no missing holdout data and proceed
-if 1, excludes units with a missing value from the holdout dataset
-if 2, do MICE on holdout dataset for missing_holdout_imputatations number of imputations. This is not recommended. 
+if 1, removes all units with a missing value from the holdout dataset
+if 2, do MICE on holdout dataset. This is not recommended. If this option is selected, it will be done for a number of iterations equal to missing_holdout_imputations.
 
 **missing_data_replace**: int 0,1,2,3, optional, (default=0)  
 if 0, assume no missing data in matching data and proceed
-if 1, does not match on units that have a missing value. 
-if 2, skip all missing_indicator values from being matched on
-if 3, do MICE on matching dataset for missing_data_imputatations, number of imputations
+if 1, units that have missing values are not matched on, and therefore will not have their own main matched group, or be placed in other units' groups.
+if 2, units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. 
+if 3, do MICE on matching dataset for the number of iterations equal to missing_data_imputatations
 
 **missing_holdout_imputatations**: int, optional (default=10)  
 If missing_holdout_replace=2, the number of imputations
@@ -259,3 +267,16 @@ If this value is 2, then the dataframe will contain complete values and no ' * '
 **return_vals**: int, optional (default=0):
 In mmg_and_te_of_unit, if this is 1 then the values will print in a pretty way rather than outputting. 
 
+## Additional Technical Notes
+
+### Missing Data Handling
+
+For details on the MICE algorithm, see : [this paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3074241/)
+The underlying MICE implementation is done using scikit learn's experimental IterativeImpute package, 
+and relies on DecisionTreeRegressions in the imputation process, to ensure that the data generated
+is fit for unordered categorical data. In addition to this, users are welcome to pre-process their datsets with other data handling techniques
+prior to using MICE. It is not recommended to use MICE on the holdout dataset, as this would be very slow.  
+
+One option is to have the parameter missing_data_replace=2, where units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. 
+In this option, the underlying algorithm works by replacing each missing value with a unique value, so that in the matching procedure, those covariates simply don't have a match because their
+values are not equl to any other values.
