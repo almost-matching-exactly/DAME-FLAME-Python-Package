@@ -33,18 +33,16 @@ from . import flame_algorithm
 from . import flame_dame_helpers
 from . import early_stops
 
-def DAME(input_data = False,
-         treatment_column_name = 'treated', weight_array = False,
-         outcome_column_name='outcome',
-         adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
-         stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
-         early_stop_pe = False, early_stop_pe_frac = 0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01,
-         missing_indicator=np.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations = 10,
-         missing_data_imputations=0):
+def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
+         outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
+         holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+         early_stop_iterations=False, stop_unmatched_c=False, 
+         early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
+         early_stop_un_t_frac=0.1, early_stop_pe=False, 
+         early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
+         early_stop_bf_frac=0.01, missing_indicator=np.nan, 
+         missing_data_replace=0, missing_holdout_replace=0, 
+         missing_holdout_imputations=10, missing_data_imputations=0):
     """
     This function kicks off the DAME algorithm
 
@@ -143,17 +141,17 @@ def DAME(input_data = False,
         return return_array
     
     
-def FLAME(input_data = False, treatment_column_name = 'treated',
-         outcome_column_name='outcome', adaptive_weights='ridge', alpha = 0.1, 
-         holdout_data=False, repeats=True, verbose=2, want_pe=True, 
-         early_stop_iterations=False, stop_unmatched_c=False, 
-         early_stop_un_c_frac = 0.1, stop_unmatched_t=False, 
-         early_stop_un_t_frac = 0.1, early_stop_pe = False, 
-         early_stop_pe_frac = 0.01, want_bf=False, early_stop_bf=False, 
-         early_stop_bf_frac = 0.01, missing_indicator=np.nan, 
-         missing_data_replace=0, missing_holdout_replace=0, 
-         missing_holdout_imputations = 10, missing_data_imputations=0, 
-         pre_dame=False, C=0.1):
+def FLAME(input_data=False, treatment_column_name='treated',
+          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
+          holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+          early_stop_iterations=False, stop_unmatched_c=False, 
+          early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
+          early_stop_un_t_frac=0.1, early_stop_pe=False, 
+          early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
+          early_stop_bf_frac=0.01, missing_indicator=np.nan, 
+          missing_data_replace=0, missing_holdout_replace=0, 
+          missing_holdout_imputations=10, missing_data_imputations=0, 
+          pre_dame=False, C=0.1):
     """
     This function kicks off the FLAME algorithm.
     
@@ -189,6 +187,7 @@ def FLAME(input_data = False, treatment_column_name = 'treated',
             early_stop_bf, early_stop_bf_frac, early_stop_iterations)
 
     if (mice_on_matching == False):
+        print(df.head())
         return flame_algorithm.flame_generic(df, treatment_column_name,
                                 outcome_column_name, adaptive_weights, alpha,
                                 df_holdout, repeats, want_pe,

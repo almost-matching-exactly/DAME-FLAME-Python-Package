@@ -9,7 +9,7 @@ from . import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
                     outcome_column_name, return_groups):    
-    # todo; DOn't forget to remove start_time!
+    # todo; not using all_covs variable anymore. 
     ''' 
     Input: 
         df_all: The dataframe of all of the data
@@ -26,12 +26,16 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     
     # This is the max of all of the columns. assuming they're 
     # ordered from least to greatest. 
+
+    
     covs_max_list = [max(df_unmatched[x])+1 for x in covs_match_on]
     # Form groups on D by exact matching on Js.  
+    
     df_all_without_outcome = df_all.drop([outcome_column_name], axis=1)
-    matched_units, bi = flame_group_by.match_ng(df_all_without_outcome, covs_match_on, 
-                                                covs_max_list, 
-                                                treatment_column_name)
+    
+    matched_units, bi = flame_group_by.match_ng(df_all_without_outcome, 
+                            covs_match_on, covs_max_list, 
+                            treatment_column_name)
 
     # Find newly matched units and their main matched groups.
     
@@ -39,7 +43,7 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     # These are the rows of the ones that have been matched: 
     matched_rows = df_all.loc[matched_units, :].copy()
     matched_rows['b_i'] = bi
-            
+
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
         
@@ -54,12 +58,12 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
         newly_matched = [i for i in units_in_g if i in df_unmatched.index]
         # Only need to proceed to fill in the return table if someone's MMG found. 
         if len(newly_matched) != 0:
-            # What does the group look like? eg [1,2,*,1]
+            # Now, we figure out: What does the group look like? eg [1,2,*,1]
             temp_row_in_group = matched_rows.loc[units_in_g[0]] 
             # ^ that line arbitrarily chooses the first row that has the bi_val so
             # the first row of that group. 
             group_covs = []
-            for col in all_covs:
+            for col in return_groups.columns:
                 if col in covs_match_on:
                     group_covs.append(temp_row_in_group[col])
                 else:

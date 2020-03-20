@@ -23,6 +23,10 @@ def compute_bf(matched_rows, treatment_column_name, df_unmatched):
     mg_control = len(matched_rows) - mg_treated
     available_treated = df_unmatched[treatment_column_name].sum()
     available_control = len(df_unmatched) - available_treated
+    
+    #print("control matched: ", mg_control)
+    #print("control unmatched: ", )
+    
     return mg_treated/available_treated + mg_control/available_control
     
 

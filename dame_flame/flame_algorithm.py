@@ -4,14 +4,11 @@
 """
 import pandas as pd
 
-# delete this one later:
-import time
-
 from . import grouped_mr
 from . import dame_algorithm
 from . import flame_dame_helpers
 
-def decide_drop(all_covs, consider_dropping, prev_dropped, df_all, 
+def decide_drop(all_covs, consider_dropping, prev_drop, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
                 adaptive_weights, alpha_given, df_unmatched, return_matches, C):
     """
@@ -22,10 +19,13 @@ def decide_drop(all_covs, consider_dropping, prev_dropped, df_all,
     # value that gets outputted in the list described in readme. 
     best_drop = 0
     best_mq = -100000
+    best_return_matches = 0
+    best_matched_rows = 0
+    best_bf = 0
     
-    for possible_drop in consider_dropping:
+    for poss_drop in consider_dropping:
         # S is the frozenset of covars we drop. We try dropping each one
-        s = prev_dropped.union(set(possible_drop))
+        s = prev_drop.union(set(poss_drop))
         
         PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout_array, 
                 treatment_column_name, outcome_column_name, s, 
@@ -38,27 +38,33 @@ def decide_drop(all_covs, consider_dropping, prev_dropped, df_all,
         # The dropping criteria for FLAME is max MQ
         # MQ = C * BF - PE
         
-        # do the hypothetical match
-        covs_match_on = list(set(all_covs)-set(possible_drop)-prev_dropped)
-        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, 
-                                        df_unmatched, covs_match_on, 
-                                        all_covs, treatment_column_name, 
-                                        outcome_column_name, 
-                                        return_matches)
-        
+        all_covs = set(all_covs)
+        covs_match_on = all_covs.difference([poss_drop]).difference(prev_drop)
+        covs_match_on = list(covs_match_on)
+                
+        # gotta make sure we don't edit the mutable dataframes...
+        df_all_temp = df_all.copy(deep=True)
+        return_matches_temp = return_matches.copy(deep=True)
+        matched_rows, return_matches_temp = grouped_mr.algo2_GroupedMR(df_all_temp, 
+            df_unmatched, covs_match_on, all_covs, treatment_column_name, 
+            outcome_column_name, return_matches_temp)
+
         # find the BF for this covariate set's match. 
         BF =  flame_dame_helpers.compute_bf(matched_rows, 
-                                            treatment_column_name, 
-                                            df_unmatched)
+                    treatment_column_name, df_unmatched)
         
         # Use the largest MQ as the covariate set to drop.
         MQ = C * BF - PE
         if MQ > best_mq:
             best_mq = MQ
             best_pe = PE
-            best_drop = possible_drop
+            best_bf = BF
+            best_drop = poss_drop
+            best_return_matches = return_matches_temp
+            best_matched_rows = matched_rows
             
-    return best_drop, best_pe, matched_rows, return_matches, BF
+    pd.options.display.max_seq_items = 10000
+    return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf
 
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
@@ -80,7 +86,6 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     return_bf = []
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
-    
     # As an initial step, we attempt to match on all covariates
     
     covs_match_on = all_covs
@@ -138,21 +143,26 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
-            unmatched_treated = df_unmatched[treatment_column_name].sum()
-            unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stops.un_t_frac != False and \
-                unmatched_treated/tot_treated < early_stops.un_t_frac):
-                print("We stopped the algorithm when ",
-                      unmatched_treated/tot_treated, "of the treated units "\
-                      "remained unmatched")
-                break
-            elif (early_stops.un_c_frac != False and \
-                unmatched_control/tot_control < early_stops.un_c_frac):
-                print("We stopped the algorithm when ",
-                      unmatched_control/tot_control, "of the control units "\
-                      "remained unmatched")
-                break
+        
+        unmatched_treated = df_unmatched[treatment_column_name].sum()
+        unmatched_control = len(df_unmatched) - unmatched_treated
+#        # todo: come back to this
+#        
+#        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+#            unmatched_treated = df_unmatched[treatment_column_name].sum()
+#            unmatched_control = len(df_unmatched) - unmatched_treated
+#            if (early_stops.un_t_frac != False and \
+#                unmatched_treated/tot_treated < early_stops.un_t_frac):
+#                print("We stopped the algorithm when ",
+#                      unmatched_treated/tot_treated, "of the treated units "\
+#                      "remained unmatched")
+#                break
+#            elif (early_stops.un_c_frac != False and \
+#                unmatched_control/tot_control < early_stops.un_c_frac):
+#                print("We stopped the algorithm when ",
+#                      unmatched_control/tot_control, "of the control units "\
+#                      "remained unmatched")
+#                break
         
                 
         # quit if there are no more covariate sets to choose from
@@ -240,6 +250,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             if want_bf == True:
                 return_package.append(return_bf)
             return return_package
+                
         
         # end loop.
     return_matches = return_matches.dropna(axis=0) #drop rows with nan
