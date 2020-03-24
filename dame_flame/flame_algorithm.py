@@ -25,7 +25,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
     
     for poss_drop in consider_dropping:
         # S is the frozenset of covars we drop. We try dropping each one
-        s = prev_drop.union(set(poss_drop))
+        s = prev_drop.union([poss_drop])
         
         PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout_array, 
                 treatment_column_name, outcome_column_name, s, 
@@ -42,7 +42,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         covs_match_on = all_covs.difference([poss_drop]).difference(prev_drop)
         covs_match_on = list(covs_match_on)
                 
-        # gotta make sure we don't edit the mutable dataframes...
+        # need to make sure we don't edit the mutable dataframes, then do match
         df_all_temp = df_all.copy(deep=True)
         return_matches_temp = return_matches.copy(deep=True)
         matched_rows, return_matches_temp = grouped_mr.algo2_GroupedMR(df_all_temp, 
@@ -63,7 +63,8 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
             best_return_matches = return_matches_temp
             best_matched_rows = matched_rows
             
-    pd.options.display.max_seq_items = 10000
+    print('Chose to drop covariate ', best_drop)
+    
     return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf
 
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
@@ -75,6 +76,10 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     pre_dame(False, integer): Indicates whether the algorithm will move to 
      DAME and after integer number of iterations. 
     '''
+    
+    # TEMPORARY
+    #df_all.to_csv('after_remove_missing.csv')
+    
     # Initialize variables. These are all moving/temporary throughout algo
     all_covs = df_all.columns.tolist()
     all_covs.remove(treatment_column_name) 
@@ -99,7 +104,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
 
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
-    
+        
     if repeats == False:
         df_all = df_unmatched
     
@@ -166,7 +171,8 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         
                 
         # quit if there are no more covariate sets to choose from
-        if (len(consider_dropping) == 0):
+        #print('**consider_dropping', consider_dropping)
+        if (len(consider_dropping) == 1):
             print((len(df_all) - len(df_unmatched)), "units matched. "\
                   "No more covariate sets to consider dropping")
             break
@@ -176,7 +182,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             consider_dropping, prev_dropped, df_all, treatment_column_name, 
             outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
             df_unmatched, return_matches, C)
-        
+                
         # Check for error in above step:
         if (new_drop == False):
             break

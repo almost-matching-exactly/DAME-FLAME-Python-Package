@@ -12,7 +12,7 @@ Group by match of FLAME algorithm.
 
 # This one is my edit of Tianyu's code...Nearly copied verbatim from Tianyu,
 # Except I made changes, to lidx_wo_t and lidx_w_t
-def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated', match_indicator_col = 'matched'):
+def match_ng(df, covs, covs_max_list, treatment_indicator_col = 'treated'):
     
     # this function takes a dataframe, a set of covariates to match on, 
     # the treatment indicator column and the matched indicator column.

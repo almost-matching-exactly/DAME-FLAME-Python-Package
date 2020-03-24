@@ -158,18 +158,15 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
     max_val = df.max().max()
     # now we replace all of the missing_indicators with unique large vals
     # that are larger than max_val. 
+
+    df = df.replace(missing_indicator, np.nan)
+    
     for col in df.columns:
         if col != treatment_column_name and col != outcome_column_name:
             for item_num in df.index.values:
-                if math.isnan(missing_indicator) == False:
-                    if df[col][item_num] == missing_indicator:
-                        df.loc[item_num, col] = max_val + 1
-                        max_val += 1
-                else:
-                    # Have to do them separately because nan == nan is false always.
-                    if math.isnan(df[col][item_num]) == True:
-                        df.loc[item_num, col] = max_val + 1
-                        max_val += 1
+                if math.isnan(df[col][item_num]) == True:
+                    df.loc[item_num, col] = max_val + 1
+                    max_val += 1
                     
     return df
 
@@ -188,7 +185,6 @@ def drop_missing(df, treatment_column_name, outcome_column_name, missing_indicat
     
     return df
     
-
 def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
                    missing_holdout_replace, missing_holdout_imputations,
                    missing_data_imputations, treatment_column_name, 
@@ -219,7 +215,6 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
         
         df = replace_unique_large(df, treatment_column_name, outcome_column_name,
                              missing_indicator)
-        
         
         # Reorder if they're not in order:
         df = df.loc[:, df.max().sort_values(ascending=True).index]
@@ -295,3 +290,18 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
         
 
     return df
+
+def post_process_unique_large(matches, df_orig, missing_indicator, 
+                              treatment_column_name, outcome_column_name):
+    # so any missing value in df_orig needs to be replaced with '*' in 
+    # the matches dataframe. 
+        
+    df_orig = df_orig.replace(missing_indicator, np.nan)
+
+    for col in df_orig.columns:
+        if col != treatment_column_name and col != outcome_column_name:
+            for item_num in df_orig.index.values:
+                if math.isnan(df_orig[col][item_num]) == True:
+                    matches.loc[item_num, col] = "*"
+                    
+    return matches

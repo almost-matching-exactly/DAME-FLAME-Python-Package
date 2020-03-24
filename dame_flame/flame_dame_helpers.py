@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import RidgeCV
+
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
 
@@ -24,9 +26,6 @@ def compute_bf(matched_rows, treatment_column_name, df_unmatched):
     available_treated = df_unmatched[treatment_column_name].sum()
     available_control = len(df_unmatched) - available_treated
     
-    #print("control matched: ", mg_control)
-    #print("control unmatched: ", )
-    
     return mg_treated/available_treated + mg_control/available_control
     
 
@@ -36,8 +35,10 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     '''
     this is a helper function to decide_drop that will find pe of a given s
     '''
+        
     pe_array = []
     for i in range(len(df_holdout)):
+        
         
         X_treated, X_control, Y_treated, Y_control = separate_dfs(df_holdout[i], 
             treatment_column_name, outcome_column_name, s)
@@ -47,7 +48,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             return False
         
         if adaptive_weights == "ridge":
-            clf = Ridge(alpha=alpha_given)
+            clf = RidgeCV(alphas=np.arange(0.00001, 10, .16).tolist())
         elif adaptive_weights == "decision tree":
             clf = DecisionTreeRegressor()
         else:

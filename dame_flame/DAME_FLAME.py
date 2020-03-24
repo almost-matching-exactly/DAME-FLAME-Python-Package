@@ -142,7 +142,7 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
     
     
 def FLAME(input_data=False, treatment_column_name='treated',
-          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
+          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.9, 
           holdout_data=False, repeats=True, verbose=2, want_pe=True, 
           early_stop_iterations=False, stop_unmatched_c=False, 
           early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
@@ -172,6 +172,9 @@ def FLAME(input_data=False, treatment_column_name='treated',
     data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha,
                                    FLAME=True, weight_array=[])
     
+    if missing_data_replace == 2:
+        df_orig = df.copy(deep=True)
+    
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
                                                    df_holdout, missing_indicator, 
                                                    missing_data_replace,
@@ -187,12 +190,17 @@ def FLAME(input_data=False, treatment_column_name='treated',
             early_stop_bf, early_stop_bf_frac, early_stop_iterations)
 
     if (mice_on_matching == False):
-        print(df.head())
-        return flame_algorithm.flame_generic(df, treatment_column_name,
+        return_array = flame_algorithm.flame_generic(df, treatment_column_name,
                                 outcome_column_name, adaptive_weights, alpha,
                                 df_holdout, repeats, want_pe,
                                 verbose, want_bf, mice_on_holdout, early_stops,
                                 pre_dame, C)
+        
+        #if missing_data_replace == 2:
+        #    return_array[0] = data_cleaning.post_process_unique_large(
+        #            return_array[0], df_orig, missing_indicator, 
+        #            treatment_column_name, outcome_column_name)
+        
     else:
         # this would mean we need to run mice on the matching data, which means
         # that we have to run algo1 multiple times
@@ -210,7 +218,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
                 alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
                 mice_on_holdout, early_stops, pre_dame, C))
             
-        return return_array
+    return return_array
 
 def mmg_of_unit(return_df, unit_id, input_data, output_style=1):
     """

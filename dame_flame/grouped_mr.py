@@ -5,6 +5,7 @@ This is algorithm 2 in the paper.
 """
 
 import numpy as np
+from operator import itemgetter
 from . import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
@@ -24,11 +25,16 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     
     '''
     
-    # This is the max of all of the columns. assuming they're 
-    # ordered from least to greatest. 
-
+    # Find max of columns and make sure list of columns and list of maximums
+    # is sorted from least to greatest
     
-    covs_max_list = [max(df_unmatched[x])+1 for x in covs_match_on]
+    # This is a list of tuples (max_of_column, column_name)
+    covs_max_tuples = [(max(df_unmatched[x])+1,x) for x in covs_match_on]
+    covs_max_tuples = sorted(covs_max_tuples,key=itemgetter(0))
+    # Now covs_match_on is a list of covars and covs_max_list is their maximums
+    covs_max_list, covs_match_on = map(list,zip(*covs_max_tuples))
+    
+    
     # Form groups on D by exact matching on Js.  
     
     df_all_without_outcome = df_all.drop([outcome_column_name], axis=1)
@@ -39,7 +45,6 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
 
     # Find newly matched units and their main matched groups.
     
-  
     # These are the rows of the ones that have been matched: 
     matched_rows = df_all.loc[matched_units, :].copy()
     matched_rows['b_i'] = bi
