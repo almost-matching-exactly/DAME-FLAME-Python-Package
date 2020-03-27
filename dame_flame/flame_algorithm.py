@@ -62,9 +62,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
             best_drop = poss_drop
             best_return_matches = return_matches_temp
             best_matched_rows = matched_rows
-            
-    print('Chose to drop covariate ', best_drop)
-    
+                
     return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf
 
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
@@ -76,10 +74,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     pre_dame(False, integer): Indicates whether the algorithm will move to 
      DAME and after integer number of iterations. 
     '''
-    
-    # TEMPORARY
-    #df_all.to_csv('after_remove_missing.csv')
-    
+            
     # Initialize variables. These are all moving/temporary throughout algo
     all_covs = df_all.columns.tolist()
     all_covs.remove(treatment_column_name) 
@@ -95,12 +90,9 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     
     covs_match_on = all_covs
     
-    matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
-                                                     covs_match_on, all_covs,
-                                                     treatment_column_name, 
-                                                     outcome_column_name,
-                                                     return_matches)
-    
+    matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
+        df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
+        outcome_column_name, return_matches)
 
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -222,6 +214,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             print("Unmatched treated units: ", unmatched_treated)
             print("Unmatched control units: ", unmatched_control)
             print("Predictive error of covariates chosen this iteration: ", pe)
+            print("The covariate dropped during this iteration: ", new_drop)
             if want_bf == True:
                 print("Balancing Factor of this iteration: ", bf)
        

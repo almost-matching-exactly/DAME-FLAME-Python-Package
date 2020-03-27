@@ -126,14 +126,22 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
         # make sure that the alpha is valid if it's a ridge regression. 
         if adaptive_weights == 'ridge' and (alpha < 0.0):
             raise Exception('Invalid input error. The alpha needs to be '\
-                            'positive for ridge regressions.')            
+                            'positive for ridge regressions.')    
+            
+        if adaptive_weights == 'ridgeCV' and (alpha == 0.1):
+            print('You did not provide a list of alphas for ridgeCV. The '\
+                  'default of [0.001, 0.01, 0.1, 1, 2, 5, 10] will be used')
+            alpha = [0.001, 0.01, 0.1, 1, 2, 5, 10]
         
         # make sure that adaptive_weights is a valid value.
-        if (adaptive_weights != "ridge" and adaptive_weights != "decision tree"):
+        if (adaptive_weights != "ridge" and 
+            adaptive_weights != "decision tree" and
+            adaptive_weights != "ridgeCV"):
             raise Exception("Invalid input error. The acceptable values for "\
                             "the adaptive_weights parameter are 'ridge', "\
-                            "'decision tree', or, for DAME, adaptive-weights "\
-                            "may be 'False' along with a weight array")
+                            "'decision tree', or 'ridgeCV'. Additionally, "\
+                            "for DAME, adaptive-weights may be 'False' along "\
+                            "with a weight array")
 
         
         # make sure the two dfs have the same number of columns first:
@@ -147,7 +155,7 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
             raise Exception('Invalid input error. The holdout and main '\
                             'dataset must have the same columns')                
             
-    return
+    return alpha
 
 def replace_unique_large(df, treatment_column_name, outcome_column_name,
                          missing_indicator):

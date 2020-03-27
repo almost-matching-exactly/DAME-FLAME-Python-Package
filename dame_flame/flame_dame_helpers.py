@@ -35,20 +35,23 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     '''
     this is a helper function to decide_drop that will find pe of a given s
     '''
-        
+            
+    # The iteration and mean of array is only used when doing MICE on holdout
     pe_array = []
     for i in range(len(df_holdout)):
         
         
-        X_treated, X_control, Y_treated, Y_control = separate_dfs(df_holdout[i], 
-            treatment_column_name, outcome_column_name, s)
+        X_treated, X_control, Y_treated, Y_control = separate_dfs(
+            df_holdout[i], treatment_column_name, outcome_column_name, s)
     
         # error check. If this is true, we stop matching.
         if type(X_treated) == bool:
             return False
         
         if adaptive_weights == "ridge":
-            clf = RidgeCV(alphas=np.arange(0.00001, 10, .16).tolist())
+            clf = Ridge(alpha=alpha_given)
+        elif adaptive_weights == "ridgeCV":
+            clf = RidgeCV(alphas=alpha_given)
         elif adaptive_weights == "decision tree":
             clf = DecisionTreeRegressor()
         else:
@@ -66,7 +69,6 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     
         pe_array.append(MSE_treated + MSE_control)
         
-    
     PE = np.mean(pe_array)
     return PE
 

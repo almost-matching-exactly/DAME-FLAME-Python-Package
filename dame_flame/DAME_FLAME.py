@@ -98,7 +98,7 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
     df = data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name, adaptive_weights)
 
-    data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha, 
+    alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha, 
                                    False, weight_array)
     
     df, df_holdout, mice_on_matching, mice_on_holdout = data_cleaning.check_missings(df, 
@@ -142,13 +142,14 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
     
     
 def FLAME(input_data=False, treatment_column_name='treated',
-          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.9, 
+          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1,
           holdout_data=False, repeats=True, verbose=2, want_pe=True, 
           early_stop_iterations=False, stop_unmatched_c=False, 
           early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
           early_stop_un_t_frac=0.1, early_stop_pe=False, 
           early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
           early_stop_bf_frac=0.01, missing_indicator=np.nan, 
+          
           missing_data_replace=0, missing_holdout_replace=0, 
           missing_holdout_imputations=10, missing_data_imputations=0, 
           pre_dame=False, C=0.1):
@@ -169,7 +170,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
     df = data_cleaning.process_input_file(df, treatment_column_name,
                                      outcome_column_name, adaptive_weights)
 
-    data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha,
+    alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha,
                                    FLAME=True, weight_array=[])
     
     if missing_data_replace == 2:

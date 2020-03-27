@@ -16,7 +16,8 @@ from . import flame_dame_helpers
 
 
 def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
-                treatment_column_name, outcome_column_name, df_holdout, alpha_given):
+                treatment_column_name, outcome_column_name, df_holdout, 
+                alpha_given):
     """ This is a helper function to Algorithm 1 in the paper. 
     
     Args:
@@ -36,11 +37,10 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
     curr_covar_set = set()
     best_pe = 1000000000
     if adaptive_weights == False:
-        # We iterate
-        # through all active covariate sets and find the total weight of each 
-        # For each possible covariate set, temp_weight counts 
+        # We iterate through all active covariate sets and find the total 
+        # weight of each . For each possible covariate set, temp_weight counts 
         # the total weight of the covs that are going to get used in the match,
-        # or the ones *not* in that  possible cov set. 
+        # or the ones *not* in that possible cov set. 
         max_weight = 0
         for s in active_covar_sets: # s is a set to consider dropping
             temp_weight = 0
@@ -60,10 +60,9 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         for s in active_covar_sets:
             # S is the frozenset of covars we drop. We try dropping each one
             PE = flame_dame_helpers.find_pe_for_covar_set(df_holdout, 
-                                                          treatment_column_name, 
-                                       outcome_column_name, s, adaptive_weights,
-                                       alpha_given)
-            # error check...note that PE can be float(0), but not denote error
+                    treatment_column_name, outcome_column_name, s, 
+                    adaptive_weights, alpha_given)
+            # error check. PE can be float(0), but not denote error
             if PE == False and type(PE) == bool:
                 return False, False
             
@@ -304,6 +303,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             print("Number of matches made in this iteration: ", 
                   prev_iter_num_unmatched - len(df_unmatched))
             print("Number of matches made so far: ", len(df_all) - len(df_unmatched))
+            print("In this iteration, the covariates dropped are: ", curr_covar_set)
             if want_bf == True:
                 print("Balancing factor of this iteration: ", bf)
                 
