@@ -96,7 +96,7 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     return early_stops_obj
 
 def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME, 
-                     weight_array=[]):
+                     weight_array=[], C=0.0):
     '''
     This function processes the parameters that were passed to DAME/FLAME
     that aren't directly the input file or related to stop_criteria. 
@@ -106,8 +106,8 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
     if adaptive_weights == False:
         
         if FLAME == True:
-            raise Exception('adaptive-weights must be either ridge or '\
-                            ' decision-tree for FLAME algorithm')
+            raise Exception('adaptive-weights must be either ridge, ridgeCV,'\
+                            ' or decision-tree for FLAME algorithm')
             
         # Confirm that weight array has the right number of values in it
         # Subtracting 2 because one col is the treatment and one is outcome. 
@@ -153,7 +153,13 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
         if (set(df_holdout.columns) != set(df.columns)):
             # they don't match
             raise Exception('Invalid input error. The holdout and main '\
-                            'dataset must have the same columns')                
+                            'dataset must have the same columns')
+            
+    if FLAME == True:
+        if C < 0.0:
+           raise Exception('The C, or the hyperparameter to trade-off between'\
+                           ' balancing factor and predictive error must be '\
+                           ' nonnegative. ')
             
     return alpha
 
@@ -298,18 +304,3 @@ def process_input_file(df, treatment_column_name, outcome_column_name, adaptive_
         
 
     return df
-
-def post_process_unique_large(matches, df_orig, missing_indicator, 
-                              treatment_column_name, outcome_column_name):
-    # so any missing value in df_orig needs to be replaced with '*' in 
-    # the matches dataframe. 
-        
-    df_orig = df_orig.replace(missing_indicator, np.nan)
-
-    for col in df_orig.columns:
-        if col != treatment_column_name and col != outcome_column_name:
-            for item_num in df_orig.index.values:
-                if math.isnan(df_orig[col][item_num]) == True:
-                    matches.loc[item_num, col] = "*"
-                    
-    return matches
