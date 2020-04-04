@@ -1,25 +1,23 @@
 # -*- coding: utf-8 -*-
-"""
-DAME Python Package
+""" Wrapper around user input, starting the input parsing and validation.
+@author: Neha Gupta, Duke University
 
-This package implements the code in the paper:
-    "Interpretable Almost-Exact 
-Matching For Causual Inference" (Liu, Dieng, Roy, Rudin, Volfovsky) 
-https://arxiv.org/abs/1806.06802
+DAME-FLAME Python Package
 
-This file in particular is just a wrapper that accepts user input and 
-kicks off the input parsing, algo, etc. 
+This package provides a package for the DAME algorithm from the paper
+"Interpretable Almost-Exact Matching For Causual Inference" 
+(Liu, Dieng, Roy, Rudin, Volfovsky), https://arxiv.org/abs/1806.06802, as well 
+as the FLAME algorithm from the paper "FLAME: A Fast Large-scale Almost
+Matching Exactly Approach to Causal Inference" (Wang, Morucci, Awan, Liu, Roy,
+Rudin, Volfovsky) https://arxiv.org/pdf/1707.06315.pdf
 
-Example:
-    DAME(file_name='sample2.csv', treatment_column_name='treated', 
-    outcome_column_name='outcome', adaptive_weights=True, 
-    holdout_file_name='sample2.csv', ate=False, repeats=False)
+This file in particular is just a wrapper around the algorithms that accepts 
+user input and kicks off the input parsing and validation prior to calling
+the algorithms. 
 
-@author: Neha
 
-x = DAME(input_data='sample5.csv', treatment_column_name='treated', 
-outcome_column_name='outcome', adaptive_weights='ridge', 
-holdout_data='sample5.csv', repeats=True, want_pe=False)
+For examples, see the main github page at:
+https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/
 
 """
 import pandas as pd
@@ -43,38 +41,43 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
          early_stop_bf_frac=0.01, missing_indicator=np.nan, 
          missing_data_replace=0, missing_holdout_replace=0, 
          missing_holdout_imputations=10, missing_data_imputations=0):
-    """
-    This function kicks off the DAME algorithm
+    """ Accepts user input, validates, error-checks, calls DAME algorithm.
 
     Args:
-        input_data: The csv file with the data being matched or df. 
-        treatment_column_name: Indicates the name
-            of the column that contains the binary indicator for whether each
-            row is a treatment group or not.
-        weight_array: As provided by the user, array of weights of all covariates 
-            that are in df_all. Only needed if adaptive_weights = False.
-        outcome_column_name: Indicates the name
-            of the column that contains the outcome values. 
-        adaptive_weights: This is false (default) if decide to drop weights
-            based on the weights given in the weight_array, or 'ridge', or 
-            'decision tree'.
-        alpha (float): This is the alpha for ridge regression. We use the scikit
-            package for ridge regression, so it is "regularization strength"
-            Larger values specify stronger regularization. 
+        input_data(str, df): The data being matched. 
+        treatment_column_name (str): Indicates the name of the column that 
+            contains the binary indicator for whether each row is a treatment 
+            group or not.
+        weight_array (array, bool): array of weights of all covariates that are
+            in input_data. Only needed if adaptive_weights = False.
+        outcome_column_name (str): Indicates the name of the column that 
+            contains the outcome values. 
+        adaptive_weights (bool, str): Weight dropping method. False, 'ridge', 
+            'decision tree', or 'ridgeCV'.
+        alpha (float): This is the alpha for ridge regression. We use the 
+            scikit package for ridge regression, so it is "regularization 
+            strength". Larger values specify stronger regularization. 
             Must be positive float.
-        holdout_data: If doing an adaptive_weights version, for training
-        repeats: Bool, whether or not values for whom a MMG has been found can
+        holdout_data (str, df): If doing an adaptive_weights version this is
+            for the training step.
+        repeats (bool): whether values for whom a MMG has been found can
             be used again and placed in an auxiliary matched group.
-        early_stop_iterations (optional int): If provided, a number of iterations 
+        early_stop_iterations (optional int): If provided, a number of iters 
             to hard stop the algorithm after.
-        stop_unmatched_c, stop_unmatched_t (bool, optional): specifies whether
+        stop_unmatched_c, stop_unmatched_t (bools): specifies whether
             the algorithm stops when there are no units remaining to match
         early_stop_un_c_frac, early_stop_un_t_frac (optional float, 
             from 0.0 - 1.0): If provided, a fraction of unmatched control/
             treatment units. When threshold met, hard stop the algo.
+        early_stop_pe, early_stop_bf: Whether the covariate set chosen to match
+            on has a pe/bf lower than the parameter early_stop_pe_frac, at 
+            which point the algorithm will stop.
+        early_stop_pe_frac, early_stop_bf_frac: If early_stop_pe/bf is true, 
+            then if the covariate set chosen to match on has a PE lower than 
+            this value, the algorithm will stop
         verbose (default: 2): If 1, provides iteration num, if 2 provides
-            iteration number and number of units left to match on every 10th iter,
-            if 3 does this print on every iteration. If 0, nothing. 
+            iteration number and number of units left to match on every 10th 
+            iter, if 3 does this print on every iteration. If 0, nothing. 
         missing_holdout_replace (0,1,2): default 0.
             if 0, assume no missing holdout data and proceed
             if 1, drop all missing_indicator values from holdout dataset
@@ -87,10 +90,25 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
             so they essentially get skipped in the matching
             if 3, do mice on matching dataset for missing_data_imputatations
             number of imputations.
+        missing_holdout_imputatations: If missing_holdout_replace=2, the number
+            of imputations on the holdout set.
+        missing_data_imputations: If missing_data_replace=3, the number of 
+            imputations on the matching set. 
+        missing_indicator: This is the character/number/np.nan that indicates 
+            missing vals in the holdout/matching data. 
+        want_pe: whether the output of the algorithm will include the 
+            predictive error of the covariate sets matched on in each iteration
+        want_bf: whether the output will include the balancing factor of each 
+            iteration.
 
     Returns:
         return_df: df of units with the column values of their main matched
-            group, with "*"s in place for the columns not in their MMG
+            group, with "*"s in place for the columns not in their 
+        pe_array: If want_pe is true, then the PE values of each match
+        bf_array: If want_bf is true, then the BF values of each match
+            
+    Raises:
+        Exception: An error occurred in the data_cleaning.py file. 
     """
 
     df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
@@ -146,13 +164,14 @@ def FLAME(input_data=False, treatment_column_name='treated',
           missing_data_replace=0, missing_holdout_replace=0, 
           missing_holdout_imputations=10, missing_data_imputations=0, 
           pre_dame=False, C=0.1):
-    """
-    This function kicks off the FLAME algorithm.
+    """ This function kicks off the FLAME algorithm.
     
     Args:
-        See DAME above.
+        See DAME above. The exeption is no weight_array, and the additional:
+            
         pre_dame (int, False): Indicates whether to switch to dame and after
             int number of iterations. 
+            
     Returns:
         See DAME above.
     """
@@ -184,7 +203,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
     else:
         # this would mean we need to run mice on the matching data, which means
         # that we have to run flame_generic multiple times
-         print("Warning: You have opted to run MICE on the matching dataset. "\
+        print("Warning: You have opted to run MICE on the matching dataset. "\
               "This is slow, and not recommended. We recommend that instead,"\
               " you run the algorithm and skip matching on missing data "\
               "points, with the parameter missing_data_replace=2.")

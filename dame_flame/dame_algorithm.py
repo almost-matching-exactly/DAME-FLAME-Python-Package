@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-@author: Neha
+@author: Neha Gupta, Duke University
+DAME-FLAME Python Package
 
-This file implements Algorithm 1 in the paper.
+This file implements Algorithm 1 in the DAME paper
 """
 
 import numpy as np
 import pandas as pd
-import itertools
-
 from . import grouped_mr
 from . import generate_new_active_sets
 from . import flame_dame_helpers
@@ -23,10 +22,11 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
     Args:
         all_covs: This is an array of just the cov column names. 
             Not including treat/outcome
-        active_covar_sets: A set of frozensets, representing all the active covar sets
+        active_covar_sets: A set of frozensets, representing all the active 
+            covar sets
         weights: This is the weight array provided by the user
         adaptive_weights: This is the T/F provided by the user indicating
-            whether to run ridge regression to decide who to drop. 
+            whether to run ridge regression to decide who to drop.
         df: The untouched dataset given by the user (df_all in algo1)
         treatment_column_name (str): name of treatment column in df
         outcome_column_name (str): name of outcome column in df
@@ -110,8 +110,8 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         early_stops (type EarlyStop): This is all of the possible stop criteria
 
     Returns:
-        return_matches: df of units with the column values of their main matched
-            group, with "*"s in place for the columns not in their MMG
+        return_matches: df of units with the column values of their main 
+            matched group, with "*"s in place for the columns not in their MMG
     """
         
     # Initialize variables. These are all moving/temporary throughout algo
@@ -131,8 +131,8 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     
     covs_match_on = all_covs
     matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
-            df_all, df_all, covs_match_on, all_covs, treatment_column_name, 
-            outcome_column_name, return_matches)
+        df_all, df_all, covs_match_on, all_covs, treatment_column_name, 
+        outcome_column_name, return_matches)
     
     
     # Now remove the matched units
@@ -144,8 +144,8 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     # set up all the extra dfs if needed
     if missing_holdout_replace != False:
         # now df_holdout is actually an array of imputed datasets
-        df_holdout = flame_dame_helpers.create_mice_dfs(df_holdout, 
-                                                        missing_holdout_replace)
+        df_holdout = flame_dame_helpers.create_mice_dfs(
+            df_holdout, missing_holdout_replace)
     else:
         # df_holdout is type array regardless, just size 1 and equal to itself
         # if not doing mice. 
@@ -171,12 +171,14 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         # Iterates until there are no more units to mach on. 
         try:
-            if early_stops.unmatched_t == True and (1 not in df_unmatched[treatment_column_name].values): 
+            if (early_stops.unmatched_t == True and 
+                (1 not in df_unmatched[treatment_column_name].values)): 
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
             
-            if early_stops.unmatched_c == True and (0 not in df_unmatched[treatment_column_name].values):
+            if (early_stops.unmatched_c == True and 
+                (0 not in df_unmatched[treatment_column_name].values)):
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
@@ -194,32 +196,33 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
-            unmatched_treated = df_unmatched[treatment_column_name].sum()
-            unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stops.un_t_frac != False and \
-                unmatched_treated/tot_treated < early_stops.un_t_frac):
-                print("We stopped the algorithm when ",
-                      unmatched_treated/tot_treated, "of the treated units "\
-                      "remained unmatched")
-                break
-            if (early_stops.un_c_frac != False and \
-                unmatched_control/tot_control < early_stops.un_c_frac):
-                print("We stopped the algorithm when ",
-                      unmatched_control/tot_control, "of the control units "\
-                      "remained unmatched")
-                break
+#        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+#            unmatched_treated = df_unmatched[treatment_column_name].sum()
+#            unmatched_control = len(df_unmatched) - unmatched_treated
+#            if (early_stops.un_t_frac != False and \
+#                unmatched_treated/tot_treated < early_stops.un_t_frac):
+#                print("We stopped the algorithm when ",
+#                      unmatched_treated/tot_treated, "of the treated units "\
+#                      "remained unmatched")
+#                break
+#            if (early_stops.un_c_frac != False and \
+#                unmatched_control/tot_control < early_stops.un_c_frac):
+#                print("We stopped the algorithm when ",
+#                      unmatched_control/tot_control, "of the control units "\
+#                      "remained unmatched")
+#                break
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
             print((len(df_all) - len(df_unmatched)), "units matched. "\
-                  "We stopped after considering all covariate set options")
+                "We stopped after considering all covariate set options")
             break
         
         # We find curr_covar_set, the best covariate set to drop. 
-        curr_covar_set, pe = decide_drop(all_covs, active_covar_sets, 
-            weight_array, adaptive_weights, df_all, treatment_column_name, 
-            outcome_column_name, df_holdout, alpha)
+        curr_covar_set, pe = decide_drop(
+            all_covs, active_covar_sets, weight_array, adaptive_weights, 
+            df_all, treatment_column_name, outcome_column_name, df_holdout, 
+            alpha)
         
         # Check for error in above step:
         if (curr_covar_set == False):
@@ -232,11 +235,9 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         covs_match_on = list(set(all_covs)-curr_covar_set)
                 
-        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(df_all, df_unmatched, 
-                                                     covs_match_on, all_covs,
-                                                     treatment_column_name, 
-                                                     outcome_column_name,
-                                                     return_matches)
+        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
+           df_all, df_unmatched, covs_match_on, all_covs,
+           treatment_column_name, outcome_column_name, return_matches)
         
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think. 
@@ -246,18 +247,18 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             mg_control = len(matched_rows) - mg_treated
             available_treated = df_unmatched[treatment_column_name].sum()
             available_control = len(df_unmatched) - available_treated
-            if available_treated != 0 and available_control != 0:
+            if (available_treated != 0 and available_control != 0):
                 bf = mg_treated/available_treated + mg_control/available_control
             else:
                 bf = np.nan
             return_bf.append(bf)
             
-            if bf < early_stops.bf:
+            if (bf < early_stops.bf):
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a balancing factor of ", bf)
                 break
         
-        if early_stops.pe != False:
+        if (early_stops.pe != False):
             if pe <= early_stops.pe:
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
@@ -310,7 +311,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             prev_iter_num_unmatched = len(df_unmatched)
         
     # end loop. 
-    return_matches = return_matches.dropna(axis=0) #drop rows with nan, dont return unmatched stuff
+    return_matches = return_matches.dropna(axis=0) # drop rows with nan, dont return unmatched stuff
     return_package = [return_matches]
     if want_pe == True:
         return_package.append(return_pe)
