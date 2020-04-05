@@ -32,9 +32,9 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
             df_holdout_array, treatment_column_name, outcome_column_name, s, 
             adaptive_weights, alpha_given)
         
-        # error check
-        if PE == False:
-            return False, False
+        # error check. PE can be float(0), but not denote error
+        if PE == False and type(PE) == bool:
+            return False, False, False, False, False
         
         # The dropping criteria for FLAME is max MQ
         # MQ = C * BF - PE
@@ -137,16 +137,22 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         except TypeError:
             break
         
+         # Hard stop criteria: 
+        if (len(df_unmatched) == 0):
+            print("All units matched.")
+            break
+        
         # Hard stop criteria: exceeded the number of iters user asked for?
         if (early_stops.iterations != False and early_stops.iterations == h):
             print((len(df_all) - len(df_unmatched)), "units matched. "\
                   "We stopped before doing iteration number: ", h)
             break
         
-        # Hard stop criteria: met the threshold of unmatched items to stop?
         
+        # Hard stop criteria: met the threshold of unmatched items to stop?
         unmatched_treated = df_unmatched[treatment_column_name].sum()
         unmatched_control = len(df_unmatched) - unmatched_treated
+        
         
 #        # todo: come back to this
 #        
@@ -168,18 +174,16 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         
                 
         # quit if there are no more covariate sets to choose from
-        #print('**consider_dropping', consider_dropping)
         if (len(consider_dropping) == 1):
             print((len(df_all) - len(df_unmatched)), "units matched. "\
                   "No more covariate sets to consider dropping")
             break
-        
-        # We find the best covariate to drop, and the matches it results in
+                        
         new_drop, pe, matched_rows, return_matches, bf = decide_drop(all_covs, 
             consider_dropping, prev_dropped, df_all, treatment_column_name, 
             outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
             df_unmatched, return_matches, C)
-                
+                     
         # Check for error in above step:
         if (new_drop == False):
             break
