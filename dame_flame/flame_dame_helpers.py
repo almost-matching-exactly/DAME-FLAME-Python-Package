@@ -26,7 +26,12 @@ def compute_bf(matched_rows, treatment_column_name, df_unmatched):
     available_treated = df_unmatched[treatment_column_name].sum()
     available_control = len(df_unmatched) - available_treated
     
-    return mg_treated/available_treated + mg_control/available_control
+    if (available_treated != 0 and available_control != 0):
+        return mg_treated/available_treated + mg_control/available_control
+    elif (available_treated == 0):
+        return mg_control/available_control
+    elif (available_control == 0):
+        return mg_treated/available_treated
     
 
 def find_pe_for_covar_set(df_holdout, treatment_column_name, 

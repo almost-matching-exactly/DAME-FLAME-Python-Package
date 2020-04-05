@@ -171,13 +171,13 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         # Iterates until there are no more units to mach on. 
         try:
-            if (early_stops.unmatched_t == True and 
+            if ((early_stops.unmatched_t == True or repeats == False) and 
                 (1 not in df_unmatched[treatment_column_name].values)): 
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
             
-            if (early_stops.unmatched_c == True and 
+            if ((early_stops.unmatched_c == True or repeats == False) and 
                 (0 not in df_unmatched[treatment_column_name].values)):
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")

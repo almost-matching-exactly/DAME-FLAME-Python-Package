@@ -123,13 +123,13 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     while True:
         # Iterates while there are units to match to match in
         try:
-            if (early_stops.unmatched_t == True and 
+            if ((early_stops.unmatched_t == True or repeats == False) and 
                 (1 not in df_unmatched[treatment_column_name].values)): 
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
             
-            if (early_stops.unmatched_c == True and 
+            if ((early_stops.unmatched_c == True or repeats == False) and 
                 (0 not in df_unmatched[treatment_column_name].values)):
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
@@ -137,9 +137,9 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         except TypeError:
             break
         
-         # Hard stop criteria: 
+         # Hard stop criteria: stop when there are no more units to match
         if (len(df_unmatched) == 0):
-            print("All units matched.")
+            print("All units have been matched.")
             break
         
         # Hard stop criteria: exceeded the number of iters user asked for?
