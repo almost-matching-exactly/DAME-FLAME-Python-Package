@@ -196,21 +196,21 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             break
         
         # Hard stop criteria: met the threshold of unmatched items to stop?
-#        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
-#            unmatched_treated = df_unmatched[treatment_column_name].sum()
-#            unmatched_control = len(df_unmatched) - unmatched_treated
-#            if (early_stops.un_t_frac != False and \
-#                unmatched_treated/tot_treated < early_stops.un_t_frac):
-#                print("We stopped the algorithm when ",
-#                      unmatched_treated/tot_treated, "of the treated units "\
-#                      "remained unmatched")
-#                break
-#            if (early_stops.un_c_frac != False and \
-#                unmatched_control/tot_control < early_stops.un_c_frac):
-#                print("We stopped the algorithm when ",
-#                      unmatched_control/tot_control, "of the control units "\
-#                      "remained unmatched")
-#                break
+        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+            unmatched_treated = df_unmatched[treatment_column_name].sum()
+            unmatched_control = len(df_unmatched) - unmatched_treated
+            if (early_stops.un_t_frac != False and \
+                unmatched_treated/tot_treated < early_stops.un_t_frac):
+                print("We stopped the algorithm when ",
+                      unmatched_treated/tot_treated, "of the treated units "\
+                      "remained unmatched")
+                break
+            if (early_stops.un_c_frac != False and \
+                unmatched_control/tot_control < early_stops.un_c_frac):
+                print("We stopped the algorithm when ",
+                      unmatched_control/tot_control, "of the control units "\
+                      "remained unmatched")
+                break
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):

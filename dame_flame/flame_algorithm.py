@@ -153,24 +153,23 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         unmatched_treated = df_unmatched[treatment_column_name].sum()
         unmatched_control = len(df_unmatched) - unmatched_treated
         
-        
-#        # todo: come back to this
-#        
-#        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
-#            unmatched_treated = df_unmatched[treatment_column_name].sum()
-#            unmatched_control = len(df_unmatched) - unmatched_treated
-#            if (early_stops.un_t_frac != False and \
-#                unmatched_treated/tot_treated < early_stops.un_t_frac):
-#                print("We stopped the algorithm when ",
-#                      unmatched_treated/tot_treated, "of the treated units "\
-#                      "remained unmatched")
-#                break
-#            elif (early_stops.un_c_frac != False and \
-#                unmatched_control/tot_control < early_stops.un_c_frac):
-#                print("We stopped the algorithm when ",
-#                      unmatched_control/tot_control, "of the control units "\
-#                      "remained unmatched")
-#                break
+        # Hard stop criteria: met the threshold of unmatched items to stop?
+
+        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+            unmatched_treated = df_unmatched[treatment_column_name].sum()
+            unmatched_control = len(df_unmatched) - unmatched_treated
+            if (early_stops.un_t_frac != False and \
+                unmatched_treated/tot_treated < early_stops.un_t_frac):
+                print("We stopped the algorithm when ",
+                      unmatched_treated/tot_treated, "of the treated units "\
+                      "remained unmatched")
+                break
+            elif (early_stops.un_c_frac != False and \
+                unmatched_control/tot_control < early_stops.un_c_frac):
+                print("We stopped the algorithm when ",
+                      unmatched_control/tot_control, "of the control units "\
+                      "remained unmatched")
+                break
         
                 
         # quit if there are no more covariate sets to choose from
