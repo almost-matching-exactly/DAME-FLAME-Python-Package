@@ -19,8 +19,10 @@ For more details about these algorithms, please refer to their papers: [FLAME: A
 
 ## Installation
 
+Install using the commandline tool of your choice from the  PyPi repository. 
+$ pip install dame_flame
+
 ``` Python
-# Since this isn't uploaded to PyPi yet, you'll need to download the files. From the location of the download:
 
 # import package
 import dame_flame
