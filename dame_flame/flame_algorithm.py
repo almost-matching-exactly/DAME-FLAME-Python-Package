@@ -199,6 +199,12 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                       "We stopped matching with a balancing factor of ", bf)
                 break
+            
+        if (early_stops.pe != False):
+            if pe >= early_stops.pe:
+                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                        "We stopped matching with a pe of ", pe)
+                break
         
         # Update covariate groups for future iterations
         consider_dropping = consider_dropping.difference([new_drop]) 

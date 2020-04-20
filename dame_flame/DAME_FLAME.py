@@ -81,16 +81,16 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
         missing_holdout_replace (0,1,2): default 0.
             if 0, assume no missing holdout data and proceed
             if 1, drop all missing_indicator values from holdout dataset
-            if 2, do mice on holdout dataset for missing_holdout_imputatations
+            if 2, do mice on holdout dataset for missing_holdout_imputations
             number of imputations
         missing_data_replace (0,1,2,3): default 0.
             if 0, assume no missing data in matching data and proceed
             if 1, drop all missing_indicator values from matching data
             if 2, replace all missing_indicator values with unique large vals
             so they essentially get skipped in the matching
-            if 3, do mice on matching dataset for missing_data_imputatations
+            if 3, do mice on matching dataset for missing_data_imputations
             number of imputations.
-        missing_holdout_imputatations: If missing_holdout_replace=2, the number
+        missing_holdout_imputations: If missing_holdout_replace=2, the number
             of imputations on the holdout set.
         missing_data_imputations: If missing_data_replace=3, the number of 
             imputations on the matching set. 

@@ -19,10 +19,9 @@ For more details about these algorithms, please refer to their papers: [FLAME: A
 
 ## Installation
 
-Install using the commandline tool of your choice from the  PyPi repository. 
-$ pip install dame_flame
-
 ``` Python
+# Install using the commandline tool of your choice from the  PyPi repository. 
+$ pip install dame_flame
 
 # import package
 import dame_flame
@@ -99,79 +98,81 @@ print(te)
 ## DAME and FLAME Parameters and Defaults
 
 ```Python
-DAME(input_data,
-         treatment_column_name = 'treated', weight_array = False,
-         outcome_column_name='outcome',
-         adaptive_weights='ridge', alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
-         stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
-         early_stop_pe = False, early_stop_pe_frac = 0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01,
-         missing_indicator=numpy.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations = 10,
-         missing_data_imputations=0)
+DAME(input_data, treatment_column_name='treated', weight_array=False,
+     outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
+     holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+     early_stop_iterations=False, stop_unmatched_c=False, 
+     early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
+     early_stop_un_t_frac=0.1, early_stop_pe=False, 
+     early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
+     early_stop_bf_frac=0.01, missing_indicator=numpy.nan, 
+     missing_data_replace=0, missing_holdout_replace=0, 
+     missing_holdout_imputations=10, missing_data_imputations=0)
 
-FLAME(input_data,
-         treatment_column_name = 'treated', weight_array = False,
-         outcome_column_name='outcome',
-         adaptive_weights=False, alpha = 0.1, holdout_data=False,
-         repeats=True, verbose=2, want_pe=True, early_stop_iterations=False, 
-         stop_unmatched_c=False, early_stop_un_c_frac = 0.1, 
-         stop_unmatched_t=False, early_stop_un_t_frac = 0.1,
-         early_stop_pe = False, early_stop_pe_frac = 0.01,
-         want_bf=False, early_stop_bf=False, early_stop_bf_frac = 0.01, 
-         pre_dame=False, missing_indicator=numpy.nan, missing_data_replace=0,
-         missing_holdout_replace=0, missing_holdout_imputations = 10,
-         missing_data_imputations=0, pre_dame=False)
+FLAME(input_data=False, treatment_column_name='treated',
+      outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
+      holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+      early_stop_iterations=False, stop_unmatched_c=False, 
+      early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
+      early_stop_un_t_frac=0.1, early_stop_pe=False, 
+      early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
+      early_stop_bf_frac=0.01, missing_indicator=numpy.nan, 
+      missing_data_replace=0, missing_holdout_replace=0, 
+      missing_holdout_imputations=10, missing_data_imputations=0, 
+      pre_dame=False, C=0.1)
 ```
 
 ### Key parameters
 
-**input_data**: file, DataFrame, required  
+**input_data**: file, DataFrame, required
 This is the data being matched. This is henceforth referred to as the matching data. 
 
 **treatment_column_name**: string, optional (default="treated")  
-This is the name of the column with a binary indicator for whether a row is a treatment or control unit
+This is the name of the column with a binary indicator for whether a row is a treatment or control unit.
 
 **outcome_column_name**: string, optional (default="outcome")  
 This is the name of the column with the outcome variable of each unit. 
 
-**adaptive_weights**: bool, "ridge", "decision tree", optional (default="ridge")  
-The method used to decide what covariate set is optimal to drop.
+**adaptive_weights**: bool, "ridge", "decision tree", "ridgeCV", optional (default="ridge")  
+The method used to decide what covariate set should be dropped next.
 
 **weight_array**: array, optional  
-If adaptive_weights = False, these are the weights to the covariates in the dataframe, for the non-adaptive version of DAME. Must sum to 1. 
+If adaptive_weights = False, these are the weights to the covariates in **input_data**, for the non-adaptive version of DAME. Must sum to 1. In this case, we do not use machine learning for the weights, they are manually entered as **weight_array**.
 
 **alpha**: float, optional (default=0.1)  
-If adaptive_weights version is ridge, this is the alpha for ridge regression.
+If adaptive_weights is set to ridge, this is the alpha for ridge regression.
 
 **holdout_data**: file, DataFrame, float between 0 and 1, optional (Default = 0.1)
-If doing an adaptive_weights version of DAME, this is used to decide what covariates to drop. The default is to use 10% of the input_data set. Users can specify a percentage of the matching data set to use, or use a different file. If using a different file, that file needs to have all of the same column labels, including treatment and outcome columns.
+If doing an adaptive_weights version of DAME, this is used to decide what covariates to drop. The default is to use 10% of the **input_data** dataset. Users can specify a percentage of the matching data set to use as the holdout set, or use a different file. If using a different file, that file needs to have all of the same column labels, including treatment and outcome columns.
 
 **repeats**: Bool, optional (default=False)  
-Whether or not values for whom a main matched has been found can be used again, and placed in an auxiliary matched group  
+Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. 
 
 
 **verbose**: int 0,1,2,3 (default=2)  
 Style of printout while algorithm runs.
 If 0, no output 
 If 1, provides iteration number 
-2 provides iteration number and number of units left to match on every 10th iteration
-3 does this print on every iteration. 
+If 2, provides iteration number and additional information on the progress of the matching at every 10th iteration
+If 3, provides iteration number and additional information on the progress of the matching at every iteration
 
 
 **want_pe**: bool, optional (default=False)  
-If true, the output of the algorithm will include the predictive error of the covariate sets matched on in each iteration.
+If true, the output of the algorithm will include the predictive error of the covariate sets used for matching in each iteration.
 
 
 **want_bf**: bool, optional (default=False)  
-If true, the output will include the balancing factor of each iteration.
+If true, the output will include the balancing factor for each iteration.
 
+#### FLAME-specific parameters
 
 **pre_dame**: bool, integer, optional (default=False)  
-This is only an option for FLAME, and will allow a user to run the Hybrid-FLAME-DAME algorithm. If an integer n is provided, then after n iterations of FLAME, the algorithm will switch to DAME.
+This will allow a user to run the Hybrid-FLAME-DAME algorithm. If an integer n is provided, then after n iterations of FLAME, the algorithm will switch to DAME.
 If the user enters 'True', then one iteration of FLAME will happen before switching to DAME. 
+
+
+**C**: float, optional (default=0.1)
+This is used in deciding the best covariate match during iterations of FLAME. Specifically, its the tradeoff parameter between balancing factor and predictive error. 
 
 
 ### Parameters related to missing data handling
@@ -190,18 +191,18 @@ If missing data is detected, but the user has not specified a handling technique
 This is the indicator for missing data in the dataset. 
 
 **missing_holdout_replace**: int 0,1,2, optional (default=0)  
-if 0, assume no missing holdout data and proceed
-if 1, removes all units with a missing value from the holdout dataset
-if 2, do MICE on holdout dataset. This is not recommended. If this option is selected, it will be done for a number of iterations equal to missing_holdout_imputations.
+If 0, assume no missing holdout data and proceed. 
+If 1, the algorithm excludes units with missing values from the holdout dataset. 
+If 2, do MICE on holdout dataset. If this option is selected, it will be done for a number of iterations equal to **missing_holdout_imputations**.
 
 **missing_data_replace**: int 0,1,2,3, optional, (default=0)  
-if 0, assume no missing data in matching data and proceed
-if 1, units that have missing values are not matched on, and therefore will not have their own main matched group, or be placed in other units' groups.
-if 2, units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. 
-if 3, do MICE on matching dataset for the number of iterations equal to missing_data_imputatations
+If 0, assume no missing data in matching data and proceed. 
+If 1, the algorithm does not match on units that have missing values. 
+If 2, prevent all **missing_indicator** values from being matched on. 
+If 3, do MICE on matching dataset. This is not recommended. If this option is selected, it will be done for a number of iterations equal to **missing_data_imputations**.
 
-**missing_holdout_imputatations**: int, optional (default=10)  
-If missing_holdout_replace=2, the number of imputations
+**missing_holdout_imputations**: int, optional (default=10)  
+If missing_holdout_replace=2, the number of imputations.
 
 **missing_data_imputations**: int, optional (default=0)  
 If missing_data_replace=3, the number of imputations. 
@@ -211,7 +212,7 @@ If missing_data_replace=3, the number of imputations.
 
 
 **early_stop_iterations**: int, optional  (default=0)  
-If provided, a number of iterations after which to hard stop the algorithm
+If provided, a number of iterations after which to hard stop the algorithm.
 
 **stop_unmatched_c**: bool, optional (default=False)  
 If True, then the algorithm terminates when there are no more control units to match. 
@@ -220,28 +221,26 @@ If True, then the algorithm terminates when there are no more control units to m
 If True, then the algorithm terminates when there are no more treatment units to match. 
 
 **early_stop_un_c_frac**: float from 0.0 to 1.0, optional (default=0.1)  
-This provides a fraction of unmatched control units. When the threshold is met, the algorithm will stop iterating. 
-For example, an input dataset with 100 control units will stop when 10 control units are ummatched but 90 are matched.
+This provides a fraction of unmatched control units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 control units, the algorithm will stop when 10 control units are unmatched and 90 are matched (or earlier, depending on other stopping conditions).
 
 **early_stop_un_t_frac**: float from 0.0 to 1.0, optional (default=0.1)
-This provides a fraction of unmatched treatment units. When the threshold is met, the algorithm will stop iterating. 
-For example, an input dataset with 100 treatment units will stop when 10 control units are ummatched but 90 are matched.
-
+This provides a fraction of unmatched treatment units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 treatment units, the algorithm will stop when 10 control units are unmatched and 90 are matched  (or earlier, depending on other stopping conditions).
 
 **early_stop_pe**: bool, optional (default=False)  
-If this is true, then if the covariate set chosen to match on has a predictive error lower than the parameter early_stop_pe_frac, the algorithm will stop. 
+If this is true, then if the covariate set chosen for matching has a predictive error higher than the parameter **early_stop_pe_frac**, the algorithm will stop.
 
 **early_stop_pe_frac**: float, optional (default=0.01)  
-If early_stop_pe is true, then if the covariate set chosen to match on has a predictive error lower than this value, the algorithm will stop.  
+If **early_stop_pe** is true, then if the covariate set chosen for matching has a predictive error higher than this value, the algorithm will stop.
 
 **early_stop_bf**: bool, optional (default=False)  
-If this is true, then if the covariate set chosen to match on has a balancing factor lower than early_stop_bf_frac, then the algorithm will stop.
+If this is true, then if the covariate set chosen for matching has a balancing factor lower than early_stop_bf_frac, then the algorithm will stop.
 
 **early_stop_bf_frac**: float, optional (default=0.01)  
-If early_stop_bf is true, then if the covariate set chosen to match on has a balancing factor lower than this value, then the algorithm will stop.
+If early_stop_bf is true, then if the covariate set chosen for matching has a balancing factor lower than this value, then the algorithm will stop.
 
-## Additional Functions Parameters and Defaults
+## Additional Functions Available, and their parameters and defaults
 
+To provide users with additional options in analyzing the output of DAME and FLAME, we provide a set of functions that can be used after running the match.
 
 ```Python
 # The main matched group of a unit

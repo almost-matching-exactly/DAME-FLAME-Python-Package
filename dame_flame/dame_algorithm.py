@@ -259,7 +259,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
                 break
         
         if (early_stops.pe != False):
-            if pe <= early_stops.pe:
+            if pe >= early_stops.pe:
                 print((len(df_all) - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
                 break
