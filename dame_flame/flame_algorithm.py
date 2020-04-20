@@ -19,10 +19,11 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
     # This is where we decide who to drop, and also compute the pe 
     # value that gets outputted in the list described in readme. 
     best_drop = 0
-    best_mq = -100000
+    best_mq = float("-inf")
     best_return_matches = 0
     best_matched_rows = 0
     best_bf = 0
+    best_pe = 0
     
     for poss_drop in consider_dropping:
         # S is the frozenset of covars we drop. We try dropping each one

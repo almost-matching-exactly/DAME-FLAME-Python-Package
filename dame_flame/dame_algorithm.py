@@ -35,7 +35,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
             testing/training for adaptive_weights version.
     """
     curr_covar_set = set()
-    best_pe = 1000000000
+    best_pe = float("inf")
     if adaptive_weights == False:
         # We iterate through all active covariate sets and find the total 
         # weight of each . For each possible covariate set, temp_weight counts 
