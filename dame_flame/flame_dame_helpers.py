@@ -40,7 +40,6 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     '''
     this is a helper function to decide_drop that will find pe of a given s
     '''
-            
     # The iteration and mean of array is only used when doing MICE on holdout
     pe_array = []
     for i in range(len(df_holdout)):

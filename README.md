@@ -15,13 +15,16 @@ A **Hybrid FLAME-DAME** algorithm will use FLAME to quickly remove less relevant
 
 Both algorithms work well for data that fits in memory, and have thus far been tested on data sized up to 30,000 rows and 15 columns, which takes roughly 30 seconds on `FLAME` and roughly 45 seconds on `DAME`. An implementation for extremely large data sets will be provided at a later time. This implementation does include a variety of options for missing data handling.
 
-For more details about these algorithms, please refer to their papers: [FLAME: A Fast Large-scale Almost Matching Exactly Approach to Causal Inference](https://arxiv.org/pdf/1707.06315.pdf) and [Interpretable Almost-Exact Matching for Causal Inference](https://arxiv.org/abs/1806.06802)
+For more details about these algorithms, please refer to their papers: [FLAME: A Fast Large-scale Almost Matching Exactly Approach to Causal Inference](https://arxiv.org/abs/1707.06315) and [Interpretable Almost-Exact Matching for Causal Inference](https://arxiv.org/abs/1806.06802)
+
+Please reach out to let our team know if you're using this, or if you have any questions! Contact Neha Gupta at neha.r.gupta "at" duke "dot" edu 
 
 ## Installation
 
+First, download from PyPi via
+$ pip install dame-flame
+
 ``` Python
-# Install using the commandline tool of your choice from the  PyPi repository. 
-$ pip install dame_flame
 
 # import package
 import dame_flame
@@ -71,7 +74,7 @@ print(result[0])
 #> 2   1   *
 #> 3   1   1
 ```
-result is a list of size 2 or 3, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
 To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
 
@@ -100,7 +103,7 @@ print(te)
 ```Python
 DAME(input_data, treatment_column_name='treated', weight_array=False,
      outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
-     holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+     holdout_data=False, repeats=True, verbose=2, want_pe=False, 
      early_stop_iterations=False, stop_unmatched_c=False, 
      early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
      early_stop_un_t_frac=0.1, early_stop_pe=False, 
@@ -111,14 +114,14 @@ DAME(input_data, treatment_column_name='treated', weight_array=False,
 
 FLAME(input_data=False, treatment_column_name='treated',
       outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
-      holdout_data=False, repeats=True, verbose=2, want_pe=True, 
+      holdout_data=False, repeats=True, verbose=2, want_pe=False, 
       early_stop_iterations=False, stop_unmatched_c=False, 
       early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
       early_stop_un_t_frac=0.1, early_stop_pe=False, 
       early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
       early_stop_bf_frac=0.01, missing_indicator=numpy.nan, 
       missing_data_replace=0, missing_holdout_replace=0, 
-      missing_holdout_imputations=10, missing_data_imputations=0, 
+      missing_holdout_imputations=10, missing_data_imputations=1, 
       pre_dame=False, C=0.1)
 ```
 
@@ -167,8 +170,7 @@ If true, the output will include the balancing factor for each iteration.
 #### FLAME-specific parameters
 
 **pre_dame**: bool, integer, optional (default=False)  
-This will allow a user to run the Hybrid-FLAME-DAME algorithm. If an integer n is provided, then after n iterations of FLAME, the algorithm will switch to DAME.
-If the user enters 'True', then one iteration of FLAME will happen before switching to DAME. 
+This will allow a user to run the Hybrid-FLAME-DAME algorithm. If an integer n is provided, then after n iterations of FLAME, the algorithm will switch to DAME. 
 
 
 **C**: float, optional (default=0.1)
@@ -204,7 +206,7 @@ If 3, do MICE on matching dataset. This is not recommended. If this option is se
 **missing_holdout_imputations**: int, optional (default=10)  
 If missing_holdout_replace=2, the number of imputations.
 
-**missing_data_imputations**: int, optional (default=0)  
+**missing_data_imputations**: int, optional (default=1)  
 If missing_data_replace=3, the number of imputations. 
 
 
@@ -276,8 +278,8 @@ For details on the MICE algorithm, see : [this paper](https://www.ncbi.nlm.nih.g
 The underlying MICE implementation is done using scikit learn's experimental IterativeImpute package, 
 and relies on DecisionTreeRegressions in the imputation process, to ensure that the data generated
 is fit for unordered categorical data. In addition to this, users are welcome to pre-process their datsets with other data handling techniques
-prior to using MICE. It is not recommended to use MICE on the holdout dataset, as this would be very slow.  
+prior to using MICE. It is not recommended to use MICE on the matching dataset, as this would be very slow.  
 
-One option is to have the parameter missing_data_replace=2, where units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. 
+One option is to set the parameter missing_data_replace=2, where units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. 
 In this option, the underlying algorithm works by replacing each missing value with a unique value, so that in the matching procedure, those covariates simply don't have a match because their
 values are not equl to any other values.

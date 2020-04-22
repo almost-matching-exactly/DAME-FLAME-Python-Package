@@ -70,7 +70,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
                   verbose, want_bf, missing_holdout_replace, early_stops,
-                  pre_dame, C):
+                  pre_dame, C, epsilon):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -112,7 +112,13 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         # if not doing mice. 
         df_holdout_array = list()
         df_holdout_array.append(df_holdout)
-    
+        
+    # todo: calculate the baseline PE and use it to create a stopping based on 
+    # the epsilon criteria. 
+#    baseline_pe = flame_dame_helpers.find_pe_for_covar_set(
+#            df_holdout_array, treatment_column_name, outcome_column_name, 
+#            all_covs, adaptive_weights, alpha)
+
     h = 1 # The iteration number
     tot_treated = df_all[treatment_column_name].sum()
     tot_control = len(df_all) - tot_treated
@@ -189,6 +195,12 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             break
         
         return_pe.append(pe)
+        
+        #  todo: check for stopping criteria based on PE
+#        if (pe > (1 + epsilon) * baseline_pe):
+#            print("We stopped matching because predictive error would have "\
+#                  "risen ", 100 * epsilon, "% above the baseline.")
+#            break
         
         if (want_bf == True):
             # if we need to track the bf, do so. 

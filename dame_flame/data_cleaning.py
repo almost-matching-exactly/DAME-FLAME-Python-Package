@@ -55,6 +55,8 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
                 early_stop_bf, early_stop_bf_frac, early_stop_iterations):
     """Check the parameters passed to DAME/FLAME relating to early stopping"""
     
+    # todo: add check for epsilon on FLAME
+    
     early_stops_obj = early_stops.EarlyStops()
     
     # todo: pretty sure we don't need this one after thinking about it a bit

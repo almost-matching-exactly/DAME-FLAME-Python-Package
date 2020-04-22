@@ -40,7 +40,7 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
          early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
          early_stop_bf_frac=0.01, missing_indicator=np.nan, 
          missing_data_replace=0, missing_holdout_replace=0, 
-         missing_holdout_imputations=10, missing_data_imputations=0):
+         missing_holdout_imputations=10, missing_data_imputations=1):
     """ Accepts user input, validates, error-checks, calls DAME algorithm.
 
     Args:
@@ -163,14 +163,18 @@ def FLAME(input_data=False, treatment_column_name='treated',
           early_stop_bf_frac=0.01, missing_indicator=np.nan, 
           missing_data_replace=0, missing_holdout_replace=0, 
           missing_holdout_imputations=10, missing_data_imputations=0, 
-          pre_dame=False, C=0.1):
+          pre_dame=False, C=0.1, epsilon=0.25):
     """ This function kicks off the FLAME algorithm.
     
     Args:
-        See DAME above. The exeption is no weight_array, and the additional:
+        See DAME above. The exeption is no weight_array, and the additional 
+        params below:
             
         pre_dame (int, False): Indicates whether to switch to dame and after
             int number of iterations. 
+        C (float, 0.1): The tradeoff between PE and BF in computing MQ
+        epsilon (float, 0.25): Early stopping criteria, the acceptable percent 
+            change in PE before stopping
             
     Returns:
         See DAME above.
@@ -198,7 +202,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
         return_array = flame_algorithm.flame_generic(
             df, treatment_column_name, outcome_column_name, adaptive_weights, 
             alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
-            mice_on_hold, early_stops, pre_dame, C)
+            mice_on_hold, early_stops, pre_dame, C, epsilon)
         
     else:
         # this would mean we need to run mice on the matching data, which means
