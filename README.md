@@ -60,8 +60,7 @@ The holdout training set, if provided, should also follow the same format.
 
 We run the DAME function with the following basic command. In this example, we provide only the basic inputs: (1) input data as a dataframe or file, (2) the name of the outcome column, and (3) the name of the treatment column.
 
-Thus the model defaults to a ridge regression  computation of the best covariate set to match on, with an alpha of 0.1, and uses 10% of the input data as the holdout data. 
-
+In this example, because of the toy sized small dataset, we set the holdout dataset equal to the complete input dataset.
 ```Python
 import pandas as pd
 import dame_flame
@@ -69,23 +68,23 @@ import dame_flame
 df = pd.read_csv("dame_flame/data/sample.csv")
 result = dame_flame.DAME_FLAME.DAME(input_data=df, treatment_column_name="treated", outcome_column_name="outcome", holdout_data=1.0)
 print(result[0])
-#>   one two
-#> 1   1   1
-#> 2   1   *
-#> 3   1   1
+#>    x1   x2   x3   x4
+#> 0   1   1    1    *
+#> 1   0   1    1    *
+#> 2   1   0    *    *
+#> 3   1   0    *    *
 ```
 result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
 To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
 
 ```Python
-mmg = dame_flame.DAME_FLAME.mmg_of_unit(return_df=result[0], unit_id=2, input_data=df)
+mmg = dame_flame.DAME_FLAME.mmg_of_unit(return_df=result[0], unit_id=0, input_data=df)
 print(mmg)
 
-#>   one  outcome  treated
-#> 1    1        2        0
-#> 2    1        1        1
-#> 3    1        1        1
+#>    x1   x2    x3
+#> 0   0    1    1
+#> 1   0    1    1
 ```
 
 To find the treatment effect of a unit, use the function *te_of_unit*
