@@ -69,7 +69,7 @@ df = pd.read_csv("dame_flame/data/sample.csv")
 result = dame_flame.DAME_FLAME.DAME(input_data=df, treatment_column_name="treated", outcome_column_name="outcome", holdout_data=1.0)
 print(result[0])
 #>    x1   x2   x3   x4
-#> 0   1   1    1    *
+#> 0   0   1    1    *
 #> 1   0   1    1    *
 #> 2   1   0    *    *
 #> 3   1   0    *    *
