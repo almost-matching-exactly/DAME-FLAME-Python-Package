@@ -1,11 +1,11 @@
-from . import DAME_FLAME
-from . import data_cleaning
-from . import dame_algorithm
-from . import flame_algorithm
-from . import flame_dame_helpers
-from . import flame_group_by
-from . import generate_new_active_sets
-from . import grouped_mr
-from . import query_ate
-from . import query_mmg
-from . import early_stops
+import DAME_FLAME
+import data_cleaning
+import dame_algorithm
+import flame_algorithm
+import flame_dame_helpers
+import flame_group_by
+import generate_new_active_sets
+import grouped_mr
+import query_ate
+import query_mmg
+import early_stops

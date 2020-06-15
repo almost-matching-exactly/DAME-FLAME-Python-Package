@@ -6,7 +6,7 @@ This is algorithm 2 in the paper.
 
 import numpy as np
 from operator import itemgetter
-from . import flame_group_by
+import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
                     outcome_column_name, return_groups):    

@@ -4,9 +4,9 @@
 """
 import pandas as pd
 
-from . import grouped_mr
-from . import dame_algorithm
-from . import flame_dame_helpers
+import grouped_mr
+import dame_algorithm
+import flame_dame_helpers
 
 def decide_drop(all_covs, consider_dropping, prev_drop, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
