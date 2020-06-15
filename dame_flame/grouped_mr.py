@@ -51,11 +51,12 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
 
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
-        
+    
+    MGs = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
         units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
-        
+        MGs.append(list(units_in_g))
         # Which of the units of this new group haven't been matched yet? 
         # unique_matched is a subset of units in the matched group, just the
         # ones for whom this is their main matched group. 
@@ -83,4 +84,4 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
             # don't update that when someone gets added to an auxiliary matched group
             # then at the end, iterate through it and create the nicely formatteed output. 
         
-    return matched_rows, return_groups
+    return matched_rows, return_groups, MGs

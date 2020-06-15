@@ -47,7 +47,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         # need to make sure we don't edit the mutable dataframes, then do match
         df_all_temp = df_all.copy(deep=True)
         return_matches_temp = return_matches.copy(deep=True)
-        matched_rows, return_matches_temp = grouped_mr.algo2_GroupedMR(
+        matched_rows, return_matches_temp, MGs = grouped_mr.algo2_GroupedMR(
             df_all_temp, df_unmatched, covs_match_on, all_covs, 
             treatment_column_name, outcome_column_name, return_matches_temp)
 
@@ -92,7 +92,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     
     covs_match_on = all_covs
     
-    matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
+    matched_rows, return_matches, MGs = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
 
@@ -283,5 +283,6 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         return_package.append(return_pe)
     if (want_bf == True):
         return_package.append(return_bf)
-        
+    return_package.append(MGs)
+    
     return return_package
