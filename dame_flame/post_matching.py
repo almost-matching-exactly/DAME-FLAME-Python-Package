@@ -10,15 +10,14 @@ result = DAME_FLAME.FLAME(input_data=matching, holdout_data = holdout, verbose=0
 
 #%% MG_index
 def MG_index(return_df, input_data):
-    mmg_dict = {}
+    mmg_list = []
     for i in input_data.index:
         mmg = DAME_FLAME.mmg_of_unit(return_df, i, input_data)
         if type(mmg) != bool:
             index = list(mmg.index)
-            if index not in mmg_dict.values():
-                mmg_dict[i] = index
-    mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
-    return mmg_dict
+            if index not in mmg_list:
+                mmg_list.append(index)
+    return mmg_list
 
 test_index = MG_index(result[0],matching)
 
