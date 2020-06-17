@@ -6,7 +6,7 @@ import DAME_FLAME
 df = pd.read_csv("data.csv")
 holdout = df[450:]
 matching = df[:450]
-result = DAME_FLAME.FLAME(input_data=matching, holdout_data = holdout, verbose=0, repeats = True)
+result = DAME_FLAME.FLAME(input_data=matching, holdout_data = holdout, verbose=0, repeats = False)
 
 #%% MG_index
 def MG_index(return_df, input_data):
@@ -21,8 +21,8 @@ def MG_index(return_df, input_data):
 
 test_index = MG_index(result[0],matching)
 
-#%% MGs
-def MG_internal(return_df, input_data):
+#%% MG v0.0.0
+def MG_v0(return_df, input_data):
     '''
     This function returns all matched groups
     
@@ -43,7 +43,31 @@ def MG_internal(return_df, input_data):
     mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
     return mmg_dict
 
-test_dict = MG_internal(result[0],matching)
+test_dict = MG_v0(result[0],matching)
+
+#%% MG v1.0.0
+def MG_v1(return_df, input_data):
+    '''
+    This function returns all matched groups
+    
+    Parameters:
+    -----------
+    return_df : ouput of DAME or FLAME
+    input_data : matching data
+    '''
+    k=set()
+    mmg_dict = {}
+    for i in input_data.index:
+        mmg = DAME_FLAME.mmg_of_unit(return_df, i, input_data)
+        if type(mmg) != bool:
+            r=hash(mmg.values.tobytes())
+            if r not in k:
+                k.add(r)
+                mmg_dict[i]=mmg
+    mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
+    return mmg_dict
+
+test_dict2 = MG_v1(result[0],matching)
 
 #%% Weights
 def unit_weights(mmg_dict, input_data):
@@ -61,7 +85,7 @@ def unit_weights(mmg_dict, input_data):
             weights[j] += 1
     return weights
 
-weights = unit_weights(test_dict, matching)
+weights = unit_weights(test_dict2, matching)
 
 #%% CATEs
 def CATE_internal(mmg_dict, return_df, input_data, treatment_column_name, 
@@ -140,11 +164,12 @@ def ATE_v1(mmg_dict, weights, CATEs, return_df, input_data,
 
 print(ATE_v1(test_dict, weights, CATEs, result[0], matching, 'treated','outcome'))
 
-#%% ATT
-def ATT(return_df, input_data, treatment_column_name, outcome_column_name, 
+#%% ATT v0.0.0
+def ATT_v0(return_df, input_data, treatment_column_name, outcome_column_name, 
         weights):
     '''
-    This function returns the ATT for post-matching analysis
+    This function returns the ATT for post-matching analysis using 
+    imputation estimation
     
     Parameters:
     -----------
@@ -173,4 +198,28 @@ def ATT(return_df, input_data, treatment_column_name, outcome_column_name,
                 te_list.append(MG_weight * te)
     return sum(te_list) / len(te_list)
 
-print(ATT(result[0],matching,'treated','outcome',weights))
+print(ATT_v0(result[0],matching,'treated','outcome',weights))
+
+#%% ATT v1.0.0
+def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name, 
+        weights):
+    '''
+    This function returns the ATT for post-matching analysis using
+    balancing estimation
+    
+    Parameters:
+    -----------
+    return_df : output of DAME or FLAME
+    input_data : matching data
+    treatment_column_name : name of column containing treatment information
+    outcome_column_name : name of column containing outcome information
+    '''
+    treated = input_data.loc[input_data[treatment_column_name] == 1]
+    control = input_data.loc[input_data[treatment_column_name] == 0]
+    control_weights = [weights[i] for i in list(control.index)]
+    avg_treated = sum(treated[outcome_column_name])/len(treated.index)
+    control_weight_sum = sum(control_weights)
+    avg_control = sum(control[outcome_column_name] * control_weights)/control_weight_sum
+    return avg_treated - avg_control
+
+print(ATT_v1(result[0],matching,'treated','outcome',weights))
