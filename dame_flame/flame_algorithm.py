@@ -11,7 +11,7 @@ import flame_dame_helpers
 def decide_drop(all_covs, consider_dropping, prev_drop, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
                 adaptive_weights, alpha_given, df_unmatched, return_matches, 
-                C):
+                C, MGs):
     """
     This is the decide drop function. 
     """
@@ -49,7 +49,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         return_matches_temp = return_matches.copy(deep=True)
         matched_rows, return_matches_temp, MGs = grouped_mr.algo2_GroupedMR(
             df_all_temp, df_unmatched, covs_match_on, all_covs, 
-            treatment_column_name, outcome_column_name, return_matches_temp)
+            treatment_column_name, outcome_column_name, return_matches_temp, MGs)
 
         # find the BF for this covariate set's match. 
         BF = flame_dame_helpers.compute_bf(
@@ -70,7 +70,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
                   verbose, want_bf, missing_holdout_replace, early_stops,
-                  pre_dame, C, epsilon):
+                  pre_dame, C, epsilon, MGs):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -94,7 +94,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     
     matched_rows, return_matches, MGs = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
-        outcome_column_name, return_matches)
+        outcome_column_name, return_matches, MGs)
 
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -188,7 +188,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         new_drop, pe, matched_rows, return_matches, bf = decide_drop(all_covs, 
             consider_dropping, prev_dropped, df_all, treatment_column_name, 
             outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
-            df_unmatched, return_matches, C)
+            df_unmatched, return_matches, C, MGs)
                      
         # Check for error in above step:
         if (new_drop == False):

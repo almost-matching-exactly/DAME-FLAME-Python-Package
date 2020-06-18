@@ -197,12 +197,14 @@ def FLAME(input_data=False, treatment_column_name='treated',
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
         early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
         early_stop_bf, early_stop_bf_frac, early_stop_iterations)
-
+    
+    MGs = []
+    
     if (mice_on_match == False):
         return_array = flame_algorithm.flame_generic(
             df, treatment_column_name, outcome_column_name, adaptive_weights, 
             alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
-            mice_on_hold, early_stops, pre_dame, C, epsilon)
+            mice_on_hold, early_stops, pre_dame, C, epsilon, MGs)
         
     else:
         # this would mean we need to run mice on the matching data, which means
@@ -219,7 +221,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
             return_array.append(flame_algorithm.flame_generic(
                 df, treatment_column_name, outcome_column_name, 
                 adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
-                want_bf, mice_on_hold, early_stops, pre_dame, C))
+                want_bf, mice_on_hold, early_stops, pre_dame, C, MGs))
             
     return return_array
 

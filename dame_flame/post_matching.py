@@ -3,7 +3,7 @@ import pandas as pd
 import DAME_FLAME
 
 #%% Sample data
-df = pd.read_csv("data/gen_data_sample_p5.csv")
+df = pd.read_csv("data/data.csv")
 result = DAME_FLAME.FLAME(input_data=df, verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome')
 
 #%% Weights test
@@ -26,14 +26,14 @@ def unit_weights_test(result_df):
 weights = unit_weights_test(result)
 
 #%% retrieves MGs from unit indices
-def MG_retrieve(return_list, groups, input_data):
+def MG_retrieve(return_df, groups):
     extracted = []
     for i in groups:
-        indices = return_list[i]
-        extracted.append(input_data.iloc[indices])
+        indices = return_df[1][i]
+        extracted.append(return_df[0].iloc[indices])
     return extracted
 
-retrieve_test = MG_retrieve(result[1], [1,7,23,30], df)
+retrieve_test = MG_retrieve(result, list(range(600)))
 
 #%% MG_index
 def MG_index(return_df, input_data):
