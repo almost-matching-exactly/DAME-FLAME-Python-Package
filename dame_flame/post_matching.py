@@ -3,10 +3,37 @@ import pandas as pd
 import DAME_FLAME
 
 #%% Sample data
-df = pd.read_csv("data.csv")
-holdout = df[450:]
-matching = df[:450]
-result = DAME_FLAME.FLAME(input_data=matching, holdout_data = holdout, verbose=0, repeats = False)
+df = pd.read_csv("data/gen_data_sample_p5.csv")
+result = DAME_FLAME.FLAME(input_data=df, verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome')
+
+#%% Weights test
+def unit_weights_test(result_df):
+    '''
+    This function returns unit weights from list
+    
+    Parameters:
+    -----------
+    mmg_dict : dictionary containing all matching groups
+    input_data : matching data
+    '''
+    
+    weights = [0] * (max(result_df[0].index)+1)
+    for i in range(len(result[1])):
+        for j in result[1][i]:
+            weights[j] += 1
+    return weights
+
+weights = unit_weights_test(result)
+
+#%% retrieves MGs from unit indices
+def MG_retrieve(return_list, groups, input_data):
+    extracted = []
+    for i in groups:
+        indices = return_list[i]
+        extracted.append(input_data.iloc[indices])
+    return extracted
+
+retrieve_test = MG_retrieve(result[1], [1,7,23,30], df)
 
 #%% MG_index
 def MG_index(return_df, input_data):
