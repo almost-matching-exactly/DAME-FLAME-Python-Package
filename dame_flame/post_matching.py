@@ -4,7 +4,7 @@ import DAME_FLAME
 
 #%% Sample data
 df = pd.read_csv("data/data.csv")
-result = DAME_FLAME.FLAME(input_data=df, verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome')
+result = DAME_FLAME.FLAME(input_data=df, verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
 
 #%% Weights test
 def unit_weights_test(result_df):
@@ -46,7 +46,7 @@ def MG_index(return_df, input_data):
                 mmg_list.append(index)
     return mmg_list
 
-test_index = MG_index(result[0],matching)
+test_index = MG_index(result[0],df)
 
 #%% MG v0.0.0
 def MG_v0(return_df, input_data):
@@ -70,7 +70,7 @@ def MG_v0(return_df, input_data):
     mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
     return mmg_dict
 
-test_dict = MG_v0(result[0],matching)
+test_dict = MG_v0(result[0],df)
 
 #%% MG v1.0.0
 def MG_v1(return_df, input_data):
@@ -94,7 +94,7 @@ def MG_v1(return_df, input_data):
     mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
     return mmg_dict
 
-test_dict2 = MG_v1(result[0],matching)
+test_dict2 = MG_v1(result[0],df)
 
 #%% Weights
 def unit_weights(mmg_dict, input_data):
@@ -112,7 +112,7 @@ def unit_weights(mmg_dict, input_data):
             weights[j] += 1
     return weights
 
-weights = unit_weights(test_dict2, matching)
+weights = unit_weights(test_dict2, df)
 
 #%% CATEs
 def CATE_internal(mmg_dict, return_df, input_data, treatment_column_name, 
@@ -138,7 +138,7 @@ def CATE_internal(mmg_dict, return_df, input_data, treatment_column_name,
         CATEs.append(avg_treated - avg_control)
     return CATEs
         
-CATEs = CATE_internal(test_dict,result[0],matching,'treated','outcome')
+CATEs = CATE_internal(test_dict,result[0],df,'treated','outcome')
 
 #%% ATE v0.0.0
 def ATE_v0(return_df, input_data, treatment_column_name, outcome_column_name):
@@ -161,7 +161,7 @@ def ATE_v0(return_df, input_data, treatment_column_name, outcome_column_name):
         te_list.append(te)
     return sum(te_list) / len(te_list)
 
-print(ATE_v0(result[0],matching,'treated','outcome'))
+print(ATE_v0(result[0],df,'treated','outcome'))
 
 #%% ATE v1.0.0
 def ATE_v1(mmg_dict, weights, CATEs, return_df, input_data, 
@@ -189,7 +189,7 @@ def ATE_v1(mmg_dict, weights, CATEs, return_df, input_data,
         weighted_CATE_sum += MG_weight * CATEs[i]
     return weighted_CATE_sum / weight_sum
 
-print(ATE_v1(test_dict, weights, CATEs, result[0], matching, 'treated','outcome'))
+print(ATE_v1(test_dict, weights, CATEs, result[0], df, 'treated','outcome'))
 
 #%% ATT v0.0.0
 def ATT_v0(return_df, input_data, treatment_column_name, outcome_column_name, 
@@ -225,7 +225,7 @@ def ATT_v0(return_df, input_data, treatment_column_name, outcome_column_name,
                 te_list.append(MG_weight * te)
     return sum(te_list) / len(te_list)
 
-print(ATT_v0(result[0],matching,'treated','outcome',weights))
+print(ATT_v0(result[0],df,'treated','outcome',weights))
 
 #%% ATT v1.0.0
 def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name, 
@@ -249,4 +249,4 @@ def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name,
     avg_control = sum(control[outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
 
-print(ATT_v1(result[0],matching,'treated','outcome',weights))
+print(ATT_v1(result[0],df,'treated','outcome',weights))
