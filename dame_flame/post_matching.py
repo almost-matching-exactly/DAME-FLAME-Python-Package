@@ -3,8 +3,8 @@ import pandas as pd
 import DAME_FLAME
 
 #%% Sample data
-df = pd.read_csv("data/data.csv")
-result = DAME_FLAME.FLAME(input_data=df, verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
+df = pd.read_csv("data/sample6.csv")
+result = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
 
 #%% Weights test
 def unit_weights_test(result_df):

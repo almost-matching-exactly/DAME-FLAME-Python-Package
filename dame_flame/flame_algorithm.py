@@ -91,13 +91,14 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     # As an initial step, we attempt to match on all covariates
     
     covs_match_on = all_covs
-    
+    print('entering grouped_mr!')
     matched_rows, return_matches, MGs = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches, MGs)
-
+    print('incoming drop')
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
+    print('dropped:'+str(list(matched_rows.index)))
         
     if repeats == False:
         df_all = df_unmatched

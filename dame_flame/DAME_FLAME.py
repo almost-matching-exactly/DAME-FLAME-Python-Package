@@ -198,7 +198,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
         early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
         early_stop_bf, early_stop_bf_frac, early_stop_iterations)
     
-    MGs = [[]] * len(input_data.index)
+    MGs = [0] * len(input_data.index)
     
     if (mice_on_match == False):
         return_array = flame_algorithm.flame_generic(
