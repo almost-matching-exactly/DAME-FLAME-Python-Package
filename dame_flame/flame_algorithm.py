@@ -11,7 +11,7 @@ import flame_dame_helpers
 def decide_drop(all_covs, consider_dropping, prev_drop, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
                 adaptive_weights, alpha_given, df_unmatched, return_matches, 
-                C, MGs):
+                C):
     """
     This is the decide drop function. 
     """
@@ -47,9 +47,9 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         # need to make sure we don't edit the mutable dataframes, then do match
         df_all_temp = df_all.copy(deep=True)
         return_matches_temp = return_matches.copy(deep=True)
-        matched_rows, return_matches_temp, MGs = grouped_mr.algo2_GroupedMR(
+        matched_rows, return_matches_temp, units_in_g = grouped_mr.algo2_GroupedMR(
             df_all_temp, df_unmatched, covs_match_on, all_covs, 
-            treatment_column_name, outcome_column_name, return_matches_temp, MGs)
+            treatment_column_name, outcome_column_name, return_matches_temp)
 
         # find the BF for this covariate set's match. 
         BF = flame_dame_helpers.compute_bf(
@@ -64,13 +64,14 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
             best_drop = poss_drop
             best_return_matches = return_matches_temp
             best_matched_rows = matched_rows
+            best_units_in_g = units_in_g
                 
-    return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf
+    return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf, best_units_in_g
 
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
                   verbose, want_bf, missing_holdout_replace, early_stops,
-                  pre_dame, C, epsilon, MGs):
+                  pre_dame, C, epsilon, MGs, groupid, CATEs, MG_demo):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -89,16 +90,27 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     # As an initial step, we attempt to match on all covariates
-    
+
     covs_match_on = all_covs
-    print('entering grouped_mr!')
-    matched_rows, return_matches, MGs = grouped_mr.algo2_GroupedMR(
+    matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
-        outcome_column_name, return_matches, MGs)
-    print('incoming drop')
+        outcome_column_name, return_matches)
+    for i in units_in_g:
+        groupid += 1
+        group_data = df_all.loc[i, [treatment_column_name, outcome_column_name]]
+        treated = group_data.loc[group_data[treatment_column_name] == 1]
+        control = group_data.loc[group_data[treatment_column_name] == 0]
+        avg_treated = sum(treated[outcome_column_name]) / len(treated.index)
+        avg_control = sum(control[outcome_column_name]) / len(control.index)
+        new_CATE = avg_treated - avg_control
+        CATEs.append(new_CATE)
+        MG_demo.append(i)
+        for j in i:
+            temp = [i for i in MGs[j] if str(i) != 'nan']
+            temp.append(groupid)
+            MGs[j] = temp
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
-    print('dropped:'+str(list(matched_rows.index)))
         
     if repeats == False:
         df_all = df_unmatched
@@ -186,10 +198,24 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                   "No more covariate sets to consider dropping")
             break
                         
-        new_drop, pe, matched_rows, return_matches, bf = decide_drop(all_covs, 
+        new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs, 
             consider_dropping, prev_dropped, df_all, treatment_column_name, 
             outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
-            df_unmatched, return_matches, C, MGs)
+            df_unmatched, return_matches, C)
+        for i in units_in_g:
+            groupid += 1
+            group_data = df_all.loc[i, [treatment_column_name, outcome_column_name]]
+            treated = group_data.loc[group_data[treatment_column_name] == 1]
+            control = group_data.loc[group_data[treatment_column_name] == 0]
+            avg_treated = sum(treated[outcome_column_name]) / len(treated.index)
+            avg_control = sum(control[outcome_column_name]) / len(control.index)
+            new_CATE = avg_treated - avg_control
+            CATEs.append(new_CATE)
+            MG_demo.append(i)
+            for j in i:
+                temp = [i for i in MGs[j] if str(i) != 'nan']
+                temp.append(groupid)
+                MGs[j] = temp
                      
         # Check for error in above step:
         if (new_drop == False):
@@ -278,12 +304,18 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                 
         
         # end loop.
+    MGs = [MGs[i] for i in range(len(MGs)) if str(MGs[i][0]) != 'nan']
+    unit_weights = [len(MGs[i]) for i in range(len(MGs))]
+    df_MG = pd.DataFrame(CATEs, columns = ['CATE'])
+    df_MG['units'] = MG_demo
     return_matches = return_matches.dropna(axis=0) #drop rows with nan
     return_package = [return_matches]
     if (want_pe == True):
         return_package.append(return_pe)
     if (want_bf == True):
         return_package.append(return_bf)
-    return_package.append(MGs)
+    return_package[0]['weights'] = unit_weights
+    return_package[0]['MGs'] = MGs
+    return_package.append(df_MG)
     
     return return_package

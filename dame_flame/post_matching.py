@@ -3,7 +3,7 @@ import pandas as pd
 import DAME_FLAME
 
 #%% Sample data
-df = pd.read_csv("data/sample6.csv")
+df = pd.read_csv("data/data.csv")
 result = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
 
 #%% Weights test
@@ -191,6 +191,33 @@ def ATE_v1(mmg_dict, weights, CATEs, return_df, input_data,
 
 print(ATE_v1(test_dict, weights, CATEs, result[0], df, 'treated','outcome'))
 
+#%% ATT v1.1.0
+def ATE_v11(result, treatment_column_name, outcome_column_name):
+    '''
+    This function returns the ATE for post-matching analysis using the result 
+    of the algo
+    
+    Parameters:
+    -----------
+    result : output of a call to DAME or FLAME
+    treatment_column_name : name of column containing treatment information
+    outcome_column_name : name of column containing outcome information
+    '''
+    weight_sum = 0; weighted_CATE_sum = 0
+    weights = result[0]['weights']
+    MGs = result[0]['MGs']
+    CATEs = result[1]['CATEs']
+    for i in range(len(result[1].index)):
+        units_in_g = [j for j in result[0].index if j in MGs[i]]
+        MG_weight = 0;
+        for k in units_in_g:
+            MG_weight += weights[k]
+        weight_sum += MG_weight
+        weighted_CATE_sum += MG_weight * CATEs[i]
+    return weighted_CATE_sum / weight_sum
+
+print(ATE_v11(result,'treated','outcome'))
+
 #%% ATT v0.0.0
 def ATT_v0(return_df, input_data, treatment_column_name, outcome_column_name, 
         weights):
@@ -225,11 +252,10 @@ def ATT_v0(return_df, input_data, treatment_column_name, outcome_column_name,
                 te_list.append(MG_weight * te)
     return sum(te_list) / len(te_list)
 
-print(ATT_v0(result[0],df,'treated','outcome',weights))
+print(ATT_v0(result[0],df,'treated','outcome',list(result[0]['weights'])))
 
 #%% ATT v1.0.0
-def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name, 
-        weights):
+def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name):
     '''
     This function returns the ATT for post-matching analysis using
     balancing estimation
@@ -241,12 +267,18 @@ def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name,
     treatment_column_name : name of column containing treatment information
     outcome_column_name : name of column containing outcome information
     '''
+    weights = return_df[0]['weights']
+    control_weights = []
     treated = input_data.loc[input_data[treatment_column_name] == 1]
     control = input_data.loc[input_data[treatment_column_name] == 0]
-    control_weights = [weights[i] for i in list(control.index)]
+    for i in list(control.index):
+        if i in list(return_df[0].index):     
+            control_weights.append(weights[i])
+        else:
+            control_weights.append(0)
     avg_treated = sum(treated[outcome_column_name])/len(treated.index)
     control_weight_sum = sum(control_weights)
     avg_control = sum(control[outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
 
-print(ATT_v1(result[0],df,'treated','outcome',weights))
+print(ATT_v1(result,df,'treated','outcome'))

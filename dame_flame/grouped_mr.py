@@ -9,7 +9,7 @@ from operator import itemgetter
 import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
-                    outcome_column_name, return_groups, MGs):    
+                    outcome_column_name, return_groups):    
     # todo; not using all_covs variable anymore. 
     ''' 
     Input: 
@@ -42,34 +42,25 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     matched_units, bi = flame_group_by.match_ng(df_all_without_outcome, 
                             covs_match_on, covs_max_list, 
                             treatment_column_name)
-    print('bi: '+str(bi))
-    print('unmatched: \n'+str(df_unmatched))
-
     # Find newly matched units and their main matched groups.
     
     # These are the rows of the ones that have been matched: 
     matched_rows = df_all.loc[matched_units, :].copy()
-    print('matched: \n'+str(matched_rows))
     matched_rows['b_i'] = bi
 
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
-    print('unique_matched_row_vals: ' + str(unique_matched_row_vals))
+    all_units_in_g = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
         units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
-            
+        all_units_in_g.append(list(units_in_g))
         # Which of the units of this new group haven't been matched yet? 
         # unique_matched is a subset of units in the matched group, just the
-        # ones for whom this is their main matched group. 
-        print('units_in_g: '+str(list(units_in_g)))       
+        # ones for whom this is their main matched group.        
         newly_matched = [i for i in units_in_g if i in df_unmatched.index]
-        print('newly_matched: '+str(newly_matched))
-        print('\n')
         # Only need to proceed to fill in the return table if someone's MMG found. 
         if len(newly_matched) != 0:
-            for i in newly_matched:
-                MGs[i] += 1
                
             # Now, we figure out: What does the group look like? eg [1,2,*,1]
             temp_row_in_group = matched_rows.loc[units_in_g[0]] 
@@ -89,6 +80,5 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
             # store the bi in a column with df_all and also a column for "pair" with another
             # persons unit id. 
             # don't update that when someone gets added to an auxiliary matched group
-            # then at the end, iterate through it and create the nicely formatteed output. 
-        
-    return matched_rows, return_groups, MGs
+            # then at the end, iterate through it and create the nicely formatteed output.
+    return matched_rows, return_groups, all_units_in_g
