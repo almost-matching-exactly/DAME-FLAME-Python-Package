@@ -23,13 +23,13 @@ https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/
 import pandas as pd
 import numpy as np
 
-from .. import data_cleaning
-from .. import dame_algorithm
-from .. import query_mmg
-from .. import query_ate
-from .. import flame_algorithm
-from .. import flame_dame_helpers
-from .. import early_stops
+from . import data_cleaning
+from . import dame_algorithm
+from . import query_mmg
+from . import query_ate
+from . import flame_algorithm
+from . import flame_dame_helpers
+from . import early_stops
 
 def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
