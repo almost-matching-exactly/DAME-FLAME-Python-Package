@@ -1,284 +1,168 @@
 #%% Imports
 import pandas as pd
+import numpy as np
+import dame_flame
 import DAME_FLAME
+import time
 
-#%% Sample data
+#%% old algo
 df = pd.read_csv("data/data.csv")
-result = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
 
-#%% Weights test
-def unit_weights_test(result_df):
+start_original = time.time()
+result = dame_flame.DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = True)
+end_original = time.time()
+print(end_original - start_original)
+
+#%% new algo
+df = pd.read_csv("data/data.csv")
+
+start_new = time.time()
+result_new = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
+end_new = time.time()
+print(end_new - start_new)
+
+#%% MG fast function
+def MG(return_df, unit_ids, input_data, treatment_column_name = 'treated', 
+         outcome_column_name = 'outcome'):
     '''
-    This function returns unit weights from list
+    This function returns the main matched groups for all specified unit
+    indices
+
+    Args:
+        return_df : output of DAME or FLAME
+        unit_id : units for which CATE will be computed
+        input_data : matching data
+        treatment_column_name : name of column containing treatment information
+        outcome_column_name : name of column containing outcome information
+    '''
+    #accept int or list
+    if type(unit_ids) is int:
+        unit_ids = [unit_ids]
+    #define relevant output variables
+    MGs = return_df[1]
+    #recover MMG
+    MMGs = []
+    for i in unit_ids:
+        status = 0
+        for j in MGs:
+            if i in j:
+                MMGs.append(input_data.loc[j])
+                status = 1
+                break
+        #warn user that unit has no matches
+        if status == 0:
+            MMGs.append(np.nan)
+            print('Unit ' + str(i) + ' does not have any matches')
+    #format output
+    if len(MMGs) == 1:
+        MMGs = MMGs[0]
+    return MMGs
+        
+MMGs = MG(result_new, [14,15,16], df)
+
+#%% CATEs function
+def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated', 
+         outcome_column_name = 'outcome'):
+    '''
+    This function returns the CATEs for all specified unit indices
     
-    Parameters:
-    -----------
-    mmg_dict : dictionary containing all matching groups
-    input_data : matching data
+    Args:
+        return_df : output of DAME or FLAME
+        unit_id : units for which CATE will be computed
+        input_data : matching data
+        treatment_column_name : name of column containing treatment information
+        outcome_column_name : name of column containing outcome information
     '''
-    
-    weights = [0] * (max(result_df[0].index)+1)
-    for i in range(len(result[1])):
-        for j in result[1][i]:
-            weights[j] += 1
-    return weights
-
-weights = unit_weights_test(result)
-
-#%% retrieves MGs from unit indices
-def MG_retrieve(return_df, groups):
-    extracted = []
-    for i in groups:
-        indices = return_df[1][i]
-        extracted.append(return_df[0].iloc[indices])
-    return extracted
-
-retrieve_test = MG_retrieve(result, list(range(600)))
-
-#%% MG_index
-def MG_index(return_df, input_data):
-    mmg_list = []
-    for i in input_data.index:
-        mmg = DAME_FLAME.mmg_of_unit(return_df, i, input_data)
-        if type(mmg) != bool:
-            index = list(mmg.index)
-            if index not in mmg_list:
-                mmg_list.append(index)
-    return mmg_list
-
-test_index = MG_index(result[0],df)
-
-#%% MG v0.0.0
-def MG_v0(return_df, input_data):
-    '''
-    This function returns all matched groups
-    
-    Parameters:
-    -----------
-    return_df : ouput of DAME or FLAME
-    input_data : matching data
-    '''
-    mmg_dict = {}
-    for i in input_data.index:
-        mmg = DAME_FLAME.mmg_of_unit(return_df, i, input_data)
-        if type(mmg) != bool:
-            duplicate = []
-            for j in mmg_dict:
-                duplicate.append(mmg.equals(mmg_dict[j]))
-            if True not in duplicate:
-                mmg_dict[i] = mmg
-    mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
-    return mmg_dict
-
-test_dict = MG_v0(result[0],df)
-
-#%% MG v1.0.0
-def MG_v1(return_df, input_data):
-    '''
-    This function returns all matched groups
-    
-    Parameters:
-    -----------
-    return_df : ouput of DAME or FLAME
-    input_data : matching data
-    '''
-    k=set()
-    mmg_dict = {}
-    for i in input_data.index:
-        mmg = DAME_FLAME.mmg_of_unit(return_df, i, input_data)
-        if type(mmg) != bool:
-            r=hash(mmg.values.tobytes())
-            if r not in k:
-                k.add(r)
-                mmg_dict[i]=mmg
-    mmg_dict = dict(enumerate(mmg_dict[x] for x in sorted(mmg_dict)))
-    return mmg_dict
-
-test_dict2 = MG_v1(result[0],df)
-
-#%% Weights
-def unit_weights(mmg_dict, input_data):
-    '''
-    This function returns unit weights
-    
-    Parameters:
-    -----------
-    mmg_dict : dictionary containing all matching groups
-    input_data : matching data
-    '''
-    weights = [0] * len(input_data)
-    for i in mmg_dict.keys():
-        for j in mmg_dict[i].index:
-            weights[j] += 1
-    return weights
-
-weights = unit_weights(test_dict2, df)
-
-#%% CATEs
-def CATE_internal(mmg_dict, return_df, input_data, treatment_column_name, 
-                  outcome_column_name):
-    '''
-    This function returns the CATEs for all matched groups provided
-    
-    Parameters:
-    -----------
-    mmg_dict : dictionary containing matched groups
-    return_df : output of DAME or FLAME
-    input_data : matching data
-    treatment_column_name : name of column containing treatment information
-    outcome_column_name : name of column containing outcome information
-    '''
+    #accept int or list
+    if type(unit_ids) is int:
+        unit_ids = [unit_ids]
+    #define relevant output variables
+    MGs = return_df[1]
+    #recover CATEs
     CATEs = []
-    for i in mmg_dict.keys():
-        df_mmg = mmg_dict[i]
-        treated = df_mmg.loc[df_mmg[treatment_column_name] == 1]
-        control = df_mmg.loc[df_mmg[treatment_column_name] == 0]
-        avg_treated = sum(treated[outcome_column_name])/len(treated.index)
-        avg_control = sum(control[outcome_column_name])/len(control.index)
-        CATEs.append(avg_treated - avg_control)
+    for i in unit_ids:
+        status = 0
+        for j in MGs:
+            if i in j:
+                df_mmg = input_data.loc[j,[treatment_column_name, 
+                                                outcome_column_name]]
+                status = 1
+                break
+        if status == 0:
+            CATEs.append(np.nan)
+            print('Unit ' + str(i) + " does not have any matches, so can't " \
+                  "find the CATE")
+        else:
+            treated = df_mmg.loc[df_mmg[treatment_column_name] == 1]
+            control = df_mmg.loc[df_mmg[treatment_column_name] == 0]
+            avg_treated = sum(treated[outcome_column_name])/len(treated.index)
+            avg_control = sum(control[outcome_column_name])/len(control.index)
+            CATEs.append(avg_treated - avg_control)
+    #format output
+    if len(CATEs) == 1:
+        CATEs = CATEs[0]
     return CATEs
         
-CATEs = CATE_internal(test_dict,result[0],df,'treated','outcome')
+CATEs = CATE(result_new, [14,15,16], df)
 
-#%% ATE v0.0.0
-def ATE_v0(return_df, input_data, treatment_column_name, outcome_column_name):
+#%% ATE function
+def ATE(return_df, input_data, treatment_column_name = 'treated',
+         outcome_column_name = 'outcome'):
     '''
-    This function returns the ATE for post-matching analysis using te_of_unit
+    This function returns the ATE for the matching data
     
-    Parameters:
-    -----------
-    return_df : output of DAME or FLAME
-    input_data : matching data
-    treatment_column_name : name of column containing treatment information
-    outcome_column_name : name of column containing outcome information
+    Args:
+        return_df : output of a call to DAME or FLAME
+        input_data : matching data
+        treatment_column_name : name of column containing treatment information
+        outcome_column_name : name of column containing outcome information
     '''
-    te_list = []
-    for i in input_data.index:
-        #estimate treatment effect for each unit
-        te = DAME_FLAME.te_of_unit(return_df, i, input_data, 
-                                              treatment_column_name, 
-                                              outcome_column_name)
-        te_list.append(te)
-    return sum(te_list) / len(te_list)
-
-print(ATE_v0(result[0],df,'treated','outcome'))
-
-#%% ATE v1.0.0
-def ATE_v1(mmg_dict, weights, CATEs, return_df, input_data, 
-           treatment_column_name, outcome_column_name):
-    '''
-    This function returns the ATE for post-matching analysis using unit weights
-    
-    Parameters:
-    -----------
-    mmg_dict : dictionary containing all matched groups
-    weights : list of unit weights
-    CATEs : list of CATEs for every matched group
-    return_df : output of DAME or FLAME
-    input_data : matching data
-    treatment_column_name : name of column containing treatment information
-    outcome_column_name : name of column containing outcome information
-    '''
+    #define relevant output variables
+    MGs = return_df[1]
+    weights = return_df[0]['weights']
+    #recover CATEs
+    CATEs = [0] * len(MGs)
+    for i in range(len(MGs)):
+        group_data = input_data.loc[MGs[i], [treatment_column_name, outcome_column_name]]
+        treated = group_data.loc[group_data[treatment_column_name] == 1]
+        control = group_data.loc[group_data[treatment_column_name] == 0]
+        avg_treated = sum(treated[outcome_column_name]) / len(treated.index)
+        avg_control = sum(control[outcome_column_name]) / len(control.index)
+        CATEs[i] = avg_treated - avg_control
+    #compute ATE
     weight_sum = 0; weighted_CATE_sum = 0
-    for i in mmg_dict.keys():
-        df_mmg = mmg_dict[i]
+    for i in range(len(MGs)):
         MG_weight = 0;
-        for j in df_mmg.index:
+        for j in MGs[i]:
             MG_weight += weights[j]
         weight_sum += MG_weight
         weighted_CATE_sum += MG_weight * CATEs[i]
     return weighted_CATE_sum / weight_sum
 
-print(ATE_v1(test_dict, weights, CATEs, result[0], df, 'treated','outcome'))
+print(ATE(result_new, df))
 
-#%% ATT v1.1.0
-def ATE_v11(result, treatment_column_name, outcome_column_name):
+#%% ATT function
+def ATT(return_df, input_data, treatment_column_name = 'treated',
+        outcome_column_name = 'outcome'):
     '''
-    This function returns the ATE for post-matching analysis using the result 
-    of the algo
-    
-    Parameters:
-    -----------
-    result : output of a call to DAME or FLAME
-    treatment_column_name : name of column containing treatment information
-    outcome_column_name : name of column containing outcome information
-    '''
-    weight_sum = 0; weighted_CATE_sum = 0
-    weights = result[0]['weights']
-    MGs = result[0]['MGs']
-    CATEs = result[1]['CATEs']
-    for i in range(len(result[1].index)):
-        units_in_g = [j for j in result[0].index if j in MGs[i]]
-        MG_weight = 0;
-        for k in units_in_g:
-            MG_weight += weights[k]
-        weight_sum += MG_weight
-        weighted_CATE_sum += MG_weight * CATEs[i]
-    return weighted_CATE_sum / weight_sum
-
-print(ATE_v11(result,'treated','outcome'))
-
-#%% ATT v0.0.0
-def ATT_v0(return_df, input_data, treatment_column_name, outcome_column_name, 
-        weights):
-    '''
-    This function returns the ATT for post-matching analysis using 
-    imputation estimation
-    
-    Parameters:
-    -----------
-    return_df : output of DAME or FLAME
-    input_data : matching data
-    treatment_column_name : name of column containing treatment information
-    outcome_column_name : name of column containing outcome information
-    '''
-    te_list = []
-    for i in input_data.index:
-        #we need to isolate treated units
-        if input_data[treatment_column_name][i] == 1:
-            #now we access the mmg for each treated unit
-            df_mmg = DAME_FLAME.mmg_of_unit(return_df, i,
-                                            input_data)
-            if type(df_mmg) != bool:
-                control = df_mmg.loc[df_mmg[treatment_column_name] == 0]
-                #we then predict the counterfactual outcome
-                control_avg = sum(control[outcome_column_name])/len(control.index)
-                #finally we estimate treatment effect
-                te = input_data[outcome_column_name][i] - control_avg
-                #we weight treatment effects using control unit weights
-                MG_weight = 0
-                for j in control.index:
-                    MG_weight += weights[j]
-                te_list.append(MG_weight * te)
-    return sum(te_list) / len(te_list)
-
-print(ATT_v0(result[0],df,'treated','outcome',list(result[0]['weights'])))
-
-#%% ATT v1.0.0
-def ATT_v1(return_df, input_data, treatment_column_name, outcome_column_name):
-    '''
-    This function returns the ATT for post-matching analysis using
+    This function returns the ATT for the matching data using
     balancing estimation
     
-    Parameters:
-    -----------
-    return_df : output of DAME or FLAME
-    input_data : matching data
-    treatment_column_name : name of column containing treatment information
-    outcome_column_name : name of column containing outcome information
+    Args:
+        return_df : output of DAME or FLAME
+        input_data : matching data
+        treatment_column_name : name of column containing treatment information
+        outcome_column_name : name of column containing outcome information
     '''
+    #define relevant output variables
     weights = return_df[0]['weights']
-    control_weights = []
     treated = input_data.loc[input_data[treatment_column_name] == 1]
     control = input_data.loc[input_data[treatment_column_name] == 0]
-    for i in list(control.index):
-        if i in list(return_df[0].index):     
-            control_weights.append(weights[i])
-        else:
-            control_weights.append(0)
+    #compute ATT
     avg_treated = sum(treated[outcome_column_name])/len(treated.index)
+    control_weights = weights[control.index]
     control_weight_sum = sum(control_weights)
     avg_control = sum(control[outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
 
-print(ATT_v1(result,df,'treated','outcome'))
+print(ATT(result_new,df))

@@ -201,15 +201,15 @@ def FLAME(input_data=False, treatment_column_name='treated',
     MGs = [[np.nan]] * len(input_data.index)
     groupid = -1
     
-    CATEs = []
     MG_demo = []
+    weights = [0] * len(input_data.index)
     
     if (mice_on_match == False):
         return_array = flame_algorithm.flame_generic(
             df, treatment_column_name, outcome_column_name, adaptive_weights, 
             alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
             mice_on_hold, early_stops, pre_dame, C, epsilon, MGs, groupid, 
-            CATEs, MG_demo)
+            weights, MG_demo)
         
     else:
         # this would mean we need to run mice on the matching data, which means
