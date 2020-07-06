@@ -6,7 +6,7 @@ import DAME_FLAME
 import time
 
 #%% old algo
-df = pd.read_csv("data/data.csv")
+df = pd.read_csv("data/5000x20.csv")
 
 start_original = time.time()
 result = dame_flame.DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = True)
@@ -17,13 +17,12 @@ print(end_original - start_original)
 df = pd.read_csv("data/data.csv")
 
 start_new = time.time()
-result_new = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = False)
+result_new = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = True)
 end_new = time.time()
 print(end_new - start_new)
 
 #%% MG fast function
-def MG(return_df, unit_ids, input_data, treatment_column_name = 'treated', 
-         outcome_column_name = 'outcome'):
+def MG(return_df, unit_ids, input_data):
     '''
     This function returns the main matched groups for all specified unit
     indices
@@ -57,8 +56,8 @@ def MG(return_df, unit_ids, input_data, treatment_column_name = 'treated',
     if len(MMGs) == 1:
         MMGs = MMGs[0]
     return MMGs
-        
-MMGs = MG(result_new, [14,15,16], df)
+       
+MMGs = MG(result_new, 0, df)
 
 #%% CATEs function
 def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated', 
@@ -165,4 +164,4 @@ def ATT(return_df, input_data, treatment_column_name = 'treated',
     avg_control = sum(control[outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
 
-print(ATT(result_new,df))
+print(ATT(result_new, df))
