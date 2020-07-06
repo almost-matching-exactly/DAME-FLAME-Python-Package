@@ -144,10 +144,10 @@ If adaptive_weights = False, these are the weights to the covariates in **input_
 **alpha**: float, optional (default=0.1)  
 If adaptive_weights is set to ridge, this is the alpha for ridge regression.
 
-**holdout_data**: file, DataFrame, float between 0 and 1, optional (Default = 0.1)
+**holdout_data**: file, DataFrame, float between 0 and 1, optional (Default = False)
 If doing an adaptive_weights version of DAME, this is used to decide what covariates to drop. The default is to use 10% of the **input_data** dataset. Users can specify a percentage of the matching data set to use as the holdout set, or use a different file. If using a different file, that file needs to have all of the same column labels, including treatment and outcome columns.
 
-**repeats**: Bool, optional (default=False)  
+**repeats**: Bool, optional (default=True)  
 Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. 
 
 
@@ -218,7 +218,7 @@ If provided, a number of iterations after which to hard stop the algorithm.
 **stop_unmatched_c**: bool, optional (default=False)  
 If True, then the algorithm terminates when there are no more control units to match. 
 
-**stop_unmatched_t**: bool, optional (default=True)  
+**stop_unmatched_t**: bool, optional (default=False)  
 If True, then the algorithm terminates when there are no more treatment units to match. 
 
 **early_stop_un_c_frac**: float from 0.0 to 1.0, optional (default=0.1)  
