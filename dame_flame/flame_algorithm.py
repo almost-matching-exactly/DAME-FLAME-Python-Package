@@ -71,7 +71,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
                   verbose, want_bf, missing_holdout_replace, early_stops,
-                  pre_dame, C, epsilon, MGs, groupid, weights, MG_demo):
+                  pre_dame, C, epsilon, weights, MG_units):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -98,12 +98,12 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
 # =============================================================================
     for i in units_in_g:
 #         groupid += 1
-         MG_demo.append(i)
+         MG_units.append(i)
          for j in i:
              weights[j] += 1
-#             temp = [i for i in MGs[j] if str(i) != 'nan']
+#             temp = [i for i in unit_MGs[j] if str(i) != 'nan']
 #             temp.append(groupid)
-#             MGs[j] = temp
+#             unit_MGs[j] = temp
 # =============================================================================
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -201,12 +201,12 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
 # =============================================================================
         for i in units_in_g:
 #             groupid += 1
-             MG_demo.append(i)
+             MG_units.append(i)
              for j in i:
                  weights[j] += 1
-#                 temp = [i for i in MGs[j] if str(i) != 'nan']
+#                 temp = [i for i in unit_MGs[j] if str(i) != 'nan']
 #                 temp.append(groupid)
-#                 MGs[j] = temp
+#                 unit_MGs[j] = temp
 # =============================================================================
                      
         # Check for error in above step:
@@ -296,17 +296,19 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                 
         
         # end loop.
-#    MGs = [MGs[i] for i in range(len(MGs)) if str(MGs[i][0]) != 'nan']
-#    df_MG = pd.DataFrame(MG_demo, columns = ['units'])
+
     return_matches = return_matches.dropna(axis=0) #drop rows with nan
     return_package = [return_matches]
     if (want_pe == True):
         return_package.append(return_pe)
     if (want_bf == True):
         return_package.append(return_bf)
+# =============================================================================
+#    unit_MGs = [unit_MGs[i] for i in range(len(MGs)) if str(unit_MGs[i][0]) != 'nan']
+#    return_package[0]['MGs'] = unit_MGs
     weights = [i for i in weights if i != 0]
     return_package[0]['weights'] = weights
-    #return_package[0]['MGs'] = MGs
-    return_package.append(MG_demo)
+    return_package.append(MG_units)
+# =============================================================================
     
     return return_package

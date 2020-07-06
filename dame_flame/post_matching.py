@@ -5,15 +5,15 @@ import dame_flame
 import DAME_FLAME
 import time
 
-#%% old algo
-df = pd.read_csv("data/5000x20.csv")
+#%% Original algorithm speed test
+df = pd.read_csv("data/data.csv")
 
 start_original = time.time()
 result = dame_flame.DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatment_column_name = 'treated', outcome_column_name = 'outcome',repeats = True)
 end_original = time.time()
 print(end_original - start_original)
 
-#%% new algo
+#%% Modified algorithm speed test
 df = pd.read_csv("data/data.csv")
 
 start_new = time.time()
@@ -21,7 +21,7 @@ result_new = DAME_FLAME.FLAME(input_data=df, holdout_data = df,verbose=0,treatme
 end_new = time.time()
 print(end_new - start_new)
 
-#%% MG fast function
+#%% MG function
 def MG(return_df, unit_ids, input_data):
     '''
     This function returns the main matched groups for all specified unit
@@ -57,7 +57,7 @@ def MG(return_df, unit_ids, input_data):
         MMGs = MMGs[0]
     return MMGs
        
-MMGs = MG(result_new, 0, df)
+print(MG(result_new, 0, df))
 
 #%% CATEs function
 def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated', 
@@ -102,7 +102,7 @@ def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated',
         CATEs = CATEs[0]
     return CATEs
         
-CATEs = CATE(result_new, [14,15,16], df)
+print(CATE(result_new, 0, df))
 
 #%% ATE function
 def ATE(return_df, input_data, treatment_column_name = 'treated',

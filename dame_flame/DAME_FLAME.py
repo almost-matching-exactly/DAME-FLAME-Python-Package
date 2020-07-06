@@ -197,19 +197,20 @@ def FLAME(input_data=False, treatment_column_name='treated',
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
         early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
         early_stop_bf, early_stop_bf_frac, early_stop_iterations)
-    
-    MGs = [[np.nan]] * len(input_data.index)
-    groupid = -1
-    
-    MG_demo = []
+
+# =============================================================================  
+#    unit_MGs = [[np.nan]] * len(input_data.index)
+#    groupid = -1  
+    MG_units = []
     weights = [0] * len(input_data.index)
-    
+# =============================================================================
+
     if (mice_on_match == False):
         return_array = flame_algorithm.flame_generic(
             df, treatment_column_name, outcome_column_name, adaptive_weights, 
             alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
-            mice_on_hold, early_stops, pre_dame, C, epsilon, MGs, groupid, 
-            weights, MG_demo)
+            mice_on_hold, early_stops, pre_dame, C, epsilon, weights, 
+            MG_units)
         
     else:
         # this would mean we need to run mice on the matching data, which means
@@ -226,8 +227,8 @@ def FLAME(input_data=False, treatment_column_name='treated',
             return_array.append(flame_algorithm.flame_generic(
                 df, treatment_column_name, outcome_column_name, 
                 adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
-                want_bf, mice_on_hold, early_stops, pre_dame, C, MGs, groupid,
-                CATEs, MG_demo))
+                want_bf, mice_on_hold, early_stops, pre_dame, C, weights,
+                MG_units))
             
     return return_array
 
