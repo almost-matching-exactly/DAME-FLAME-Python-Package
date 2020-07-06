@@ -2,8 +2,8 @@
 import pandas as pd
 import numpy as np
 import dame_flame
-import DAME_FLAME
 import time
+from .. import DAME_FLAME
 
 #%% Original algorithm speed test
 df = pd.read_csv("data/data.csv")
