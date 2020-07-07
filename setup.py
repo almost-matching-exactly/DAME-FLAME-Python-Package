@@ -7,13 +7,13 @@ with open("README.md", "r") as fh:
 
 
 setuptools.setup(name='dame_flame',
-      version='0.1',
+      version='0.2',
       description='Causal Inference Covariate Matching',
       long_description=long_description,
       keywords='Causal Inference Matching Covariates FLAME DAME',
       url='https://github.com/almost-matching-exactly/DAME-Python-Package',
       author='Neha Gupta',
-      author_email='nrg18@duke.edu',
+      author_email='neha.r.gupta@duke.edu',
       license='MIT',
       packages=['dame_flame'],
       install_requires=[

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-
-@author: Neha
+@author: Neha Gupta, Duke University.
+Copyright Duke University 2020
 """
 
 import pandas as pd

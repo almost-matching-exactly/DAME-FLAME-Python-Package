@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jan 11 19:24:34 2020
-
-@author: Neha
+@author: Neha Gupta, Duke University.
+Copyright Duke University 2020
 """
 
 class EarlyStops:

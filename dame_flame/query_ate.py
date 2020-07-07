@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Neha
+@author: Neha Gupta, Duke University.
+Copyright Duke University 2020
 """
 
 def find(mmg_of_unit, unit_id, df_all, treatment_col, outcome_col):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-@author: Neha, Tianyu
+@author: Neha Gupta, Tianyu Wang
+Copyright Duke University 2020
 """
 import pandas as pd
 import numpy as np
