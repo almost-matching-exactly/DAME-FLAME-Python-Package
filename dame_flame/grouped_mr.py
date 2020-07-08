@@ -6,7 +6,7 @@ This is algorithm 2 in the paper.
 
 import numpy as np
 from operator import itemgetter
-from . import flame_group_by
+import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
                     outcome_column_name, return_groups):    
@@ -21,7 +21,8 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     Output: 
         matched_rows: newly matched units using covs indexed by Js. Type df
         return_groups: The df of unit id and covar values matched on, with '*"
-            for the irrelevant ones. 
+            for the irrelevant ones.
+        all_units_in_g: list of unit ids for all matched groups created
     
     '''
     
@@ -50,10 +51,13 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
 
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
+    
+    # This list stores all matched groups created by this function
     all_units_in_g = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
         units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
+        # Append newly created matched group
         all_units_in_g.append(list(units_in_g))
         # Which of the units of this new group haven't been matched yet? 
         # unique_matched is a subset of units in the matched group, just the

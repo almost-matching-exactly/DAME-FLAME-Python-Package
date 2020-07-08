@@ -4,9 +4,9 @@
 """
 import pandas as pd
 
-from . import grouped_mr
-from . import dame_algorithm
-from . import flame_dame_helpers
+import grouped_mr
+import dame_algorithm
+import flame_dame_helpers
 
 def decide_drop(all_covs, consider_dropping, prev_drop, df_all, 
                 treatment_column_name, outcome_column_name, df_holdout_array, 
@@ -71,11 +71,11 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
                   verbose, want_bf, missing_holdout_replace, early_stops,
-                  pre_dame, C, epsilon, weights, MG_units):
+                  pre_dame, C, epsilon):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
-     DAME and after integer number of iterations. 
+    DAME and after integer number of iterations.
     '''
             
     # Initialize variables. These are all moving/temporary throughout algo
@@ -87,6 +87,8 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     # The items getting returned
     return_pe= [] # list of predictive errors, 
     return_bf = []
+    MG_units = [] #list of unit ids for each matched group
+    weights = [0] * len(df_all.index) #unit weights
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     # As an initial step, we attempt to match on all covariates
@@ -95,16 +97,15 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
-# =============================================================================
-    for i in units_in_g:
-#         groupid += 1
-         MG_units.append(i)
-         for j in i:
-             weights[j] += 1
-#             temp = [i for i in unit_MGs[j] if str(i) != 'nan']
-#             temp.append(groupid)
-#             unit_MGs[j] = temp
-# =============================================================================
+    
+    # Iterate through newly returned matched groups
+    for group in units_in_g:
+         # Append new matched groups
+         MG_units.append(group)
+         # Update unit weights for all units which appear in the new groups
+         for unit in group:
+             weights[unit] += 1
+             
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
         
@@ -198,16 +199,14 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             consider_dropping, prev_dropped, df_all, treatment_column_name, 
             outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
             df_unmatched, return_matches, C)
-# =============================================================================
-        for i in units_in_g:
-#             groupid += 1
-             MG_units.append(i)
-             for j in i:
-                 weights[j] += 1
-#                 temp = [i for i in unit_MGs[j] if str(i) != 'nan']
-#                 temp.append(groupid)
-#                 unit_MGs[j] = temp
-# =============================================================================
+      
+        # Iterate through newly returned matched groups
+        for group in units_in_g:
+             # Append new matched groups
+             MG_units.append(group)
+             # Update unit weights for all units which appear in the new groups
+             for unit in group:
+                 weights[unit] += 1
                      
         # Check for error in above step:
         if (new_drop == False):
@@ -303,12 +302,12 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
         return_package.append(return_pe)
     if (want_bf == True):
         return_package.append(return_bf)
-# =============================================================================
-#    unit_MGs = [unit_MGs[i] for i in range(len(MGs)) if str(unit_MGs[i][0]) != 'nan']
-#    return_package[0]['MGs'] = unit_MGs
+    
+    # Remove unmatched units
     weights = [i for i in weights if i != 0]
+    
     return_package[0]['weights'] = weights
     return_package.append(MG_units)
-# =============================================================================
+
     
     return return_package
