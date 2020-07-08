@@ -87,8 +87,8 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     # The items getting returned
     return_pe= [] # list of predictive errors, 
     return_bf = []
-    MG_units = [] #list of unit ids for each matched group
-    weights = [0] * len(df_all.index) #unit weights
+    MG_units = [] # list of unit ids for each matched group
+    weights = [0] * len(df_all.index) # unit weights
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     # As an initial step, we attempt to match on all covariates
