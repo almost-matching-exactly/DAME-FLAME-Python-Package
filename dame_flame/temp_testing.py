@@ -1,5 +1,5 @@
 #%% Imports
-import DAME_FLAME
+from . import DAME_FLAME
 import pandas as pd
 
 #%% Test

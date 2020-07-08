@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import math
 
-import early_stops
+from . import early_stops
 
 def read_files(input_data, holdout_data):
     """Both options can be either df or csv files and are parsed here.

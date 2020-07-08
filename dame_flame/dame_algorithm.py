@@ -8,9 +8,9 @@ This file implements Algorithm 1 in the DAME paper
 
 import numpy as np
 import pandas as pd
-import grouped_mr
-import generate_new_active_sets
-import flame_dame_helpers
+from . import grouped_mr
+from . import generate_new_active_sets
+from . import flame_dame_helpers
 
 
 
