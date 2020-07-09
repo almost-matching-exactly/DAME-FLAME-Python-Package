@@ -280,9 +280,18 @@ This is output from `FLAME` or `DAME`
 **unit_ids**: int, list, required (no default).
 This is the unit or list of units for which the main matched group or treatment effect is being calculated
 
+**input_data**: file, DataFrame, required (no default)
+This is the matching data. 
+
 **output_style**: int, optional (default=1):
 In the MG function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ' * ' character in the column for each unit that was not matched on that covariate.
 If this value is 2, then the dataframe will contain complete values and no ' * ' characters.
+
+**treatment_column_name**: string, optional (default="treated")  
+This is the name of the column with a binary indicator for whether a row is a treatment or control unit.
+
+**outcome_column_name**: string, optional (default="outcome")  
+This is the name of the column with the outcome variable of each unit. 
 
 ## Additional Technical Notes
 
