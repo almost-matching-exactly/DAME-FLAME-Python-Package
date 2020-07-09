@@ -110,8 +110,11 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         early_stops (type EarlyStop): This is all of the possible stop criteria
 
     Returns:
-        return_matches: df of units with the column values of their main 
-            matched group, with "*"s in place for the columns not in their MMG
+        return_df: df of units with the column values of their main matched
+            group, with "*"s in place for the columns not in their MMG; 
+            includes a unit weights column which indicates the number of times 
+            each unit was matched
+        MG_units: list of unit ids for every matched group
     """
         
     # Initialize variables. These are all moving/temporary throughout algo
@@ -124,15 +127,25 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     # Initialize return values
     return_pe = []
     return_bf = []
+    MG_units = [] # list of unit ids for each matched group
+    weights = [0] * len(df_all.index) # unit weights
     
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     
     # As an initial step, we attempt to match on all covariates
     
     covs_match_on = all_covs
-    matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
-        df_all, df_all, covs_match_on, all_covs, treatment_column_name, 
+    matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
+        df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
+    
+    # Iterate through newly returned matched groups
+    for group in units_in_g:
+         # Append new matched groups
+         MG_units.append(group)
+         # Update unit weights for all units which appear in the new groups
+         for unit in group:
+             weights[unit] += 1
     
     
     # Now remove the matched units
@@ -235,9 +248,17 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         covs_match_on = list(set(all_covs)-curr_covar_set)
                 
-        matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
-           df_all, df_unmatched, covs_match_on, all_covs,
-           treatment_column_name, outcome_column_name, return_matches)
+        matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
+        df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
+        outcome_column_name, return_matches)
+    
+        # Iterate through newly returned matched groups
+        for group in units_in_g:
+             # Append new matched groups
+             MG_units.append(group)
+             # Update unit weights for all units which appear in the new groups
+             for unit in group:
+                 weights[unit] += 1
         
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think. 
@@ -317,5 +338,11 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         return_package.append(return_pe)
     if want_bf == True:
         return_package.append(return_bf)
+        
+    # Remove unmatched units
+    weights = [i for i in weights if i != 0]
+    
+    return_package[0]['weights'] = weights
+    return_package.append(MG_units)
         
     return return_package

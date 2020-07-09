@@ -71,31 +71,43 @@ print(result[0])
 #>    x1   x2   x3   x4
 #> 0   0   1    1    *
 #> 1   0   1    1    *
-#> 2   1   0    *    *
-#> 3   1   0    *    *
+#> 2   1   0    *    1
+#> 3   1   0    *    1
 ```
-result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. This element also includes a column of unit weights which specifies the number of times each unit was matched. The second element is a list of unit IDs belonging to each of the matched groups created by the algorithm. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
-To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
+To find the main matched group of a particular unit or group of units after DAME has been run, use the function *MG*:
 
 ```Python
-mmg = dame_flame.DAME_FLAME.mmg_of_unit(return_df=result[0], unit_id=0, input_data=df)
+mmg = dame_flame.DAME_FLAME.MG(return_df=result, unit_id=0, input_data=df)
 print(mmg)
 
-#>    x1   x2    x3
-#> 0   0    1    1
-#> 1   0    1    1
+#>      x1    x2    x3    x4    treated    outcome
+#> 0    0     1     1     *     0          5
+#> 1    0     1     1     *     1          6
 ```
 
-To find the treatment effect of a unit, use the function *te_of_unit*
+To find the conditional treatment effect (CATE) for the main matched group of a particular unit or group of units, use the function *CATE*:
 
 
 ```Python
-te = dame_flame.DAME_FLAME.te_of_unit(return_df=result[0], unit_id=2, input_data=df, treatment_column_name='treated', outcome_column_name='outcome')
+te = dame_flame.DAME_FLAME.CATE(return_df=result, unit_id=2, input_data=df)
 print(te)
-#> -1.0
+#> 3.0
 ```
 
+To find the average treatment effect (ATE) or average treatment effect on the treated (ATT), use the functions *ATE* and *ATT*, respectively:
+
+
+```Python
+ate = dame_flame.DAME_FLAME.ATE(return_df=result, input_data=df)
+print(ate)
+#> 2.0
+
+att = dame_flame.DAME_FLAME.ATT(return_df=result, input_data=df)
+print(att)
+#> 2.0
+```
 
 ## DAME and FLAME Parameters and Defaults
 
@@ -244,30 +256,30 @@ If early_stop_bf is true, then if the covariate set chosen for matching has a ba
 To provide users with additional options in analyzing the output of DAME and FLAME, we provide a set of functions that can be used after running the match.
 
 ```Python
-# The main matched group of a unit
-mmg_of_unit(return_df, unit_id, input_data, output_style=1)
+# The main matched group of a unit or list of units
+MG(return_df, unit_id, input_data, output_style = 1, treatment_column_name = 'treated', outcome_column_name = 'outcome')
 
-# The treatment effect of a unit
-te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
+# The conditional average treatment effect for a unit or list of units
+CATE(return_df, unit_id, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
 
-# Both the main matched group and the treatment effect of a unit 
-mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name, return_vals=0)
+# The average treatment effect for the matching data
+ATE(return_df, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
+
+# The average treatment effect on the treated for the matching data
+ATT(return_df, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
 ```
 
 ### Parameters 
 
 **return_df**: Python Pandas Dataframe, required (no default).
-This is the dataframe containing all of the matches, or the first and main output from `FLAME` or `DAME`
+This is output from `FLAME` or `DAME`
 
-**unit_id**: int, required (no default).
-This is the unit for which the main matched group or treatment effect is being calculated
+**unit_ids**: int, list, required (no default).
+This is the unit or list of units for which the main matched group or treatment effect is being calculated
 
 **output_style**: int, optional (default=1):
-In the mmg_of_unit function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ' * ' character in the column for each unit that was not matched on that covariate.
+In the MG function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ' * ' character in the column for each unit that was not matched on that covariate.
 If this value is 2, then the dataframe will contain complete values and no ' * ' characters.
-
-**return_vals**: int, optional (default=0):
-In mmg_and_te_of_unit, if this is 1 then the values will print in a pretty way rather than outputting. 
 
 ## Additional Technical Notes
 

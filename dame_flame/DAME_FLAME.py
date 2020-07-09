@@ -103,7 +103,10 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
 
     Returns:
         return_df: df of units with the column values of their main matched
-            group, with "*"s in place for the columns not in their 
+            group, with "*"s in place for the columns not in their MMG; 
+            includes a unit weights column which indicates the number of times 
+            each unit was matched
+        MG_units: list of unit ids for every matched group
         pe_array: If want_pe is true, then the PE values of each match
         bf_array: If want_bf is true, then the BF values of each match
             
@@ -177,10 +180,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
             change in PE before stopping
             
     Returns:
-        See DAME above. The exeption is that return_df also includes a column
-        of unit weeights and the additional return below:
-        
-        MG_units: a list of unit ids for each matched group
+        See DAME above.
     """
     
     df, df_holdout = data_cleaning.read_files(input_data, holdout_data)
@@ -334,14 +334,15 @@ def print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name,
 
 ##### These are the newly created functions #####
 
-def MG(return_df, unit_ids, input_data):
+def MG(return_df, unit_ids, input_data, output_style = 1,
+       treatment_column_name = 'treated', outcome_column_name = 'outcome'):
     '''
     This function returns the main matched groups for all specified unit
     indices
 
     Args:
         return_df (df): output of FLAME
-        unit_id (int, list): units for which MG will be returned
+        unit_ids (int, list): units for which MG will be returned
         input_data (str, df): matching data
         treatment_column_name (str): name of column containing treatment 
             information
@@ -367,7 +368,14 @@ def MG(return_df, unit_ids, input_data):
         for group in MGs:
             # The first group to contain the specified unit is the MMG
             if unit in group:
-                MMGs.append(input_data.loc[group])
+                new_group = input_data.loc[group]
+                if output_style == 1:
+                    # Insert asterisks for covariates that were not matched on
+                    for column in new_group.drop(columns = [treatment_column_name, 
+                                                            outcome_column_name]):
+                        if new_group[column].nunique() > 1:
+                            new_group[column] = ['*'] * len(new_group.index)
+                MMGs.append(new_group)
                 # Update status after group is found and break loop
                 status = 1
                 break
@@ -387,7 +395,7 @@ def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated',
     
     Args:
         return_df (df): output of FLAME
-        unit_id (int, list): units for which CATE will be computed
+        unit_ids (int, list): units for which CATE will be computed
         input_data (str, df): matching data
         treatment_column_name (str): name of column containing treatment 
             information
