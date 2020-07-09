@@ -30,7 +30,7 @@ $ pip install dame-flame
 import dame_flame
 
 # Run DAME
-x = dame_flame.DAME_FLAME.DAME(input_data=r"dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
+x = dame_flame.DAME_FLAME.DAME(input_data="dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
 ```
 
 ## Required data format
@@ -68,11 +68,14 @@ import dame_flame
 df = pd.read_csv("dame_flame/data/sample.csv")
 result = dame_flame.DAME_FLAME.DAME(input_data=df, treatment_column_name="treated", outcome_column_name="outcome", holdout_data=1.0)
 print(result[0])
-#>    x1   x2   x3   x4
-#> 0   0   1    1    *
-#> 1   0   1    1    *
-#> 2   1   0    *    1
-#> 3   1   0    *    1
+#>    x1   x2   x3   x4    weights
+#> 0   0   1    1    *     1
+#> 1   0   1    1    *     1
+#> 2   1   0    *    1     1
+#> 3   1   0    *    1     1
+
+print(result[1])
+#> [[0,1],[2,3]]
 ```
 result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. This element also includes a column of unit weights which specifies the number of times each unit was matched. The second element is a list of unit IDs belonging to each of the matched groups created by the algorithm. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
