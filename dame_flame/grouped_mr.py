@@ -52,20 +52,23 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
     
-    # This list stores all matched groups created by this function
+    # Each element in this list represents a matched group and contains all of
+    # the unit ids belonging to that particular group
     all_units_in_g = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
         units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
-        # Append newly created matched group
-        all_units_in_g.append(list(units_in_g))
+
         # Which of the units of this new group haven't been matched yet? 
         # unique_matched is a subset of units in the matched group, just the
         # ones for whom this is their main matched group.        
         newly_matched = [i for i in units_in_g if i in df_unmatched.index]
         # Only need to proceed to fill in the return table if someone's MMG found. 
         if len(newly_matched) != 0:
-               
+            
+            # Append newly created matched group
+            all_units_in_g.append(list(units_in_g))
+            
             # Now, we figure out: What does the group look like? eg [1,2,*,1]
             temp_row_in_group = matched_rows.loc[units_in_g[0]] 
             # ^ that line arbitrarily chooses the first row that has the bi_val so

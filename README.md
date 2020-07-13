@@ -75,9 +75,12 @@ print(result[0])
 #> 3   1   0    *    1     1
 
 print(result[1])
-#> [[0,1],[2,3]]
+#> [[2,3],[0,1]]
 ```
-result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. This element also includes a column of unit weights which specifies the number of times each unit was matched. The second element is a list of unit IDs belonging to each of the matched groups created by the algorithm. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. 
+The covariates that each unit was not matched on is denoted with a " * " character. This element also includes a column of unit weights which specifies the number of main matched groups that each unit was placed in. 
+The second element is a list of lists, each of which corresponds to a particular main matched group and contains all of the units belonging that group. 
+The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
 
 To find the main matched group of a particular unit or group of units after DAME has been run, use the function *MG*:
 
