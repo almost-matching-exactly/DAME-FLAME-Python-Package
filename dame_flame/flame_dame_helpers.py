@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 11 18:56:00 2019
-
-@author: nrg18
+@author: Neha Gupta, Duke University.
+Copyright Duke University 2020
 """
 import numpy as np
 import pandas as pd

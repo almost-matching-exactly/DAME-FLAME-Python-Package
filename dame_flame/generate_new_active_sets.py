@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
+"""
+@author: Neha Gupta, Duke University.
+Copyright Duke University 2020
+"""
 import itertools
 
 def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
