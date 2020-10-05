@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@author: Neha Gupta, Duke University
-DAME-FLAME Python Package
+@author: Neha Gupta, Duke University.
+Copyright Duke University 2020
+
 
 This file implements Algorithm 1 in the DAME paper
 """
@@ -82,8 +83,8 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
 
     Args:
         df_all: The cleaned, user-provided dataframe with all rows/columns. 
-            There are no changes made to this throughout the code. In the 
-            paper, it's called 'D'.
+            There are no changes made to this throughout the code when the 
+            parameter "repeats" is True. In the DAME paper, this is called 'D'.
         treatment_column_name: As provided by the user, this indicates the name
             of the column that contains the binary indicator for whether each
             row is a treatment group or not.
@@ -129,8 +130,12 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     return_bf = []
     MG_units = [] # list of unit ids for each matched group
     weights = [0] * len(df_all.index) # unit weights
-    
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
+    
+    # Initialize variables used in checking stopping criteria
+    orig_len_df_all = len(df_all) # Need this bc of case where repeats=False
+    tot_treated = df_all[treatment_column_name].sum()
+    tot_control = len(df_all) - tot_treated
     
     # As an initial step, we attempt to match on all covariates
     
@@ -175,8 +180,6 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     processed_covar_sets = set() 
         
     h = 1 # The iteration number
-    tot_treated = df_all[treatment_column_name].sum()
-    tot_control = len(df_all) - tot_treated
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     
     # Here, we begin the iterative dropping procedure of DAME
@@ -186,13 +189,13 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         try:
             if ((early_stops.unmatched_t == True or repeats == False) and 
                 (1 not in df_unmatched[treatment_column_name].values)): 
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
             
             if ((early_stops.unmatched_c == True or repeats == False) and 
                 (0 not in df_unmatched[treatment_column_name].values)):
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
         except TypeError:
@@ -204,7 +207,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         # Hard stop criteria: exceeded the number of iters user asked for?
         if (early_stops.iterations != False and early_stops.iterations == h):
-            print((len(df_all) - len(df_unmatched)), "units matched. "\
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped before doing iteration number: ", h)
             break
         
@@ -227,7 +230,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         # quit if there are covariate sets to choose from
         if (len(active_covar_sets) == 0):
-            print((len(df_all) - len(df_unmatched)), "units matched. "\
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                 "We stopped after considering all covariate set options")
             break
         
@@ -239,7 +242,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         
         # Check for error in above step:
         if (curr_covar_set == False):
-            print((len(df_all) - len(df_unmatched)), "units matched. "\
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped when the holdout set was not large enough or "\
                   "there was nothing left to match")
             break
@@ -275,13 +278,13 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             return_bf.append(bf)
             
             if (bf < early_stops.bf):
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a balancing factor of ", bf)
                 break
         
         if (early_stops.pe != False):
             if pe >= early_stops.pe:
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
                 break
             
@@ -319,12 +322,12 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             print("Unmatched treated units: ", unmatched_treated,
                   "out of a total of ", total_treated, "treated units .")
             print("Unmatched control units: ", unmatched_control,
-                  "out of a total of ", len(df_all)-total_treated, 
+                  "out of a total of ", orig_len_df_all-total_treated, 
                   "control units")
             print("Predictive error of covariates chosen this iteration: ", pe)
             print("Number of matches made in this iteration: ", 
                   prev_iter_num_unmatched - len(df_unmatched))
-            print("Number of matches made so far: ", len(df_all) - len(df_unmatched))
+            print("Number of matches made so far: ", orig_len_df_all - len(df_unmatched))
             print("In this iteration, the covariates dropped are: ", curr_covar_set)
             if want_bf == True:
                 print("Balancing factor of this iteration: ", bf)
