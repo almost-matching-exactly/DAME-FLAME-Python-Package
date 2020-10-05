@@ -4,6 +4,7 @@
 Copyright Duke University 2020
 """
 import pandas as pd
+import numpy as np
 
 from . import grouped_mr
 from . import dame_algorithm
@@ -89,7 +90,9 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     return_pe= [] # list of predictive errors, 
     return_bf = []
     MG_units = [] # list of unit ids for each matched group
-    weights = [0] * len(df_all.index) # unit weights
+    weights = pd.DataFrame(np.zeros(shape=(len(df_all.index),1)), 
+                           columns = ['weights'],
+                           index = df_all.index) # unit weights
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     # As an initial step, we attempt to match on all covariates
@@ -105,7 +108,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
          MG_units.append(group)
          # Update unit weights for all units which appear in the new groups
          for unit in group:
-             weights[unit] += 1
+             weights['weights'][unit] += 1
              
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -207,8 +210,8 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
              MG_units.append(group)
              # Update unit weights for all units which appear in the new groups
              for unit in group:
-                 weights[unit] += 1
-                     
+                 weights['weights'][unit] += 1
+
         # Check for error in above step:
         if (new_drop == False):
             break
@@ -254,6 +257,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
             print("Iteration number: ", h)
+            print("Matched groups formed: ", len(units_in_g))
             if (early_stops.un_t_frac == False and 
                 early_stops.un_c_frac == False):
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
@@ -304,10 +308,8 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     if (want_bf == True):
         return_package.append(return_bf)
     
-    # Remove unmatched units
-    weights = [i for i in weights if i != 0]
-    
-    return_package[0]['weights'] = weights
+    # append weights and MGs to return package
+    return_package[0] = return_package[0].join(weights)
     return_package.append(MG_units)
 
     

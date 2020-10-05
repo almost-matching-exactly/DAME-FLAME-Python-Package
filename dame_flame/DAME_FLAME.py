@@ -354,33 +354,33 @@ def MG(return_df, unit_ids, input_data, output_style = 1,
             in the main matched groups for the specified units
         
     '''
-    # Accept int or list
+    # Accept int or list for unit_id
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
     # Define relevant output variables
     MGs = return_df[1]
     # Now we recover MMG
     MMGs = []
     for unit in unit_ids:
-        # Status variable indicates whether the requested MMG has been found
-        status = 0
-        # Iterate through all matched groups
-        for group in MGs:
-            # The first group to contain the specified unit is the MMG
-            if unit in group:
-                new_group = input_data.loc[group]
-                if output_style == 1:
-                    # Insert asterisks for covariates that were not matched on
-                    for column in new_group.drop(columns = [treatment_column_name, 
-                                                            outcome_column_name]):
-                        if new_group[column].nunique() > 1:
-                            new_group[column] = ['*'] * len(new_group.index)
-                MMGs.append(new_group)
-                # Update status after group is found and break loop
-                status = 1
-                break
+        if unit in return_df[0].index:
+            # Iterate through all matched groups
+            for group in MGs:
+                # The first group to contain the specified unit is the MMG
+                if unit in group:
+                    new_group = input_data.loc[group]
+                    my_series = return_df[0].loc[unit]
+                    if output_style == 1 and "*" in my_series.unique():
+                        # Insert asterisks for unused covariates
+                        star_cols = my_series[my_series == "*"].index
+                        for col in star_cols:
+                            new_group[[col]] = ['*'] * len(new_group.index)
+                    MMGs.append(new_group)
+                    break
         # Warn user if a unit has no matches
-        if status == 0:
+        else:
             MMGs.append(np.nan)
             print('Unit ' + str(unit) + ' does not have any matches')
     # Format output
@@ -410,33 +410,33 @@ def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated',
     # Accept int or list
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
     # Define relevant output variables
     MGs = return_df[1]
     # Recover CATEs
     CATEs = []
     for unit in unit_ids:
-        status = 0
-        # Iterate through all matched groups
-        for group in MGs:
-            # The first group to contain the specified unit is the MMG
-            if unit in group:
-                df_mmg = input_data.loc[group,[treatment_column_name,
-                                               outcome_column_name]]
-                # Update status after group is found and break loop
-                status = 1
-                break
-        # Warn user that unit has no matches
-        if status == 0:
-            CATEs.append(np.nan)
-            print('Unit ' + str(unit) + " does not have any matches, so " \
-                  "can't find the CATE")
-        else:
+        if unit in return_df[0].index:
+            for group in MGs:
+                # The first group to contain the specified unit is the MMG
+                if unit in group:
+                    df_mmg = input_data.loc[group,[treatment_column_name,
+                                                   outcome_column_name]]
+                    break
             # Assuming an MMG has been found, compute CATE for that group
             treated = df_mmg.loc[df_mmg[treatment_column_name] == 1]
             control = df_mmg.loc[df_mmg[treatment_column_name] == 0]
             avg_treated = sum(treated[outcome_column_name])/len(treated.index)
             avg_control = sum(control[outcome_column_name])/len(control.index)
             CATEs.append(avg_treated - avg_control)
+        # Warn user that unit has no matches
+        else:
+            CATEs.append(np.nan)
+            print('Unit ' + str(unit) + " does not have any matches, so " \
+                  "can't find the CATE")
+            
     # Format output
     if len(CATEs) == 1:
         CATEs = CATEs[0]
@@ -459,6 +459,9 @@ def ATE(return_df, input_data, treatment_column_name = 'treated',
         ATE: the average treatment effect for the matching data
         
     '''
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
     # Define relevant output variables
     MGs = return_df[1]
     weights = return_df[0]['weights']
@@ -500,6 +503,9 @@ def ATT(return_df, input_data, treatment_column_name = 'treated',
     Returns:
         ATT: the average treatment effect on the treated for the matching data
     '''
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
     # Define relevant output variables
     weights = return_df[0]['weights']
     treated = input_data.loc[input_data[treatment_column_name] == 1]

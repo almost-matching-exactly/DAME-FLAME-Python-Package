@@ -180,7 +180,6 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
     This function replaces missing values from the df with unique large values
     could possibly clean this up later
     '''
-    max_val = df.max().max()
     # now we replace all of the missing_indicators with unique large vals
     # that are larger than max_val. 
 
@@ -188,12 +187,12 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
     
     for col in df.columns:
         if (col != treatment_column_name and col != outcome_column_name):
+            max_val = df[col].max()
             for item_num in df.index.values:
                 if (math.isnan(df[col][item_num]) == True):
                     df.loc[item_num, col] = max_val + 1
                     max_val += 1
-                    
-    return df
+    return df.astype('int64')
 
 def drop_missing(df, treatment_column_name, outcome_column_name, 
                  missing_indicator):

@@ -9,9 +9,9 @@ This file implements Algorithm 1 in the DAME paper
 
 import numpy as np
 import pandas as pd
-from . import grouped_mr
-from . import generate_new_active_sets
-from . import flame_dame_helpers
+import grouped_mr
+import generate_new_active_sets
+import flame_dame_helpers
 
 
 
@@ -315,6 +315,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
             print("Iteration number: ", h)
+            print("Matched groups formed: ", len(units_in_g))
             if (early_stops.un_t_frac == False and early_stops.un_c_frac == False):
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
                 unmatched_control = len(df_unmatched) - unmatched_treated
