@@ -45,7 +45,6 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     matched_units, bi = flame_group_by.match_ng(df_all_without_outcome, 
                             covs_match_on, covs_max_list, 
                             treatment_column_name)
-
     # Find newly matched units and their main matched groups.
     
     # These are the rows of the ones that have been matched: 
@@ -60,8 +59,8 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     all_units_in_g = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
-        units_in_g = matched_rows.index[matched_rows['b_i'] == bi_val]
-        
+        units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
+
         # Which of the units of this new group haven't been matched yet? 
         # unique_matched is a subset of units in the matched group, just the
         # ones for whom this is their main matched group.        
