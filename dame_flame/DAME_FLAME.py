@@ -103,7 +103,10 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
 
     Returns:
         return_df: df of units with the column values of their main matched
-            group, with "*"s in place for the columns not in their 
+            group, with "*"s in place for the columns not in their MMG; 
+            includes a unit weights column which indicates the number of times 
+            each unit was matched
+        MG_units: list of unit ids for every matched group
         pe_array: If want_pe is true, then the PE values of each match
         bf_array: If want_bf is true, then the BF values of each match
             
@@ -328,3 +331,195 @@ def print_te_and_mmg(return_df, unit_id, input_data, treatment_column_name,
     print(df_mmg)
     print("This is the treatment effect of unit", unit_id, ":")
     print(te)
+
+##### These are the newly created functions #####
+
+def MG(return_df, unit_ids, input_data, output_style = 1,
+       treatment_column_name = 'treated', outcome_column_name = 'outcome'):
+    '''
+    This function returns the main matched groups for all specified unit
+    indices
+
+    Args:
+        return_df (df): output of FLAME
+        unit_ids (int, list): units for which MG will be returned
+        input_data (str, df): matching data
+        treatment_column_name (str): name of column containing treatment 
+            information
+        outcome_column_name (str): name of column containing outcome 
+            information
+    
+    Returns:
+        MMGs: list of datraframes or singular dataframe containing the units
+            in the main matched groups for the specified units
+        
+    '''
+    # Accept int or list for unit_id
+    if type(unit_ids) is int:
+        unit_ids = [unit_ids]
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
+    # Define relevant output variables
+    MGs = return_df[1]
+    # Now we recover MMG
+    MMGs = []
+    for unit in unit_ids:
+        if unit in return_df[0].index:
+            # Iterate through all matched groups
+            for group in MGs:
+                # The first group to contain the specified unit is the MMG
+                if unit in group:
+                    new_group = input_data.loc[group]
+                    my_series = return_df[0].loc[unit]
+                    if output_style == 1 and "*" in my_series.unique():
+                        # Insert asterisks for unused covariates
+                        star_cols = my_series[my_series == "*"].index
+                        for col in star_cols:
+                            new_group[[col]] = ['*'] * len(new_group.index)
+                    MMGs.append(new_group)
+                    break
+        # Warn user if a unit has no matches
+        else:
+            MMGs.append(np.nan)
+            print('Unit ' + str(unit) + ' does not have any matches')
+    # Format output
+    if len(MMGs) == 1:
+        MMGs = MMGs[0]
+    return MMGs
+
+def CATE(return_df, unit_ids, input_data, treatment_column_name = 'treated', 
+         outcome_column_name = 'outcome'):
+    '''
+    This function returns the CATEs for all specified unit indices
+    
+    Args:
+        return_df (df): output of FLAME
+        unit_ids (int, list): units for which CATE will be computed
+        input_data (str, df): matching data
+        treatment_column_name (str): name of column containing treatment 
+            information
+        outcome_column_name (str): name of column containing outcome 
+            information
+    
+    Returns:
+        CATEs: list of floats or singular float containing the CATEs
+            of the main matched groups for the specified units
+        
+    '''
+    # Accept int or list
+    if type(unit_ids) is int:
+        unit_ids = [unit_ids]
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
+    # Define relevant output variables
+    MGs = return_df[1]
+    # Recover CATEs
+    CATEs = []
+    for unit in unit_ids:
+        if unit in return_df[0].index:
+            for group in MGs:
+                # The first group to contain the specified unit is the MMG
+                if unit in group:
+                    df_mmg = input_data.loc[group,[treatment_column_name,
+                                                   outcome_column_name]]
+                    break
+            # Assuming an MMG has been found, compute CATE for that group
+            treated = df_mmg.loc[df_mmg[treatment_column_name] == 1]
+            control = df_mmg.loc[df_mmg[treatment_column_name] == 0]
+            avg_treated = sum(treated[outcome_column_name])/len(treated.index)
+            avg_control = sum(control[outcome_column_name])/len(control.index)
+            CATEs.append(avg_treated - avg_control)
+        # Warn user that unit has no matches
+        else:
+            CATEs.append(np.nan)
+            print('Unit ' + str(unit) + " does not have any matches, so " \
+                  "can't find the CATE")
+            
+    # Format output
+    if len(CATEs) == 1:
+        CATEs = CATEs[0]
+    return CATEs
+
+def ATE(return_df, input_data, treatment_column_name = 'treated',
+         outcome_column_name = 'outcome'):
+    '''
+    This function returns the ATE for the matching data
+    
+    Args:
+        return_df (df): output of FLAME
+        input_data (str, df): matching data
+        treatment_column_name (str): name of column containing treatment 
+            information
+        outcome_column_name (str): name of column containing outcome 
+            information
+    
+    Returns:
+        ATE: the average treatment effect for the matching data
+        
+    '''
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
+    # Define relevant output variables
+    MGs = return_df[1]
+    weights = return_df[0]['weights']
+    # Recover CATEs
+    CATEs = [0] * len(MGs)
+    for group_id in range(len(MGs)):
+        group_data = input_data.loc[MGs[group_id], [treatment_column_name,
+                                                    outcome_column_name]]
+        treated = group_data.loc[group_data[treatment_column_name] == 1]
+        control = group_data.loc[group_data[treatment_column_name] == 0]
+        avg_treated = sum(treated[outcome_column_name]) / len(treated.index)
+        avg_control = sum(control[outcome_column_name]) / len(control.index)
+        CATEs[group_id] = avg_treated - avg_control
+    # Compute ATE
+    weight_sum = 0; weighted_CATE_sum = 0
+    for group_id in range(len(MGs)):
+        MG_weight = 0;
+        for unit in MGs[group_id]:
+            MG_weight += weights[unit]
+        weight_sum += MG_weight
+        weighted_CATE_sum += MG_weight * CATEs[group_id]
+    ATE = weighted_CATE_sum / weight_sum
+    return ATE
+
+def ATT(return_df, input_data, treatment_column_name = 'treated',
+        outcome_column_name = 'outcome'):
+    '''
+    This function returns the ATT for the matching data using
+    balancing estimation
+    
+    Args:
+        return_df (df): output of FLAME
+        input_data (str, df): matching data
+        treatment_column_name (str): name of column containing treatment 
+            information
+        outcome_column_name (str): name of column containing outcome 
+            information
+    
+    Returns:
+        ATT: the average treatment effect on the treated for the matching data
+    '''
+    # Accept dataframe or string for input_data
+    if type(input_data) != pd.core.frame.DataFrame:
+        input_data = pd.read_csv(input_data)
+    # Define relevant output variables
+    weights = return_df[0]['weights']
+    treated = input_data.loc[input_data[treatment_column_name] == 1]
+    control = input_data.loc[input_data[treatment_column_name] == 0]
+    # Compute ATT
+    avg_treated = sum(treated[outcome_column_name])/len(treated.index)
+    # Stores weights for all control units
+    control_weights = []
+    for unit in control.index:
+        if unit in weights.index:
+            control_weights.append(weights[unit])
+        else:
+            # Unmatched units have a weight of 0
+            control_weights.append(0)
+    control_weight_sum = sum(control_weights)
+    avg_control = sum(control[outcome_column_name] * control_weights)/control_weight_sum
+    return avg_treated - avg_control

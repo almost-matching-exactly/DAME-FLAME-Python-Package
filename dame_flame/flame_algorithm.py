@@ -4,6 +4,7 @@
 Copyright Duke University 2020
 """
 import pandas as pd
+import numpy as np
 
 from . import grouped_mr
 from . import dame_algorithm
@@ -48,7 +49,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         # need to make sure we don't edit the mutable dataframes, then do match
         df_all_temp = df_all.copy(deep=True)
         return_matches_temp = return_matches.copy(deep=True)
-        matched_rows, return_matches_temp = grouped_mr.algo2_GroupedMR(
+        matched_rows, return_matches_temp, units_in_g = grouped_mr.algo2_GroupedMR(
             df_all_temp, df_unmatched, covs_match_on, all_covs, 
             treatment_column_name, outcome_column_name, return_matches_temp)
 
@@ -65,8 +66,9 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
             best_drop = poss_drop
             best_return_matches = return_matches_temp
             best_matched_rows = matched_rows
+            best_units_in_g = units_in_g
                 
-    return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf
+    return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf, best_units_in_g
 
 def flame_generic(df_all, treatment_column_name, outcome_column_name, 
                   adaptive_weights, alpha, df_holdout, repeats, want_pe,
@@ -75,7 +77,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
-     DAME and after integer number of iterations. 
+    DAME and after integer number of iterations.
     '''
             
     # Initialize variables. These are all moving/temporary throughout algo
@@ -87,16 +89,27 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
     # The items getting returned
     return_pe= [] # list of predictive errors, 
     return_bf = []
+    MG_units = [] # list of unit ids for each matched group
+    weights = pd.DataFrame(np.zeros(shape=(len(df_all.index),1)), 
+                           columns = ['weights'],
+                           index = df_all.index) # unit weights
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     # As an initial step, we attempt to match on all covariates
-    
+
     covs_match_on = all_covs
-    
-    matched_rows, return_matches = grouped_mr.algo2_GroupedMR(
+    matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
-
+    
+    # Iterate through newly returned matched groups
+    for group in units_in_g:
+         # Append new matched groups
+         MG_units.append(group)
+         # Update unit weights for all units which appear in the new groups
+         for unit in group:
+             weights['weights'][unit] += 1
+             
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
         
@@ -186,11 +199,19 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                   "No more covariate sets to consider dropping")
             break
                         
-        new_drop, pe, matched_rows, return_matches, bf = decide_drop(all_covs, 
+        new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs, 
             consider_dropping, prev_dropped, df_all, treatment_column_name, 
             outcome_column_name, df_holdout_array, adaptive_weights, alpha, 
             df_unmatched, return_matches, C)
-                     
+      
+        # Iterate through newly returned matched groups
+        for group in units_in_g:
+             # Append new matched groups
+             MG_units.append(group)
+             # Update unit weights for all units which appear in the new groups
+             for unit in group:
+                 weights['weights'][unit] += 1
+
         # Check for error in above step:
         if (new_drop == False):
             break
@@ -236,6 +257,7 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
             print("Iteration number: ", h)
+            print("Matched groups formed: ", len(units_in_g))
             if (early_stops.un_t_frac == False and 
                 early_stops.un_c_frac == False):
                 unmatched_treated = df_unmatched[treatment_column_name].sum()
@@ -278,11 +300,17 @@ def flame_generic(df_all, treatment_column_name, outcome_column_name,
                 
         
         # end loop.
+
     return_matches = return_matches.dropna(axis=0) #drop rows with nan
     return_package = [return_matches]
     if (want_pe == True):
         return_package.append(return_pe)
     if (want_bf == True):
         return_package.append(return_bf)
-        
+    
+    # append weights and MGs to return package
+    return_package[0] = return_package[0].join(weights)
+    return_package.append(MG_units)
+
+    
     return return_package

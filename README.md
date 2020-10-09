@@ -30,7 +30,7 @@ $ pip install dame-flame
 import dame_flame
 
 # Run DAME
-x = dame_flame.DAME_FLAME.DAME(input_data=r"dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
+x = dame_flame.DAME_FLAME.DAME(input_data="dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
 ```
 
 ## Required data format
@@ -68,34 +68,52 @@ import dame_flame
 df = pd.read_csv("dame_flame/data/sample.csv")
 result = dame_flame.DAME_FLAME.DAME(input_data=df, treatment_column_name="treated", outcome_column_name="outcome", holdout_data=1.0)
 print(result[0])
-#>    x1   x2   x3   x4
-#> 0   0   1    1    *
-#> 1   0   1    1    *
-#> 2   1   0    *    *
-#> 3   1   0    *    *
-```
-result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a " * " character. The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+#>    x1   x2   x3   x4    weights
+#> 0   0   1    1    *     1
+#> 1   0   1    1    *     1
+#> 2   1   0    *    1     1
+#> 3   1   0    *    1     1
 
-To find the main matched group of a particular unit after DAME has been run, use the function *mmg_of_unit*
+print(result[1])
+#> [[2,3],[0,1]]
+```
+result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. 
+The covariates that each unit was not matched on is denoted with a " * " character. This element also includes a column of unit weights which specifies the number of main matched groups that each unit was placed in. 
+The second element is a list of lists, each of which corresponds to a particular main matched group and contains all of the units belonging that group. 
+The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+
+To find the main matched group of a particular unit or group of units after DAME has been run, use the function *MG*:
 
 ```Python
-mmg = dame_flame.DAME_FLAME.mmg_of_unit(return_df=result[0], unit_id=0, input_data=df)
+mmg = dame_flame.DAME_FLAME.MG(return_df=result, unit_id=0, input_data=df)
 print(mmg)
 
-#>    x1   x2    x3
-#> 0   0    1    1
-#> 1   0    1    1
+#>      x1    x2    x3    x4    treated    outcome
+#> 0    0     1     1     *     0          5
+#> 1    0     1     1     *     1          6
 ```
 
-To find the treatment effect of a unit, use the function *te_of_unit*
+To find the conditional treatment effect (CATE) for the main matched group of a particular unit or group of units, use the function *CATE*:
 
 
 ```Python
-te = dame_flame.DAME_FLAME.te_of_unit(return_df=result[0], unit_id=2, input_data=df, treatment_column_name='treated', outcome_column_name='outcome')
+te = dame_flame.DAME_FLAME.CATE(return_df=result, unit_id=2, input_data=df)
 print(te)
-#> -1.0
+#> 3.0
 ```
 
+To find the average treatment effect (ATE) or average treatment effect on the treated (ATT), use the functions *ATE* and *ATT*, respectively:
+
+
+```Python
+ate = dame_flame.DAME_FLAME.ATE(return_df=result, input_data=df)
+print(ate)
+#> 2.0
+
+att = dame_flame.DAME_FLAME.ATT(return_df=result, input_data=df)
+print(att)
+#> 2.0
+```
 
 ## DAME and FLAME Parameters and Defaults
 
@@ -144,10 +162,10 @@ If adaptive_weights = False, these are the weights to the covariates in **input_
 **alpha**: float, optional (default=0.1)  
 If adaptive_weights is set to ridge, this is the alpha for ridge regression.
 
-**holdout_data**: file, DataFrame, float between 0 and 1, optional (Default = 0.1)
+**holdout_data**: file, DataFrame, float between 0 and 1, optional (Default = False)
 If doing an adaptive_weights version of DAME, this is used to decide what covariates to drop. The default is to use 10% of the **input_data** dataset. Users can specify a percentage of the matching data set to use as the holdout set, or use a different file. If using a different file, that file needs to have all of the same column labels, including treatment and outcome columns.
 
-**repeats**: Bool, optional (default=False)  
+**repeats**: Bool, optional (default=True)  
 Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. 
 
 
@@ -218,7 +236,7 @@ If provided, a number of iterations after which to hard stop the algorithm.
 **stop_unmatched_c**: bool, optional (default=False)  
 If True, then the algorithm terminates when there are no more control units to match. 
 
-**stop_unmatched_t**: bool, optional (default=True)  
+**stop_unmatched_t**: bool, optional (default=False)  
 If True, then the algorithm terminates when there are no more treatment units to match. 
 
 **early_stop_un_c_frac**: float from 0.0 to 1.0, optional (default=0.1)  
@@ -244,30 +262,39 @@ If early_stop_bf is true, then if the covariate set chosen for matching has a ba
 To provide users with additional options in analyzing the output of DAME and FLAME, we provide a set of functions that can be used after running the match.
 
 ```Python
-# The main matched group of a unit
-mmg_of_unit(return_df, unit_id, input_data, output_style=1)
+# The main matched group of a unit or list of units
+MG(return_df, unit_id, input_data, output_style = 1, treatment_column_name = 'treated', outcome_column_name = 'outcome')
 
-# The treatment effect of a unit
-te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name)
+# The conditional average treatment effect for a unit or list of units
+CATE(return_df, unit_id, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
 
-# Both the main matched group and the treatment effect of a unit 
-mmg_and_te_of_unit(return_df, unit_id, input_data, treatment_column_name, outcome_column_name, return_vals=0)
+# The average treatment effect for the matching data
+ATE(return_df, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
+
+# The average treatment effect on the treated for the matching data
+ATT(return_df, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
 ```
 
 ### Parameters 
 
 **return_df**: Python Pandas Dataframe, required (no default).
-This is the dataframe containing all of the matches, or the first and main output from `FLAME` or `DAME`
+This is output from `FLAME` or `DAME`
 
-**unit_id**: int, required (no default).
-This is the unit for which the main matched group or treatment effect is being calculated
+**unit_ids**: int, list, required (no default).
+This is the unit or list of units for which the main matched group or treatment effect is being calculated
+
+**input_data**: file, DataFrame, required (no default)
+This is the matching data. 
 
 **output_style**: int, optional (default=1):
-In the mmg_of_unit function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ' * ' character in the column for each unit that was not matched on that covariate.
+In the MG function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ' * ' character in the column for each unit that was not matched on that covariate.
 If this value is 2, then the dataframe will contain complete values and no ' * ' characters.
 
-**return_vals**: int, optional (default=0):
-In mmg_and_te_of_unit, if this is 1 then the values will print in a pretty way rather than outputting. 
+**treatment_column_name**: string, optional (default="treated")  
+This is the name of the column with a binary indicator for whether a row is a treatment or control unit.
+
+**outcome_column_name**: string, optional (default="outcome")  
+This is the name of the column with the outcome variable of each unit. 
 
 ## Additional Technical Notes
 
