@@ -115,10 +115,11 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
             
     # Checks on the weight array...if the weight array needs to exist
     if (adaptive_weights == False):
-        
-        if (FLAME == True):
-            raise Exception('adaptive-weights must be either ridge, ridgeCV,'\
-                            ' or decision-tree for FLAME algorithm')
+            
+        if (type(weight_array) != list):
+            raise Exception('Invalid input error. A weight array of type'\
+                            'array needs to be provided when the'\
+                            'parameter adaptive_weights == True')
             
         # Confirm that weight array has the right number of values in it
         # Subtracting 2 because one col is the treatment and one is outcome. 
@@ -151,7 +152,7 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
             raise Exception("Invalid input error. The acceptable values for "\
                             "the adaptive_weights parameter are 'ridge', "\
                             "'decision tree', or 'ridgeCV'. Additionally, "\
-                            "for DAME, adaptive-weights may be 'False' along "\
+                            "adaptive-weights may be 'False' along "\
                             "with a weight array")
 
         

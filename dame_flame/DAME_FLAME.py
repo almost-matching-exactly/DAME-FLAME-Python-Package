@@ -31,6 +31,7 @@ from . import flame_algorithm
 from . import flame_dame_helpers
 from . import early_stops
 
+
 def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
          holdout_data=False, repeats=True, verbose=2, want_pe=False, 
@@ -156,7 +157,7 @@ def DAME(input_data=False, treatment_column_name='treated', weight_array=False,
         return return_array
     
     
-def FLAME(input_data=False, treatment_column_name='treated',
+def FLAME(input_data=False, treatment_column_name='treated', weight_array=False,
           outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1,
           holdout_data=False, repeats=True, verbose=2, want_pe=False, 
           early_stop_iterations=False, stop_unmatched_c=False, 
@@ -170,7 +171,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
     """ This function kicks off the FLAME algorithm.
     
     Args:
-        See DAME above. The exeption is no weight_array, and the additional 
+        See DAME above. The exeption is the additional 
         params below:
             
         pre_dame (int, False): Indicates whether to switch to dame and after
@@ -189,7 +190,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
         df, treatment_column_name, outcome_column_name, adaptive_weights)
 
     alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df, 
-                                           alpha, True, [], C)
+                                           alpha, True, weight_array, C)
     
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,
@@ -203,9 +204,9 @@ def FLAME(input_data=False, treatment_column_name='treated',
 
     if (mice_on_match == False):
         return_array = flame_algorithm.flame_generic(
-            df, treatment_column_name, outcome_column_name, adaptive_weights, 
-            alpha, df_holdout, repeats, want_pe, verbose, want_bf, 
-            mice_on_hold, early_stops, pre_dame, C, epsilon)
+            df, treatment_column_name, weight_array, outcome_column_name, 
+            adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose, 
+            want_bf, mice_on_hold, early_stops, pre_dame, C, epsilon)
         
     else:
         # this would mean we need to run mice on the matching data, which means
@@ -220,7 +221,7 @@ def FLAME(input_data=False, treatment_column_name='treated',
         return_array = []
         for i in range(len(df_array)):
             return_array.append(flame_algorithm.flame_generic(
-                df, treatment_column_name, outcome_column_name, 
+                df, treatment_column_name, weight_array, outcome_column_name, 
                 adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
                 want_bf, mice_on_hold, early_stops, pre_dame, C))
             
