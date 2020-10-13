@@ -114,7 +114,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
 def flame_generic(df_all, treatment_column_name, weight_array, 
                   outcome_column_name, adaptive_weights, alpha, df_holdout, 
                   repeats, want_pe, verbose, want_bf, missing_holdout_replace, 
-                  early_stops, pre_dame, C, epsilon):
+                  early_stops, pre_dame, C):
     '''
     All variables are the same as dame algorithm 1 except for:
     pre_dame(False, integer): Indicates whether the algorithm will move to 
@@ -144,13 +144,15 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
     
-    # Iterate through newly returned matched groups
-    for group in units_in_g:
-         # Append new matched groups
-         MG_units.append(group)
-         # Update unit weights for all units which appear in the new groups
-         for unit in group:
-             weights['weights'][unit] += 1
+    if (len(units_in_g)) != 0:
+        # add the newly matched groups to MG_units, which tracks units in groups
+        MG_units = MG_units + units_in_g
+        # update unit weights for all units which appear in the new groups
+        # flatten to 1 list, then add occurrences of unique units
+        flat_units_in_g = np.concatenate(units_in_g).ravel()
+        unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
+        for index in range(len(unique_units)):
+            weights['weights'][unique_units[index]] += occurrences[index]  
              
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -169,11 +171,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         df_holdout_array = list()
         df_holdout_array.append(df_holdout)
         
-    # todo: calculate the baseline PE and use it to create a stopping based on 
-    # the epsilon criteria. 
-#    baseline_pe = flame_dame_helpers.find_pe_for_covar_set(
-#            df_holdout_array, treatment_column_name, outcome_column_name, 
-#            all_covs, adaptive_weights, alpha)
 
     h = 1 # The iteration number
     tot_treated = df_all[treatment_column_name].sum()
@@ -250,21 +247,17 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         if (new_drop == False):
             break
         
-        # Iterate through newly returned matched groups
-        for group in units_in_g:
-             # Append new matched groups
-             MG_units.append(group)
-             # Update unit weights for all units which appear in the new groups
-             for unit in group:
-                 weights['weights'][unit] += 1
+        if (len(units_in_g)) != 0:
+        # add the newly matched groups to MG_units, which tracks units in groups
+            MG_units = MG_units + units_in_g
+            # update unit weights for all units which appear in the new groups
+            # flatten to 1 list, then add occurrences of unique units
+            flat_units_in_g = np.concatenate(units_in_g).ravel()
+            unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
+            for index in range(len(unique_units)):
+                weights['weights'][unique_units[index]] += occurrences[index]  
         
         return_pe.append(pe)
-        
-        #  todo: check for stopping criteria based on PE
-#        if (pe > (1 + epsilon) * baseline_pe):
-#            print("We stopped matching because predictive error would have "\
-#                  "risen ", 100 * epsilon, "% above the baseline.")
-#            break
         
         if (want_bf == True):
             # if we need to track the bf, do so. 
@@ -333,11 +326,13 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             
             # but first, make sure anything not matched isn't in the df:
             return_matches = return_matches.dropna(axis=0) #drop rows with nan
-            return_package = [return_matches, return_matches_dame]
+            return_matches = return_matches.join(weights)
+            return_package = [return_matches, MG_units]
             if (want_pe == True):
                 return_package.append(return_pe)
             if (want_bf == True):
                 return_package.append(return_bf)
+            return_package.append(return_matches_dame)
             return return_package
                 
         
@@ -345,14 +340,14 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
     return_matches = return_matches.dropna(axis=0) #drop rows with nan
     return_package = [return_matches]
-    if (want_pe == True):
-        return_package.append(return_pe)
-    if (want_bf == True):
-        return_package.append(return_bf)
     
     # append weights and MGs to return package
     return_package[0] = return_package[0].join(weights)
     return_package.append(MG_units)
-
     
+    if (want_pe == True):
+        return_package.append(return_pe)
+    if (want_bf == True):
+        return_package.append(return_bf)
+
     return return_package

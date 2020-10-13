@@ -16,10 +16,10 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     ''' 
     Input: 
         df_all: The dataframe of all of the data
-            df_unmatched: The dataframe ofjust hte unmatched data, a subset of df
-            covs_match_on (array): List of strs with name of columns of df. 
-                            A subset of indexes of all covariates.
-            all_covs (array): list of all covariates. 
+        df_unmatched: The dataframe ofjust hte unmatched data, a subset of df
+        covs_match_on (array): List of strs with name of columns of df. 
+            A subset of indexes of all covariates.
+        all_covs (array): list of all covariates. 
     Output: 
         matched_rows: newly matched units using covs indexed by Js. Type df
         return_groups: The df of unit id and covar values matched on, with '*"

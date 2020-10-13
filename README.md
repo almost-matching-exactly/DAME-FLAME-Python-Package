@@ -66,26 +66,41 @@ import pandas as pd
 import dame_flame
 
 df = pd.read_csv("dame_flame/data/sample.csv")
-result = dame_flame.DAME_FLAME.DAME(input_data=df, treatment_column_name="treated", outcome_column_name="outcome", holdout_data=1.0)
-print(result[0])
-#>    x1   x2   x3   x4    weights
-#> 0   0   1    1    *     1
-#> 1   0   1    1    *     1
-#> 2   1   0    *    1     1
-#> 3   1   0    *    1     1
 
-print(result[1])
-#> [[2,3],[0,1]]
+model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False)
+model.fit(holdout_data=df)
+result = model.predict(input_data=df)
+
+print(result)
+#>    x1   x2   x3   x4
+#> 0   0   1    1    *     
+#> 1   0   1    1    *     
+#> 2   1   0    *    1     
+#> 3   1   0    *    1     
+
+print(model.groups_per_unit)
+#> 0    1.0
+#> 1    1.0
+#> 2    1.0
+#> 3    1.0
+
+print(model.units_per_group)
+#> [[2, 3], [0, 1]]
+
 ```
-result is a list, where the first element in the list is of type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. 
-The covariates that each unit was not matched on is denoted with a " * " character. This element also includes a column of unit weights which specifies the number of main matched groups that each unit was placed in. 
-The second element is a list of lists, each of which corresponds to a particular main matched group and contains all of the units belonging that group. 
-The list 'result' will have additional values based on additional optional parameters, detailed in additional documentation below. 
+result is type **Data Frame**. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. 
+The covariates that each unit was not matched on is denoted with a " * " character.
+
+model.groups_per_unit is a **Data Frame** with a column of unit weights which specifies the number of groups that each unit was placed in. 
+
+model.units_per_group is a **list** in which each list is a main matched group, and the unit ids that belong to that group.
+
+Additional values based on additional optional parameters can be retrieved, detailed in additional documentation below. 
 
 To find the main matched group of a particular unit or group of units after DAME has been run, use the function *MG*:
 
 ```Python
-mmg = dame_flame.DAME_FLAME.MG(return_df=result, unit_id=0, input_data=df)
+mmg = dame_flame.utils.post_processing.MG(matching_object=model, unit_id=0)
 print(mmg)
 
 #>      x1    x2    x3    x4    treated    outcome
@@ -97,7 +112,7 @@ To find the conditional treatment effect (CATE) for the main matched group of a 
 
 
 ```Python
-te = dame_flame.DAME_FLAME.CATE(return_df=result, unit_id=2, input_data=df)
+te = dame_flame.utils.post_processing.CATE(matching_object=model, unit_id=0)
 print(te)
 #> 3.0
 ```
@@ -106,11 +121,11 @@ To find the average treatment effect (ATE) or average treatment effect on the tr
 
 
 ```Python
-ate = dame_flame.DAME_FLAME.ATE(return_df=result, input_data=df)
+ate = dame_flame.utils.post_processing.ATE(matching_object=model)
 print(ate)
 #> 2.0
 
-att = dame_flame.DAME_FLAME.ATT(return_df=result, input_data=df)
+att = dame_flame.utils.post_processing.MG(matching_object=model)
 print(att)
 #> 2.0
 ```
@@ -118,28 +133,20 @@ print(att)
 ## DAME and FLAME Parameters and Defaults
 
 ```Python
-DAME(input_data, treatment_column_name='treated', weight_array=False,
-     outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
-     holdout_data=False, repeats=True, verbose=2, want_pe=False, 
-     early_stop_iterations=False, stop_unmatched_c=False, 
-     early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
-     early_stop_un_t_frac=0.1, early_stop_pe=False, 
-     early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
-     early_stop_bf_frac=0.01, missing_indicator=numpy.nan, 
-     missing_data_replace=0, missing_holdout_replace=0, 
-     missing_holdout_imputations=10, missing_data_imputations=0)
+__init__(self, adaptive_weights='ridge', alpha=0.1, repeats=True,
+         verbose=2, early_stop_iterations=False, 
+         stop_unmatched_c=False, early_stop_un_c_frac=False, 
+         stop_unmatched_t=False, early_stop_un_t_frac=False, 
+         early_stop_pe=False, early_stop_pe_frac=0.01, 
+         early_stop_bf=False, early_stop_bf_frac=0.01,
+         missing_indicator=np.nan, missing_data_replace=0, 
+         missing_holdout_replace=0, missing_holdout_imputations=10, 
+         missing_data_imputations=1, want_pe=False, want_bf=False)
 
-FLAME(input_data=False, treatment_column_name='treated',
-      outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1, 
-      holdout_data=False, repeats=True, verbose=2, want_pe=False, 
-      early_stop_iterations=False, stop_unmatched_c=False, 
-      early_stop_un_c_frac=0.1, stop_unmatched_t=False, 
-      early_stop_un_t_frac=0.1, early_stop_pe=False, 
-      early_stop_pe_frac=0.01, want_bf=False, early_stop_bf=False, 
-      early_stop_bf_frac=0.01, missing_indicator=numpy.nan, 
-      missing_data_replace=0, missing_holdout_replace=0, 
-      missing_holdout_imputations=10, missing_data_imputations=1, 
-      pre_dame=False, C=0.1)
+fit(self, holdout_data=False, treatment_column_name='treated',
+          outcome_column_name='outcome', weight_array=False)
+            
+predict(self, input_data)       
 ```
 
 ### Key parameters
@@ -263,16 +270,17 @@ To provide users with additional options in analyzing the output of DAME and FLA
 
 ```Python
 # The main matched group of a unit or list of units
-MG(return_df, unit_id, input_data, output_style = 1, treatment_column_name = 'treated', outcome_column_name = 'outcome')
+MG(matching_object, unit_ids)
 
 # The conditional average treatment effect for a unit or list of units
-CATE(return_df, unit_id, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
+CATE(matching_object, unit_ids)
 
 # The average treatment effect for the matching data
-ATE(return_df, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
+ATE(matching_object)
 
 # The average treatment effect on the treated for the matching data
-ATT(return_df, input_data, treatment_column_name = 'treated', outcome_column_name = 'outcome')
+ATT(matching_object)
+
 ```
 
 ### Parameters 

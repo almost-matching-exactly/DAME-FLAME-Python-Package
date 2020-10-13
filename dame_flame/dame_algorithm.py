@@ -97,9 +97,10 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
             or false (default) if decide to drop weights
             based on the weights given in the weight_array
         alpha (float): for ridge regression.
-        df_holdout: The cleaned, user-provided dataframe with all rows/columns. 
-            There are no changes made to this throughout the code. Used only in
-            testing/training for adaptive_weights version.
+        df_holdout: The array of cleaned, user-provided dataframe with all 
+            rows/columns. There are no changes made to this throughout the 
+            code. Used only in testing/training for adaptive_weights version.
+            Size 1 with 1 array if not doing MICE on holdout dataset. 
         repeats (bool): Provided by user, whether or not values for whom a MMG 
             has been found can be used again and placed in an auxiliary group.
         want_pe (bool): Whether or not we want predictive error of each match
@@ -129,7 +130,10 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     return_pe = []
     return_bf = []
     MG_units = [] # list of unit ids for each matched group
-    weights = [0] * len(df_all.index) # unit weights
+    # weights indicates the number of times each unit appears in a group
+    weights = pd.DataFrame(np.zeros(shape=(len(df_all.index),1)), 
+                           columns = ['weights'],
+                           index = df_all.index)
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
     
     # Initialize variables used in checking stopping criteria
@@ -143,15 +147,16 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
-    
-    # Iterate through newly returned matched groups
-    for group in units_in_g:
-         # Append new matched groups
-         MG_units.append(group)
-         # Update unit weights for all units which appear in the new groups
-         for unit in group:
-             weights[unit] += 1
-    
+
+    if (len(units_in_g)) != 0:
+        # add the newly matched groups to MG_units, which tracks units in groups
+        MG_units = MG_units + units_in_g
+        # update unit weights for all units which appear in the new groups
+        # flatten to 1 list, then add occurrences of unique units
+        flat_units_in_g = np.concatenate(units_in_g).ravel()
+        unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
+        for index in range(len(unique_units)):
+            weights['weights'][unique_units[index]] += occurrences[index]    
     
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -255,13 +260,16 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name, 
         outcome_column_name, return_matches)
     
-        # Iterate through newly returned matched groups
-        for group in units_in_g:
-             # Append new matched groups
-             MG_units.append(group)
-             # Update unit weights for all units which appear in the new groups
-             for unit in group:
-                 weights[unit] += 1
+        if (len(units_in_g)) != 0:
+            # add the newly matched groups to MG_units, which tracks units in groups
+            MG_units = MG_units + units_in_g
+            # update unit weights for all units which appear in the new groups
+            # flatten to 1 list, then add occurrences of unique units
+            flat_units_in_g = np.concatenate(units_in_g).ravel()
+            unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
+            for index in range(len(unique_units)):
+                weights['weights'][unique_units[index]] += occurrences[index]
+        
         
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think. 
@@ -338,15 +346,15 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     # end loop. 
     return_matches = return_matches.dropna(axis=0) # drop rows with nan, dont return unmatched stuff
     return_package = [return_matches]
+        
+    return_package[0] = return_package[0].join(weights)
+    return_package.append(MG_units)
+    
+    # the optional returns
     if want_pe == True:
         return_package.append(return_pe)
     if want_bf == True:
         return_package.append(return_bf)
         
-    # Remove unmatched units
-    weights = [i for i in weights if i != 0]
-    
-    return_package[0]['weights'] = weights
-    return_package.append(MG_units)
         
     return return_package
