@@ -30,7 +30,9 @@ $ pip install dame-flame
 import dame_flame
 
 # Run DAME
-x = dame_flame.DAME_FLAME.DAME(input_data="dame_flame/data/sample.csv",treatment_column_name='treated', outcome_column_name='outcome', adaptive_weights='ridge', holdout_data=1.0)
+df = pd.read_csv("dame_flame/data/sample.csv")
+model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False)
+model.fit(holdout_data=df)
 ```
 
 ## Required data format
