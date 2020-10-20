@@ -187,6 +187,19 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     h = 1 # The iteration number
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     
+    if verbose==3:
+        print("Iteration number: ", h)
+        print("Matched groups formed: ", len(units_in_g))
+        unmatched_treated = df_unmatched[treatment_column_name].sum()
+        unmatched_control = len(df_unmatched) - unmatched_treated             
+        total_treated = df_all[treatment_column_name].sum()
+        print("Unmatched treated units: ", unmatched_treated,"out of a total of ", total_treated, "treated units .")
+        print("Unmatched control units: ", unmatched_control,"out of a total of ", orig_len_df_all-total_treated, 
+                  "control units")
+        print("Number of matches made so far: ", orig_len_df_all - len(df_unmatched))
+
+    
+    
     # Here, we begin the iterative dropping procedure of DAME
     while True:
         
