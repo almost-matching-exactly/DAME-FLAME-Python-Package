@@ -127,6 +127,12 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     all_covs.remove(outcome_column_name)
     df_unmatched = df_all.copy(deep=True) 
     
+    #Ensuring that no entries are non-integers
+    for index, row in df_all.iterrows():
+        for i in all_covs:
+            assert (type(row[i])==int), 'Input has non-integer entries'
+            
+            
     # The items getting returned
     return_pe= [] # list of predictive errors, 
     return_bf = []
