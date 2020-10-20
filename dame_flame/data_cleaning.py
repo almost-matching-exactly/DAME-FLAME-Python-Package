@@ -279,7 +279,15 @@ def process_input_file(df, treatment_column_name, outcome_column_name,
     directly the input file.
     
     '''
-    
+    #Ensuring that no entries are non-integers
+    for index, row in df_all.iterrows():
+        for i in all_covs:
+            if type(row[i])!=int:
+                raise Exception('Input has non-integer entries')
+                
+    if df.index.is_unique==False:
+        raise Exception('Input has nonunique indices')
+            
     # Confirm that the treatment column name exists. 
     if (treatment_column_name not in df.columns):
         raise Exception('Invalid input error. Treatment column name does not'\

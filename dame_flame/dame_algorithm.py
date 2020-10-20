@@ -126,13 +126,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     df_unmatched = df_all.copy(deep=True) # This is df_h in the paper    
     all_covs_max_list = [max(df_all[x])+1 for x in all_covs] 
     
-    #Ensuring that no entries are non-integers
-    for index, row in df_all.iterrows():
-        for i in all_covs:
-            assert (type(row[i])==int), 'Input has non-integer entries'
-
-
-                  
+                 
     # Initialize return values
     return_pe = []
     return_bf = []
