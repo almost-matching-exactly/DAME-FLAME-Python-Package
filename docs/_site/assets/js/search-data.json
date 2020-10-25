@@ -1,16 +1,64 @@
 {"0": {
-    "doc": "Home",
-    "title": "DAME-FLAME Python Package Documentation",
-    "content": "description . View us on GitHub . ",
-    "url": "http://localhost:4000/#dame-flame-python-package-documentation",
-    "relUrl": "/#dame-flame-python-package-documentation"
+    "doc": "Documentation",
+    "title": "Documentation",
+    "content": "To get started with this algorithm…. ",
+    "url": "http://localhost:4000/documentation",
+    "relUrl": "/documentation"
   },"1": {
-    "doc": "Home",
-    "title": "Heading",
-    "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque commodo, ipsum sit amet posuere malesuada, odio ante rhoncus libero, eu fermentum mi enim id dolor. In non lacus vitae eros egestas blandit ac nec augue. Curabitur ac feugiat mi, ac aliquet erat. Nullam nisl odio, semper ut magna eget, congue eleifend tortor. Donec dignissim tortor id porta malesuada. Morbi luctus ex aliquet, rhoncus justo eu, pulvinar felis. Quisque quis leo ut nulla lobortis pulvinar. ",
-    "url": "http://localhost:4000/#heading",
-    "relUrl": "/#heading"
+    "doc": "Treatment Effect Estimates",
+    "title": "Treatment Effect Estimates",
+    "content": "We define and discuss the most common metrics that researchers estimate when evaluating the results of a treatment. For further detail, see (cite). | Standard Notation and Statistical Definitions | Average Treatment Effect (ATE) | Average Treatment Effect on Treated (ATT) | Conditional Average Treatment Effect (CATE) | Conditional Average Treatment Effect on Treated (CATT) | . ",
+    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects",
+    "relUrl": "/documentation/user-guide/Treatment-Effects"
   },"2": {
+    "doc": "Treatment Effect Estimates",
+    "title": "Standard Notation and Statistical Definitions",
+    "content": "We say there are $i$ units or observations. These are the individuals being observed in the study. There are $n$ of them in total. We let $y_i$ be the outcome variable for each i. (y_i) \\begin{math}y_i\\end{math} .. math:: (a + b)^2 = a^2 + 2ab + b^2 . \\[y_i\\] \\[e = mc^2\\] ",
+    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#standard-notation-and-statistical-definitions",
+    "relUrl": "/documentation/user-guide/Treatment-Effects#standard-notation-and-statistical-definitions"
+  },"3": {
+    "doc": "Treatment Effect Estimates",
+    "title": "Average Treatment Effect (ATE)",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#average-treatment-effect-ate",
+    "relUrl": "/documentation/user-guide/Treatment-Effects#average-treatment-effect-ate"
+  },"4": {
+    "doc": "Treatment Effect Estimates",
+    "title": "Average Treatment Effect on Treated (ATT)",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#average-treatment-effect-on-treated-att",
+    "relUrl": "/documentation/user-guide/Treatment-Effects#average-treatment-effect-on-treated-att"
+  },"5": {
+    "doc": "Treatment Effect Estimates",
+    "title": "Conditional Average Treatment Effect (CATE)",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-cate",
+    "relUrl": "/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-cate"
+  },"6": {
+    "doc": "Treatment Effect Estimates",
+    "title": "Conditional Average Treatment Effect on Treated (CATT)",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-on-treated-catt",
+    "relUrl": "/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-on-treated-catt"
+  },"7": {
+    "doc": "User Guide",
+    "title": "User Guide",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/",
+    "relUrl": "/documentation/user-guide/"
+  },"8": {
+    "doc": "Home",
+    "title": "Welcome to the DAME-FLAME Python Package Documentation!",
+    "content": "dame-flame is a Python package for performing matching for observational causal inference on datasets containing discrete covariates. It implements the Dynamic Almost Matching Exactly (DAME) and Fast, Large-Scale Almost Matching Exactly (FLAME) algorithms, which match treatment and control units on subsets of the covariates. The resulting matched groups are interpretable, because the matches are made on covariates (rather than, for instance, propensity scores), and high-quality, because machine learning is used to determine which covariates are important to match on. View us on GitHub . ",
+    "url": "http://localhost:4000/#welcome-to-the-dame-flame-python-package-documentation",
+    "relUrl": "/#welcome-to-the-dame-flame-python-package-documentation"
+  },"9": {
+    "doc": "Home",
+    "title": "Contact",
+    "content": "Please reach out to let our team know if you’re using this, or if you have any questions! Contact Neha Gupta at neha.r.gupta “at” duke “dot” edu . ",
+    "url": "http://localhost:4000/#contact",
+    "relUrl": "/#contact"
+  },"10": {
     "doc": "Home",
     "title": "Home",
     "content": " ",
