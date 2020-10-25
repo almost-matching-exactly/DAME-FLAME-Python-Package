@@ -1,64 +1,244 @@
 {"0": {
+    "doc": "API Documentation",
+    "title": "API Documentation",
+    "content": "This is going to talk through all the actual function calls. What’s in the “Intro” is mostly what will get included, but split up for organization and maybe expanded upon a bit. ",
+    "url": "http://localhost:4000/documentation/api-documentation/",
+    "relUrl": "/documentation/api-documentation/"
+  },"1": {
+    "doc": "Introduction",
+    "title": "API Documentation Introduction",
+    "content": ". | DAME and FLAME Parameters and Defaults . | Key parameters . | FLAME-specific parameters | . | Parameters related to missing data handling | Parameters related to early stopping criteria | . | Additional Functions Available, and their parameters and defaults . | Parameters | . | Additional Technical Notes . | Missing Data Handling | . | . ",
+    "url": "http://localhost:4000/documentation/api-documentation/Introduction#api-documentation-introduction",
+    "relUrl": "/documentation/api-documentation/Introduction#api-documentation-introduction"
+  },"2": {
+    "doc": "Introduction",
+    "title": "DAME and FLAME Parameters and Defaults",
+    "content": "__init__(self, adaptive_weights='ridge', alpha=0.1, repeats=True, verbose=2, early_stop_iterations=False, stop_unmatched_c=False, early_stop_un_c_frac=False, stop_unmatched_t=False, early_stop_un_t_frac=False, early_stop_pe=False, early_stop_pe_frac=0.01, early_stop_bf=False, early_stop_bf_frac=0.01, missing_indicator=np.nan, missing_data_replace=0, missing_holdout_replace=0, missing_holdout_imputations=10, missing_data_imputations=1, want_pe=False, want_bf=False) fit(self, holdout_data=False, treatment_column_name='treated', outcome_column_name='outcome', weight_array=False) predict(self, input_data) . Key parameters . input_data: file, DataFrame, required This is the data being matched. This is henceforth referred to as the matching data. treatment_column_name: string, optional (default=”treated”) This is the name of the column with a binary indicator for whether a row is a treatment or control unit. outcome_column_name: string, optional (default=”outcome”) This is the name of the column with the outcome variable of each unit. adaptive_weights: bool, “ridge”, “decision tree”, “ridgeCV”, optional (default=”ridge”) The method used to decide what covariate set should be dropped next. weight_array: array, optional If adaptive_weights = False, these are the weights to the covariates in input_data, for the non-adaptive version of DAME. Must sum to 1. In this case, we do not use machine learning for the weights, they are manually entered as weight_array. alpha: float, optional (default=0.1) If adaptive_weights is set to ridge, this is the alpha for ridge regression. holdout_data: file, DataFrame, float between 0 and 1, optional (Default = False) If doing an adaptive_weights version of DAME, this is used to decide what covariates to drop. The default is to use 10% of the input_data dataset. Users can specify a percentage of the matching data set to use as the holdout set, or use a different file. If using a different file, that file needs to have all of the same column labels, including treatment and outcome columns. repeats: Bool, optional (default=True) Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. verbose: int 0,1,2,3 (default=2) Style of printout while algorithm runs. If 0, no output If 1, provides iteration number If 2, provides iteration number and additional information on the progress of the matching at every 10th iteration If 3, provides iteration number and additional information on the progress of the matching at every iteration . want_pe: bool, optional (default=False) If true, the output of the algorithm will include the predictive error of the covariate sets used for matching in each iteration. want_bf: bool, optional (default=False) If true, the output will include the balancing factor for each iteration. FLAME-specific parameters . pre_dame: bool, integer, optional (default=False) This will allow a user to run the Hybrid-FLAME-DAME algorithm. If an integer n is provided, then after n iterations of FLAME, the algorithm will switch to DAME. C: float, optional (default=0.1) This is used in deciding the best covariate match during iterations of FLAME. Specifically, its the tradeoff parameter between balancing factor and predictive error. Parameters related to missing data handling . A variety of built-in options for missing data handling functionality is available to users. The fastest option is to exclude missing values for each unit in the matching dataset, and drop missing units entirely from the holdout dataset. The units with missing values would still be placed in a group, but the covariates for which they have missing data wouldn’t be used to find their group. Holdout missing data would be dropped. These are parameters missing_holdout_replace=1, missing_data_replace=2. If missing data is detected, but the user has not specified a handling technique, then (does it quit?) . missing_indicator: character, integer, numpy.nan, optional (default=numpy.nan) This is the indicator for missing data in the dataset. missing_holdout_replace: int 0,1,2, optional (default=0) If 0, assume no missing holdout data and proceed. If 1, the algorithm excludes units with missing values from the holdout dataset. If 2, do MICE on holdout dataset. If this option is selected, it will be done for a number of iterations equal to missing_holdout_imputations. missing_data_replace: int 0,1,2,3, optional, (default=0) If 0, assume no missing data in matching data and proceed. If 1, the algorithm does not match on units that have missing values. If 2, prevent all missing_indicator values from being matched on. If 3, do MICE on matching dataset. This is not recommended. If this option is selected, it will be done for a number of iterations equal to missing_data_imputations. missing_holdout_imputations: int, optional (default=10) If missing_holdout_replace=2, the number of imputations. missing_data_imputations: int, optional (default=1) If missing_data_replace=3, the number of imputations. Parameters related to early stopping criteria . early_stop_iterations: int, optional (default=0) If provided, a number of iterations after which to hard stop the algorithm. stop_unmatched_c: bool, optional (default=False) If True, then the algorithm terminates when there are no more control units to match. stop_unmatched_t: bool, optional (default=False) If True, then the algorithm terminates when there are no more treatment units to match. early_stop_un_c_frac: float from 0.0 to 1.0, optional (default=0.1) This provides a fraction of unmatched control units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 control units, the algorithm will stop when 10 control units are unmatched and 90 are matched (or earlier, depending on other stopping conditions). early_stop_un_t_frac: float from 0.0 to 1.0, optional (default=0.1) This provides a fraction of unmatched treatment units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 treatment units, the algorithm will stop when 10 control units are unmatched and 90 are matched (or earlier, depending on other stopping conditions). early_stop_pe: bool, optional (default=False) If this is true, then if the covariate set chosen for matching has a predictive error higher than the parameter early_stop_pe_frac, the algorithm will stop. early_stop_pe_frac: float, optional (default=0.01) If early_stop_pe is true, then if the covariate set chosen for matching has a predictive error higher than this value, the algorithm will stop. early_stop_bf: bool, optional (default=False) If this is true, then if the covariate set chosen for matching has a balancing factor lower than early_stop_bf_frac, then the algorithm will stop. early_stop_bf_frac: float, optional (default=0.01) If early_stop_bf is true, then if the covariate set chosen for matching has a balancing factor lower than this value, then the algorithm will stop. ",
+    "url": "http://localhost:4000/documentation/api-documentation/Introduction#dame-and-flame-parameters-and-defaults",
+    "relUrl": "/documentation/api-documentation/Introduction#dame-and-flame-parameters-and-defaults"
+  },"3": {
+    "doc": "Introduction",
+    "title": "Additional Functions Available, and their parameters and defaults",
+    "content": "To provide users with additional options in analyzing the output of DAME and FLAME, we provide a set of functions that can be used after running the match. # The main matched group of a unit or list of units MG(matching_object, unit_ids) # The conditional average treatment effect for a unit or list of units CATE(matching_object, unit_ids) # The average treatment effect for the matching data ATE(matching_object) # The average treatment effect on the treated for the matching data ATT(matching_object) . Parameters . return_df: Python Pandas Dataframe, required (no default). This is output from FLAME or DAME . unit_ids: int, list, required (no default). This is the unit or list of units for which the main matched group or treatment effect is being calculated . input_data: file, DataFrame, required (no default) This is the matching data. output_style: int, optional (default=1): In the MG function, if this is 1 then the main matched group will only display covariates that were used in matching for each unit. The output dataframe will have a ‘ * ‘ character in the column for each unit that was not matched on that covariate. If this value is 2, then the dataframe will contain complete values and no ‘ * ‘ characters. treatment_column_name: string, optional (default=”treated”) This is the name of the column with a binary indicator for whether a row is a treatment or control unit. outcome_column_name: string, optional (default=”outcome”) This is the name of the column with the outcome variable of each unit. ",
+    "url": "http://localhost:4000/documentation/api-documentation/Introduction#additional-functions-available-and-their-parameters-and-defaults",
+    "relUrl": "/documentation/api-documentation/Introduction#additional-functions-available-and-their-parameters-and-defaults"
+  },"4": {
+    "doc": "Introduction",
+    "title": "Additional Technical Notes",
+    "content": "Missing Data Handling . For details on the MICE algorithm, see : this paper The underlying MICE implementation is done using scikit learn’s experimental IterativeImpute package, and relies on DecisionTreeRegressions in the imputation process, to ensure that the data generated is fit for unordered categorical data. In addition to this, users are welcome to pre-process their datsets with other data handling techniques prior to using MICE. It is not recommended to use MICE on the matching dataset, as this would be very slow. One option is to set the parameter missing_data_replace=2, where units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. In this option, the underlying algorithm works by replacing each missing value with a unique value, so that in the matching procedure, those covariates simply don’t have a match because their values are not equl to any other values. ",
+    "url": "http://localhost:4000/documentation/api-documentation/Introduction#additional-technical-notes",
+    "relUrl": "/documentation/api-documentation/Introduction#additional-technical-notes"
+  },"5": {
+    "doc": "Introduction",
+    "title": "Introduction",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/api-documentation/Introduction",
+    "relUrl": "/documentation/api-documentation/Introduction"
+  },"6": {
     "doc": "Documentation",
     "title": "Documentation",
     "content": "To get started with this algorithm…. ",
     "url": "http://localhost:4000/documentation",
     "relUrl": "/documentation"
-  },"1": {
+  },"7": {
+    "doc": "Example 1",
+    "title": "Example 1",
+    "content": "This is example 1 . ",
+    "url": "http://localhost:4000/examples/example-1/",
+    "relUrl": "/examples/example-1/"
+  },"8": {
+    "doc": "Examples",
+    "title": "Examples",
+    "content": "To get started with one of our algorithms, click on a software package listed below for installation, usage guides, and tutorials. My thoughts….I should definitely do an example with fixed weights and with adaptive weights. And discuss the differences of the algorithm in both cases in the user guide. And also maybe do all of the options for the decision tree and logistic regression and stuff…and definitely discuss the difference between replace is true and replace is false. ",
+    "url": "http://localhost:4000/examples",
+    "relUrl": "/examples"
+  },"9": {
+    "doc": "Algorithm Controls",
+    "title": "Early Stopping Controls",
+    "content": ". | Introduction to Early Stopping Controls | Recommendations | . This goes in the Algorithm Controls page. ",
+    "url": "http://localhost:4000/documentation/user-guide/Algorithm-Controls#early-stopping-controls",
+    "relUrl": "/documentation/user-guide/Algorithm-Controls#early-stopping-controls"
+  },"10": {
+    "doc": "Algorithm Controls",
+    "title": "Introduction to Early Stopping Controls",
+    "content": "The ideal situation for matching in causal inference is if each treatment unit has an exactly identical control unit. We can best determine the rise in income that a person experiences after a job training program if that person has an identical twin with the same degree and GPA as them who didn’t attend the job training program. The FLAME-DAME package begins by matching identical twins (“exact matches”) in the dataset. Since not all units have exact matches, most units are matched based on subsets of all covariates. The subset that a unit is matched on is the subsets that is selected to be most predictive of their outcome. As the FLAME and DAME algorithms run, the units that are matched later in the algorithm, are those that are most distinct in observable characteristics from the other units in the dataset are matched later. Later matched units are likely to have the highest error in estimated treatment effects. For this reason, there are situations where the FLAME or DAME algorithm should be stopped early in order to avoid poor matches. ",
+    "url": "http://localhost:4000/documentation/user-guide/Algorithm-Controls#introduction-to-early-stopping-controls",
+    "relUrl": "/documentation/user-guide/Algorithm-Controls#introduction-to-early-stopping-controls"
+  },"11": {
+    "doc": "Algorithm Controls",
+    "title": "Recommendations",
+    "content": "The default option is that the algorithm runs until all units are matched. However, if runtime or high accuracy of estimates of treatment effects are important, then we recommend users experiment with their stopping criteria based on their specific need and dataset size. A large dataset will have a longer runtime, and an early stop will take less time. Regardless of the early stopping criteria chosen, in the majority of datasets, any early stopping will lead to closer estimates between the estimated and true treatment effects. This is illustrated in the examples section. If it is crucial that all units be matched, it is recommended that users do not use any early stopping criteria. | Category of Early Stopping | Technical Details | Usage Recommendation | Algorithm parameters | . | Algorithm Iterations | This provides a number of iterations after which to stop the DAME or FLAME algorithm. If FLAME is used, then this is the maximum number of covariates that can be dropped, meaning when the total number of covariates is $m$, no unit will be matched on $m-early_stop_iterations$ covariates | This is useful in the case of a FLAME user knowing their preferred covariate match size, or if a user knows what runtime is sufficient from a previous experiment | early_stop_iterations | . | Unmatched Units in Treatment or Control | When the algorithm is set with the repeats=True parameter, then previously matched units can still be placed in groups with other units. The algorithm will by default stop iterating when there are no more units that have not been placed in any group. However, a case could arise where all units remaining to be placed in a group are of the treatment or control group, and we provide this option in case a user has preference between ensuring that all treated or control units are matched. | These parameters will not be useful, and is therefore not recommended in the case where the the repeats parameter is False. If repeats=False, then in effect, both of these parameters are True. | stop_unmatched_c, stop_unmatched_t | . | Proportion of unmatched units | This stops the algorithm when some fraction of control units or treatment units are unmatched | One specific case in which this could be useful immediately is where a user is certain that some percent of the input is unlikely to result in good matches. | early_stop_un_c_frac, early_stop_un_t_frac | . | Predictive Error | The predictive error measures how important a covariate set is for predicting the outcome on the holdout dataset, using a machine learning algorithm. It is the sole determinant of the covariate set to match on for DAME, and one of two factors for FLAME. | The range of this value is specific to a dataset’s values. Therefore, reasonable values for this can only be determined after at least one prior run of this algorithm on the same dataset in which the predictive error is observed. | early_stop_pe, early_stop_pe_frac | . | Balancing Factor | The balancing factor of an iteration is the number of matches formed after selecting a covariate set, and the discrepancy between the number of treated and control units remaining to be matched after the matching. This is only part of the algorithm’s decision of which covariates to drop for FLAME but is still measured for DAME. | If it’s important to a user that there be a balance between treatment and control units in each covariate set, this is a parameter to pay attention to. The range of this value is specific to a dataset’s values. Therefore, reasonable values for this can only be determined after at least one prior run of this algorithm on the same dataset, while observing the balancing factor. | early_stop_bf, early_stop_bf_frac | . ",
+    "url": "http://localhost:4000/documentation/user-guide/Algorithm-Controls#recommendations",
+    "relUrl": "/documentation/user-guide/Algorithm-Controls#recommendations"
+  },"12": {
+    "doc": "Algorithm Controls",
+    "title": "Algorithm Controls",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/Algorithm-Controls",
+    "relUrl": "/documentation/user-guide/Algorithm-Controls"
+  },"13": {
+    "doc": "Getting Matches",
+    "title": "Getting Matches from the Data",
+    "content": ". | FLAME . | References | . | DAME . | References | . | Hybrid FLAME-DAME . | References | . | Variations in the learning of the best covariate set . | References | . | Fixed weights for a simplified version of DAME and FLAME | . This goes in the “Getting Matches” page, which possibly needs to be split up by algorithm into two pages. ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches#getting-matches-from-the-data",
+    "relUrl": "/documentation/user-guide/Getting-Matches#getting-matches-from-the-data"
+  },"14": {
+    "doc": "Getting Matches",
+    "title": "FLAME",
+    "content": "FLAME stands for Fast Large Scale Almost Matching Exactly. The FLAME algorithm begins by matching any units that can be matched exactly on all covariates. The algorithm will iterate over all covariates until stopping criteria is reached. In each iteration, the algorithm will drop the worst covariate set to match on, and units that have identical values in all of the remaining covariates will form a matched group. When deciding which covariate should be dropped, at each step, it drops the covariate leading to the smallest drop in match quality, MQ, defined as MQ=C·BF−PE. Here, PE denotes the predictive error, which measures how important the dropped covariate is for predicting the outcome on the holdout dataset, using a machine learning algorithm. The balancing factor, BF, measures the number of matches formed by dropping that covariate and the discrepancy between the number of treated and control units after the matching. In future iterations, the covariate that was determined worst and was just dropped will not reappear, so the maximum number of times the algorithm will iterate is equal to the number of covariates. import pandas as pd import dame_flame df = pd.read_csv(\"dame_flame/data/sample.csv\") model = dame_flame.matching.FLAME(repeats=False, verbose=1, early_stop_iterations=False) model.fit(holdout_data=df) result = model.predict(input_data=df) print(result) #&gt; x1 x2 x3 x4 #&gt; 0 0 1 1 * #&gt; 1 0 1 1 * #&gt; 2 1 0 * 1 #&gt; 3 1 0 * 1 . References . For more details on this algorithm, see Wang, Tianyu, et al. “Flame: A fast large-scale almost matching exactly approach to causal inference.” . ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches#flame",
+    "relUrl": "/documentation/user-guide/Getting-Matches#flame"
+  },"15": {
+    "doc": "Getting Matches",
+    "title": "DAME",
+    "content": "DAME stands for Dynamic Almost Matching Exactly. The algorithm begins by matching any units that can be matched exactly on all co-variates. The algorithm will iterate over options of covariates to match on until stopping criteria is reached. In each iteration, the algorithm will select the best covariate set to match on, and units that have identical values in all of the covariates that are part of the chosen covariate set will form a matched group. In its options of covariate sets to drop, DAME will always include the largest possible covariate sets, and will ultimately consider several combinations of covariates before selecting one to match on. It defines the best covariate set as the one that minimizes PE. PE is predictive error, and measures how important the covariate set is for predicting the outcome on the holdout dataset, using a machine learning algorithm . import pandas as pd import dame_flame df = pd.read_csv(\"dame_flame/data/sample.csv\") model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False) model.fit(holdout_data=df) result = model.predict(input_data=df) print(result) #&gt; x1 x2 x3 x4 #&gt; 0 0 1 1 * #&gt; 1 0 1 1 * #&gt; 2 1 0 * 1 #&gt; 3 1 0 * 1 . References . For more details on this algorithm, see Dieng, Awa, et al. “Interpretable almost-exact matching for causal inference.” . ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches#dame",
+    "relUrl": "/documentation/user-guide/Getting-Matches#dame"
+  },"16": {
+    "doc": "Getting Matches",
+    "title": "Hybrid FLAME-DAME",
+    "content": "The hybrid algorithm works by … (quick example) . References . For more details on this algorithm, see Dieng, Awa, et al. “Interpretable almost-exact matching for causal inference.” . ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches#hybrid-flame-dame",
+    "relUrl": "/documentation/user-guide/Getting-Matches#hybrid-flame-dame"
+  },"17": {
+    "doc": "Getting Matches",
+    "title": "Variations in the learning of the best covariate set",
+    "content": "Both the FLAME and DAME algorithms choose the best covariate set after measuring how important each covariate set is for predicting the outcome on the holdout dataset, using a machine learning algorithm. We offer different options for the machine learning algorithm used, as well as a simplified FLAME and simplified DAME that does not use machine learning. | Learning Method | Technical Details | Usage Recommendation | Algorithm parameter | . | Ridge Regression | A ridge regression is similar to an ordinary least squares regression, but it imposes a penalty on the size of coefficients. It minimizes a residual sum of squares. A shrinkage parameter, $\\alpha$ must be included. | This can only be used when it is certain that none of the covariates are categorical. Ordinal, binary, and discrete numerical data is all accepted. For this option, a larger $\\alpha$ corresponds should be chosen if it is believed that there is greater multicollinearity in the data, meaning that many covariates are linearly correlated. | adaptive_weights='ridge' | . | Ridge Regression CV | This is a ridge regression with built-in cross validation to determine the best $\\alpha$ parameter. We use the scikit-learn ridgeCV class, but the default array of $\\alpha$ options that we provide the function to iterate over is larger than the default they provide, for greater flexibility. | This also can only be used when it is certain that none of the covariates are categorical. Ordinal, binary and discrete numerical data is all accepted. This option is advantageous over the ‘ridge’ option without cross validation in a case where a user is uncertain about the $\\alpha$ parameter, and a minor speed decrease from cross validation is acceptable. | adaptive_weights='ridgeCV' | . | Decision Tree | The underlying implementation is the Decision Tree Regression provided by scikit-learn, which uses a variation of CART. Trees predict the value of the outcome by learning decision rules from the covariates. | This can be used for categorical, ordinal, binary, and discrete numerical data. Overfitting is a risk with decision tree models, which can be possible in DAME or FLAME algorithm if the holdout and input datasets provided are the same. | adaptive_weights='decision-tree' | . References . We use scikit-learn for the underlying learning algorithms. So we refer you to their documentation and references to learn more about these popular machine learning algorithms, as well as their specific implementations: . Scikit-learn Ridge Regressions. Scikit-learn RidgeCV. Scikit-learn DecisionTree. For examples of categorical, binary, and numerical data, see here. ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches#variations-in-the-learning-of-the-best-covariate-set",
+    "relUrl": "/documentation/user-guide/Getting-Matches#variations-in-the-learning-of-the-best-covariate-set"
+  },"18": {
+    "doc": "Getting Matches",
+    "title": "Fixed weights for a simplified version of DAME and FLAME",
+    "content": "blah blah blaaaaaaaaah . ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches#fixed-weights-for-a-simplified-version-of-dame-and-flame",
+    "relUrl": "/documentation/user-guide/Getting-Matches#fixed-weights-for-a-simplified-version-of-dame-and-flame"
+  },"19": {
+    "doc": "Getting Matches",
+    "title": "Getting Matches",
+    "content": " ",
+    "url": "http://localhost:4000/documentation/user-guide/Getting-Matches",
+    "relUrl": "/documentation/user-guide/Getting-Matches"
+  },"20": {
+    "doc": "Introduction",
+    "title": "Introduction",
+    "content": ". | Introduction to Causal Inference and Matching | Determining Whether to Use Matching Methods . | The Stable Unit Treatment Value Assumption (SUTVA) | The Unconfoundedness Assumption | Additional Requirements For DAME-FLAME | . | Challenges in Matching Methods . | Further Reference | . | . ",
+    "url": "http://localhost:4000/documentation/user-guide/Introduction",
+    "relUrl": "/documentation/user-guide/Introduction"
+  },"21": {
+    "doc": "Introduction",
+    "title": "Introduction to Causal Inference and Matching",
+    "content": "Causal inference is the attempt to draw conclusions that something is being caused by something else. It goes beyond questions of correlation, association, and is distinct from model-based predictive analysis. Questions of robust causal inference are practically unavoidable in health, medicine, or social studies. Much of the available data in the clinical and social sciences is observational, and we can only observe one outcome per individual. For example, if one individual took pain reliever for a headache and they now feel better, we don’t know what would have happened to that same individual over the same time period, if they had not taken pain reliever. Taking the pain reliever puts them in the treatment group, but since we don’t know what the control outcome of not taking pain reliever would be (without time travel), how can we say pain reliever caused the headache to go away? . When estimating causal effects in an observational setting, one common approach is to match each treatment unit to an identical control unit. Going back to the example, can we find two people sharing every physical attribute, who also had the exact same symptoms, prior to the time when only one of them taking the pain reliever? Secondly, how did their outcomes differ? . In large datasets where we observe many characteristics about individuals, few “identical twins”, (referred to as “exact matches”) exist. What is the best way to match individuals that were treated and controlled? Only once they’re matched are we able to apply common treatment effect estimators to the groups of matched individuals, in order to try to determine the effect of treatment. ",
+    "url": "http://localhost:4000/documentation/user-guide/Introduction#introduction-to-causal-inference-and-matching",
+    "relUrl": "/documentation/user-guide/Introduction#introduction-to-causal-inference-and-matching"
+  },"22": {
+    "doc": "Introduction",
+    "title": "Determining Whether to Use Matching Methods",
+    "content": "Matching of treatment and control units can be a good method in order to determine treatment effects. However, certain criteria must be upheld in order for matching to be an appropriate solution for a given dataset. If these criteria are not upheld, perhaps matching should be used in addition to other approaches for causal inference. The Stable Unit Treatment Value Assumption (SUTVA) . Treatments applied to one unit should not affect the outcome of another unit. Units can not interfere with one another. This is reasonable in many situations: If two individuals are not in contact with each other, how would one individual taking a pain medication impact the outcome of another individual. We should also assume that the treatment doesn’t have varying forms, and is completely binary. Individuals can not have taken pain medication of different strengths. The Unconfoundedness Assumption . This is also referred to as “ignorability”. It is importat that the outcome is independent of the treatment when observable covaraiates are held constant. Omitted variable bias is a common issue that occurs when a variable impacts both treatment and outcomes, and appears in a bias of treatment effect estimates. In the example about pain medications, if a researher fails to include in their dataset some underlying health condition that impacts response to pain medication, the impact of taking pain medication for a headache might be evaluated incorrectly. Additional Requirements For DAME-FLAME . As a final note, DAME-FLAME is intended for use on datasets that contain discrete covariates. We provide some examples and discuss the importance of the discrete datasets in (link) and (link). ",
+    "url": "http://localhost:4000/documentation/user-guide/Introduction#determining-whether-to-use-matching-methods",
+    "relUrl": "/documentation/user-guide/Introduction#determining-whether-to-use-matching-methods"
+  },"23": {
+    "doc": "Introduction",
+    "title": "Challenges in Matching Methods",
+    "content": "“Exact matching” isn’t possible when we a dataset has lots of characteristics about individuals, or is high dimensional. So, matching methods performing the best-possible alternative should be interpretable. Users of matching algorithms need to be able to easily understand which covariates were selected to be most important to their outcome, and need be able to find out why they were selected. This is important so that causal analysis can provide crucial information on who benefits from treatment most, where resources should be spent for future treatments, and why some individuals benefit from treatment while others were not. This can also help researchers determine what type of additional data must be collected. Interpretability of the matches provided by DAME-FLAME is discussed in (link). Secondly, the matches should also be high quality. If an oracle could tell us the exact result of doing treatment on any individual whose treatment we did not observe, then would we find that our estimate of the effect of treatment on that individual is accurate? Determining the treatment effect of a match is discussed in (link). Further Reference . For further reference on causal inference research and its assumptions and issues, we recommend Imbens, Guido W., and Donald B. Rubin. Causal inference in statistics, social, and biomedical sciences.. ",
+    "url": "http://localhost:4000/documentation/user-guide/Introduction#challenges-in-matching-methods",
+    "relUrl": "/documentation/user-guide/Introduction#challenges-in-matching-methods"
+  },"24": {
+    "doc": "Missing Data Handling",
+    "title": "Missing Data Handling",
+    "content": ". | Introduction to Missing Data Problems in Matching | Determining Which Missing Data Method Is Right For You . | Missing values in the input data | Missing values in the holdout data | . | Further Details on MICE imputation . | Further Reference | . | . ",
+    "url": "http://localhost:4000/documentation/user-guide/Missing-Data",
+    "relUrl": "/documentation/user-guide/Missing-Data"
+  },"25": {
+    "doc": "Missing Data Handling",
+    "title": "Introduction to Missing Data Problems in Matching",
+    "content": "Missing data is a complicated issue in matching problems. Imputing missing values on datasets is possible, but matches become less interpretable when matching on imputed values, in that it is more difficult to discern why a match was recommended by the matching algorithm. The DAME and FLAME algorithms rely on covariate matching, so the DAME-FLAME package is able to take advantage of this and allows users to match on raw values on data sets with missing data without imputing any data. The DAME-FLAME package also provides options for imputing data. ",
+    "url": "http://localhost:4000/documentation/user-guide/Missing-Data#introduction-to-missing-data-problems-in-matching",
+    "relUrl": "/documentation/user-guide/Missing-Data#introduction-to-missing-data-problems-in-matching"
+  },"26": {
+    "doc": "Missing Data Handling",
+    "title": "Determining Which Missing Data Method Is Right For You",
+    "content": "Missing values in the input data . We recommend users set the parameter missing_data_replace=2, where units that have missing values are still matched on, but the covariates they are missing are not used in computing their match. In this option, the underlying algorithm works by replacing each missing value with a unique value, so that in the matching procedure, those covariates simply don’t have a match because their values are not equl to any other values. It is not recommended to use MICE to impute on the matching dataset, as this would be very slow. Users also have the option of imputing their data through any data imputation method of their choice, and then using their imputed dataset as the input data. | Method | Recommendation | Technical Details | missing_data_replace parameter value | . | Do not match units with missing values | Only use if missing values indicate bad unit | Units in the input dataset that have missing data are dropped from the dataset prior to running the algorithms finding the matches | 1 | . | Match units with missing values, but ignore missing values | Recommended for most cases | When pre-processing the input, we place a unique value in place of each missing data point. This will not match any other value, so a unit will only be matched where it’s non-missing covariates match the non-missing covariates of another unit | 2 | . | Impute missing values with MICE | Not recommended | Creates several imputed datasets and iterates over each to find a match according to each dataset. See below for details. | 3 | . Missing values in the holdout data . The “holdout dataset”, if provided, must have the exact same covariates as the input dataset. It is used when training and fitting a machine learning algorithm to determine the best covariates for predicting the outcome. Matches will always be done on the corresponding covariates, but only on the input dataset. We recommend users set the parameter missing_data_replace=1, where units with missing values are dropped, and these units are not used in determining the best covariate set for predicting the outcome. This is the fastest option for the algorithm’s runtime. The error of the predictions will vary depending on how large and informative the observed, non-missing dataset is. Users also have the option of imputing their data through any data imputation method of their choice, and then using their imputed dataset as the input data. | Method | Recommendation | Technical Details | missing_holdout_replace parameter value | . | Do not match units with missing values | Recommended | Units in the holdout dataset that have missing data are dropped from the dataset prior to running the algorithms finding the matches | 1 | . | Impute missing values with MICE | Recommended if interpretability and speed are lower order priorities | Creates several imputed holdout datasets. When choosing the best covariate set for predicting the outcome, iterates over each imputed dataset, and averages the predictive error over all datasets | 2 | . ",
+    "url": "http://localhost:4000/documentation/user-guide/Missing-Data#determining-which-missing-data-method-is-right-for-you",
+    "relUrl": "/documentation/user-guide/Missing-Data#determining-which-missing-data-method-is-right-for-you"
+  },"27": {
+    "doc": "Missing Data Handling",
+    "title": "Further Details on MICE imputation",
+    "content": "The built-in imputation method that we include is the “Multiple Imputation by Chained Equations” algorithm. This constructs several imputed datasets. It fills in missing values multiple times, creating multiple “complete” datasets. The error of the imputations, and the consistency of the imputations across imputed datasets, is dependent on how predictive the observed data is of the missing values. The underlying MICE implementation is done using scikit learn’s experimental IterativeImpute package, and relies on DecisionTreeRegressions in the imputation process, to ensure that the data generated is fit for unordered categorical data. Further Reference . For further reference on the MICE missing data handling technique, we recommend Azur, Melissa J., et al. “Multiple imputation by chained equations: what is it and how does it work?.”. ",
+    "url": "http://localhost:4000/documentation/user-guide/Missing-Data#further-details-on-mice-imputation",
+    "relUrl": "/documentation/user-guide/Missing-Data#further-details-on-mice-imputation"
+  },"28": {
     "doc": "Treatment Effect Estimates",
     "title": "Treatment Effect Estimates",
-    "content": "We define and discuss the most common metrics that researchers estimate when evaluating the results of a treatment. For further detail, see (cite). | Standard Notation and Statistical Definitions | Average Treatment Effect (ATE) | Average Treatment Effect on Treated (ATT) | Conditional Average Treatment Effect (CATE) | Conditional Average Treatment Effect on Treated (CATT) | . ",
+    "content": "We define and discuss the most common metrics that researchers estimate when evaluating the results of a treatment. As an important note, these metrics will be biased if the unconfoundedness or ignorability assumption does not hold. In other words, it is best to use these metrics if the outcome is independent of the treatment when observable covaraiates are held constant. The bias will be as small as possible if many covariates are included, or users include any covariate that would have an impact on the outcome. In a case where a user is conflicted on whether or not to include particular covariates, we provide an example here (todo: provide link) where the user includes all variables, and is able to eliminate weakly correlated covariates quickly and continue matching on only the most relevant ones. We recommend this approach, in order to ensure that any important covariates are matched on and bias of these estimators is minimized. | Standard Notation and Statistical Definitions | Average Treatment Effect (ATE) | Average Treatment Effect on Treated (ATT) | Conditional Average Treatment Effect (CATE) . | Further Reference | . | . ",
     "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects",
     "relUrl": "/documentation/user-guide/Treatment-Effects"
-  },"2": {
+  },"29": {
     "doc": "Treatment Effect Estimates",
     "title": "Standard Notation and Statistical Definitions",
-    "content": "We say there are $i$ units or observations. These are the individuals being observed in the study. There are $n$ of them in total. We let $y_i$ be the outcome variable for each i. (y_i) \\begin{math}y_i\\end{math} .. math:: (a + b)^2 = a^2 + 2ab + b^2 . \\[y_i\\] \\[e = mc^2\\] ",
+    "content": "We say there are $i$ units or observations. These are the individuals being observed in the study. There are $n$ individuals in total. There are $r$ covariates upon which we have observed characteristics about each of the individuals prior to treatment, and these are $x_1$ through $x_r$. For a given unit $i$, its vector of covariates is $X_i$ . Let the treatment indicator for any unit $i$ be indicated as $T_i$. We let $Y_i$ be the outcome for individual $i$. We use this interchangably with the notation $Y_i(T_i)$, so we write $Y_i(0)$ to indicate the outcome of $i$ if $i$ is in the control group, and $Y_i(1)$ if $i$ is in the treated group. Lastly, we introduce notation for the matched group of a unit $i$. Supposed unit $i$ belongs in matched group $M$. We define the set of units in the opposite treatment group that unit $i$ is matched to as $\\mathbb{J}_M(i)={\\ell_1(i), …\\ell_M(i)}$ . ",
     "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#standard-notation-and-statistical-definitions",
     "relUrl": "/documentation/user-guide/Treatment-Effects#standard-notation-and-statistical-definitions"
-  },"3": {
+  },"30": {
     "doc": "Treatment Effect Estimates",
     "title": "Average Treatment Effect (ATE)",
-    "content": " ",
+    "content": "The Average Treatment Effect for a population would be $\\mathbb{E}[Y(1)-Y(0)]$. We estimate this for a sample as $\\frac{1}{N}\\sum_{i=1}^{N}[Y_i(1)-Y_i(0)]$. Since we only observe either $Y_i(1)$ or $Y_i(0)$ for each individual, the other is estimated from a unit’s matched group. The imputed potential outcome is thus: . \\[\\hat{Y}_i(0) = \\begin{cases} Y_i &amp; \\text{if $T_i=0$} \\\\ \\frac{1}{M}\\sum_{j\\in\\mathbb{J}_M(i)}Y_j &amp; \\text{if $T_i=1$} \\\\ \\end{cases}\\] and . \\[\\hat{Y}_i(1) = \\begin{cases} Y_i &amp; \\text{if $T_i=1$} \\\\ \\frac{1}{M}\\sum_{j\\in\\mathbb{J}_M(i)}Y_j &amp; \\text{if $T_i=0$} \\\\ \\end{cases}\\] So finally, the ATE is estimated as $\\frac{1}{N}\\sum_{i=1}^{N}[\\hat{Y}_i(1)-\\hat{Y}_i(0)]$ . ",
     "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#average-treatment-effect-ate",
     "relUrl": "/documentation/user-guide/Treatment-Effects#average-treatment-effect-ate"
-  },"4": {
+  },"31": {
     "doc": "Treatment Effect Estimates",
     "title": "Average Treatment Effect on Treated (ATT)",
-    "content": " ",
+    "content": "The ATT is simply the ATE on exclusively treated units. Let $N_T=\\sum_{i=1}^{N}W_i$. This is the number of treated units in the dataset. Formally, we estimate it similarly to the ATE described above, and it becomes: $\\frac{1}{N_T}\\sum_{i:T_i=1}[\\hat{Y}_i(1)-\\hat{Y}_i(0)]$ . ",
     "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#average-treatment-effect-on-treated-att",
     "relUrl": "/documentation/user-guide/Treatment-Effects#average-treatment-effect-on-treated-att"
-  },"5": {
+  },"32": {
     "doc": "Treatment Effect Estimates",
     "title": "Conditional Average Treatment Effect (CATE)",
-    "content": " ",
+    "content": "This is defined as the ATE conditional on particular covariates. In the DAME and FLAME algorithms, because each unit is not matched on all covariates, we provide an implementation of CATE that allows a user to input a unit $i$, and then will output the CATE based on the covariates that $i$ was matched on. Formally, CATE is \\(\\frac{1}{N}\\sum_{i=1}^N\\mathbb{E}[Y(1)-Y(0)\\|X_i]\\) . Since our units are each matched in a group with other units that share treatment indicator as well as the opposite indicator, each unit in a matched group will have the same CATE. For a unit $i$ in matched group $M$ of size $m$, the CATE of $i$ is thus estimated as: \\(\\frac{1}{m}\\sum_{i:T_i=1}[\\hat{Y}_i(1)]-\\frac{1}{m}\\sum_{i:T_i=0}[\\hat{Y}_i(0)]\\) . Further Reference . For further reference on treatment effects, see Imbens, Guido W. “Nonparametric estimation of average treatment effects under exogeneity: A review.” . ",
     "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-cate",
     "relUrl": "/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-cate"
-  },"6": {
-    "doc": "Treatment Effect Estimates",
-    "title": "Conditional Average Treatment Effect on Treated (CATT)",
-    "content": " ",
-    "url": "http://localhost:4000/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-on-treated-catt",
-    "relUrl": "/documentation/user-guide/Treatment-Effects#conditional-average-treatment-effect-on-treated-catt"
-  },"7": {
+  },"33": {
     "doc": "User Guide",
     "title": "User Guide",
     "content": " ",
     "url": "http://localhost:4000/documentation/user-guide/",
     "relUrl": "/documentation/user-guide/"
-  },"8": {
+  },"34": {
+    "doc": "Getting Started",
+    "title": "Getting Started",
+    "content": "Here, we aim to get you launched . | Dependencies | Installation | Quickstart Example | . ",
+    "url": "http://localhost:4000/getting-started",
+    "relUrl": "/getting-started"
+  },"35": {
+    "doc": "Getting Started",
+    "title": "Dependencies",
+    "content": "This package requires prior installation of . | Python (&gt;= 3.0) | NumPy (&gt;= 1.17.5) | Scikit-Learn (&gt;= 0.22.1)) | Pandas (todo: check) | . If your computer system does not have python 3.*, install from here. If your python version does not have the Pandas, Scikit learn, or Numpy packages, install from here . ",
+    "url": "http://localhost:4000/getting-started#dependencies",
+    "relUrl": "/getting-started#dependencies"
+  },"36": {
+    "doc": "Getting Started",
+    "title": "Installation",
+    "content": "The DAME-FLAME Python Package is available for download on the almost-matching-exactly Github or via PyPi (recommended): . pip install dame-flame . ",
+    "url": "http://localhost:4000/getting-started#installation",
+    "relUrl": "/getting-started#installation"
+  },"37": {
+    "doc": "Getting Started",
+    "title": "Quickstart Example",
+    "content": "We run the DAME function with the following basic command. In this example, we provide only the basic inputs: (1) input data as a dataframe or file, (2) the name of the outcome column, and (3) the name of the treatment column. In this example, because of the toy sized small dataset, we set the holdout dataset equal to the complete input dataset. import pandas as pd import dame_flame df = pd.read_csv(\"dame_flame/data/sample.csv\") model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False) model.fit(holdout_data=df) result = model.predict(input_data=df) print(result) #&gt; x1 x2 x3 x4 #&gt; 0 0 1 1 * #&gt; 1 0 1 1 * #&gt; 2 1 0 * 1 #&gt; 3 1 0 * 1 print(model.groups_per_unit) #&gt; 0 1.0 #&gt; 1 1.0 #&gt; 2 1.0 #&gt; 3 1.0 print(model.units_per_group) #&gt; [[2, 3], [0, 1]] . result is type Data Frame. The dataframe contains all of the units that were matched, and the covariates and corresponding values, that it was matched on. The covariates that each unit was not matched on is denoted with a “ * “ character. model.groups_per_unit is a Data Frame with a column of unit weights which specifies the number of groups that each unit was placed in. model.units_per_group is a list in which each list is a main matched group, and the unit ids that belong to that group. Additional values based on additional optional parameters can be retrieved, detailed in additional documentation below. To find the main matched group of a particular unit or group of units after DAME has been run, use the function MG: . mmg = dame_flame.utils.post_processing.MG(matching_object=model, unit_id=0) print(mmg) #&gt; x1 x2 x3 x4 treated outcome #&gt; 0 0 1 1 * 0 5 #&gt; 1 0 1 1 * 1 6 . To find the conditional treatment effect (CATE) for the main matched group of a particular unit or group of units, use the function CATE: . te = dame_flame.utils.post_processing.CATE(matching_object=model, unit_id=0) print(te) #&gt; 3.0 . To find the average treatment effect (ATE) or average treatment effect on the treated (ATT), use the functions ATE and ATT, respectively: . ate = dame_flame.utils.post_processing.ATE(matching_object=model) print(ate) #&gt; 2.0 att = dame_flame.utils.post_processing.MG(matching_object=model) print(att) #&gt; 2.0 . ",
+    "url": "http://localhost:4000/getting-started#quickstart-example",
+    "relUrl": "/getting-started#quickstart-example"
+  },"38": {
     "doc": "Home",
     "title": "Welcome to the DAME-FLAME Python Package Documentation!",
     "content": "dame-flame is a Python package for performing matching for observational causal inference on datasets containing discrete covariates. It implements the Dynamic Almost Matching Exactly (DAME) and Fast, Large-Scale Almost Matching Exactly (FLAME) algorithms, which match treatment and control units on subsets of the covariates. The resulting matched groups are interpretable, because the matches are made on covariates (rather than, for instance, propensity scores), and high-quality, because machine learning is used to determine which covariates are important to match on. View us on GitHub . ",
     "url": "http://localhost:4000/#welcome-to-the-dame-flame-python-package-documentation",
     "relUrl": "/#welcome-to-the-dame-flame-python-package-documentation"
-  },"9": {
+  },"39": {
     "doc": "Home",
     "title": "Contact",
     "content": "Please reach out to let our team know if you’re using this, or if you have any questions! Contact Neha Gupta at neha.r.gupta “at” duke “dot” edu . ",
     "url": "http://localhost:4000/#contact",
     "relUrl": "/#contact"
-  },"10": {
+  },"40": {
     "doc": "Home",
     "title": "Home",
     "content": " ",
