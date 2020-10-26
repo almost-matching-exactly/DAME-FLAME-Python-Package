@@ -171,7 +171,7 @@ def ATE(matching_object):
     array_MGs = matching_object.return_array[1]
     num_groups_per_unit = matching_object.return_array[0]['weights']
     # Recover CATEs
-    CATEs = [0] * len(array_MGs)
+    CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
     for group_id in range(len(array_MGs)):
         group_data = matching_object.input_data.loc[array_MGs[group_id], 
                                                     [matching_object.treatment_column_name,
@@ -210,8 +210,9 @@ def ATT(matching_object):
     # pretty sure this function will break in those cases
         
     num_groups_per_unit = matching_object.return_array[0]['weights']
-    treated = matching_object.input_data.loc[matching_object.input_data[matching_object.treatment_column_name] == 1]
-    control = matching_object.input_data.loc[matching_object.input_data[matching_object.treatment_column_name] == 0]
+    matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
+    treated = matched_df.loc[matched_df[matching_object.treatment_column_name] == 1]
+    control = matched_df.loc[matched_df[matching_object.treatment_column_name] == 0]
     # Compute ATT
     avg_treated = sum(treated[matching_object.outcome_column_name])/len(treated.index)
     # Stores weights for all control units
