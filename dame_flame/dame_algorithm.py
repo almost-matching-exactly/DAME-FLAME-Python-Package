@@ -185,6 +185,13 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     processed_covar_sets = set() 
         
     h = 1 # The iteration number
+    
+    if verbose == 3:
+        flame_dame_helpers.verbose_output(h, len(MG_units), 
+            df_unmatched[treatment_column_name].sum(), 
+            len(df_unmatched), orig_len_df_all, tot_treated, 0, 
+            orig_len_df_all, set())
+        
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     
     # Here, we begin the iterative dropping procedure of DAME
@@ -322,22 +329,12 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
         if verbose == 1:
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
-            print("Iteration number: ", h)
-            print("Matched groups formed: ", len(units_in_g))
-            if (early_stops.un_t_frac == False and early_stops.un_c_frac == False):
-                unmatched_treated = df_unmatched[treatment_column_name].sum()
-                unmatched_control = len(df_unmatched) - unmatched_treated
-            total_treated = df_all[treatment_column_name].sum()
-            print("Unmatched treated units: ", unmatched_treated,
-                  "out of a total of ", total_treated, "treated units .")
-            print("Unmatched control units: ", unmatched_control,
-                  "out of a total of ", orig_len_df_all-total_treated, 
-                  "control units")
-            print("Predictive error of covariates chosen this iteration: ", pe)
-            print("Number of matches made in this iteration: ", 
-                  prev_iter_num_unmatched - len(df_unmatched))
-            print("Number of matches made so far: ", orig_len_df_all - len(df_unmatched))
-            print("In this iteration, the covariates dropped are: ", curr_covar_set)
+                        
+            flame_dame_helpers.verbose_output(h, len(MG_units),
+                df_unmatched[treatment_column_name].sum(), len(df_unmatched), 
+                orig_len_df_all, tot_treated, pe, prev_iter_num_unmatched,
+                curr_covar_set)
+
             if want_bf == True:
                 print("Balancing factor of this iteration: ", bf)
                 

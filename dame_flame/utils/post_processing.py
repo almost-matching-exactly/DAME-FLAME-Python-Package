@@ -8,6 +8,13 @@ from .. import matching
 import pandas as pd
 import numpy as np
 
+'''
+Doing a reformat. The new goal is utils->post_processing.mmg and 
+treatment_effects->CATE, etc. 
+I think I need to declare things in the init of the subfolders for this.
+
+And then I need data->gendata functions
+'''
 
 def validate_matching_obj(matching_object):
     '''
@@ -135,8 +142,9 @@ def CATE(matching_object, unit_ids):
         # Warn user that unit has no matches
         else:
             CATEs.append(np.nan)
-            print('Unit ' + str(unit) + " does not have any matches, so " \
-                  "can't find the CATE")
+            if (matching_object.verbose != 0):
+                print('Unit ' + str(unit) + " does not have any matches, so " \
+                      "can't find the CATE")
             
     # Format output
     if len(CATEs) == 1:
