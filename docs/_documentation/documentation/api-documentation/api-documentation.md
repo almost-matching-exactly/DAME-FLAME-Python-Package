@@ -18,5 +18,3 @@ has_children: true
 1. TOC
 {:toc}
 </details>
-
-This is going to talk through all the actual function calls. What's in the "Intro" is mostly what will get included, but split up for organization and maybe expanded upon a bit. 

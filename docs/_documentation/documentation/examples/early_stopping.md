@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Early Stopping for Improved CATT estimates
-nav_order: 1
+title: Benefit to Early Stopping
+nav_order: 2
 permalink: /examples/early_stopping/
 parent: Examples
 ---
 
-# Example With Early Stopping Critera
+# Early Stopping and Treatment Effect Estimates
 {: .fs-9 }
 Both the FLAME and DAME algorithms begin by matching identical twins ("exact matches") in the dataset. As iterations of the algorithm progress, later matched units are likely to have the highest error in estimated treatment effects. For this reason, there are situations where a user may wish to stop the FLAME or DAME algorithm in order to avoid poor quality matches, and if its not critical that all units are matched. 
 

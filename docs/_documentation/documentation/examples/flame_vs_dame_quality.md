@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Example Comparing DAME and FLAME
+title: Comparing DAME and FLAME
 
 nav_order: 1
 permalink: /examples/flame_vs_dame_quality/
 parent: Examples
 ---
 
-# Example With Both FLAME and DAME
+# Comparing Match Quality of DAME and FLAME
 {: .fs-9 }
 Both the FLAME and DAME algorithms begin by matching any possible identical twins ("exact matches") in the dataset, meaning any units that have the same values on every possible covariate. 
 

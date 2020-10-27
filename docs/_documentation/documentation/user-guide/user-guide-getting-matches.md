@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Getting Matches
-nav_order: 2
+nav_order: 3
 permalink: /documentation/user-guide/Getting-Matches
 parent: User Guide
 grand_parent: Documentation
@@ -19,7 +19,6 @@ has_children: true
 1. TOC
 {:toc}
 </details>
-This goes in the "Getting Matches" page, which possibly needs to be split up by algorithm into two pages.
 
 
 ## FLAME
@@ -102,6 +101,3 @@ We use scikit-learn for the underlying learning algorithms. So we refer you to t
 
 For examples of categorical, binary, and numerical data, see [here](https://stats.idre.ucla.edu/other/mult-pkg/whatstat/what-is-the-difference-between-categorical-ordinal-and-numerical-variables/). 
 
-
-## Fixed weights for a simplified version of DAME and FLAME
-blah blah blaaaaaaaaah
