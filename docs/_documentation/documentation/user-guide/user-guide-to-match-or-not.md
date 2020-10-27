@@ -34,9 +34,9 @@ We should also assume that the treatment doesn't have varying forms, and is comp
 
 ### The Unconfoundedness Assumption
 
-This is also referred to as "ignorability". It is importat that the outcome is independent of the treatment when observable covaraiates are held constant. Omitted variable bias is a common issue that occurs when a variable impacts both treatment and outcomes, and appears in a bias of treatment effect estimates. 
+This is also referred to as "ignorability". It is important that the outcome is independent of the treatment when observable covaraiates are held constant. Omitted variable bias is a common issue that occurs when a variable impacts both treatment and outcomes, and appears in a bias of treatment effect estimates. 
 
-In the example about pain medications, if a researher fails to include in their dataset some underlying health condition that impacts response to pain medication, the impact of taking pain medication for a headache might be evaluated incorrectly.
+In the example about pain medications, if a researcher fails to include in their dataset some underlying health condition that impacts response to pain medication, the impact of taking pain medication for a headache might be evaluated incorrectly.
 
 
 ### Overlap of Treatment and Control Groups
