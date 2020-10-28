@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Algorithm Controls
-nav_order: 5
+nav_order: 6
 permalink: /documentation/user-guide/Algorithm-Controls
 parent: User Guide
 grand_parent: Documentation

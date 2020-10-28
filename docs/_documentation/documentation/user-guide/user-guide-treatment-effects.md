@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Treatment Effect Estimates
-nav_order: 4
+nav_order: 5
 permalink: /documentation/user-guide/Treatment-Effects
 parent: User Guide
 grand_parent: Documentation

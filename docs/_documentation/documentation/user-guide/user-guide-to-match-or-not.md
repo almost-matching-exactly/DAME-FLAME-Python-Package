@@ -1,6 +1,6 @@
 ---
 layout: default
-title: To Match or Not
+title: Whether to use Matching
 nav_order: 2
 permalink: /documentation/user-guide/to-match-or-not
 parent: User Guide
@@ -8,7 +8,7 @@ grand_parent: Documentation
 has_children: true
 ---
 
-# To Match or Not
+# To Match or Not To Match
 That is the question
 {: .no_toc }
 
@@ -46,10 +46,11 @@ A common problem in causal inference is overlap or imbalance between treatment a
 A more moderate issue is partial overlap. In this case, some units do not have matches. Because the `DAME-FLAME` package allows for algorithm controls, even if all units could be matched in theory, users of the algorithm might prefer to avoid matching all units. Regardless of the cause, units that are unmatched do not have a CATE estimate, and they are not included in the treatment effect calculations either. 
 
 
-### Additional Requirements For `DAME-FLAME`
+## Additional Requirements For `DAME-FLAME`
 
-As a final note, `DAME-FLAME` is intended for use on datasets that contain discrete covariates. We do not recommend users bin covariate datasets unless they are confident they are binning a separable dataset in a way that is typical of their research question.
+Since `DAME-FLAME` is a package for matching treatment and control groups, we require all of the above criteria for users. 
 
+Additionally, we impose one additional crucial requirement: that the datasets that contain discrete observational data. The outcome variable can be continuous, but we impose this requirement on all of the covariates. We do not recommend users bin continous covariates unless they are confident they are  in a way that is a typical, research driven separation. 
 
 ## Challenges in Matching Methods
 

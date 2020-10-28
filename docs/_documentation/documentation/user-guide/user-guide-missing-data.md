@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Missing Data Handling
-nav_order: 6
+nav_order: 7
 permalink: /documentation/user-guide/Missing-Data
 parent: User Guide
 grand_parent: Documentation
