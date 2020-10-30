@@ -180,14 +180,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     
     consider_dropping = set(i for i in all_covs)
     prev_dropped = set()
-    
-    # if verbose==3:
-    #     print("Iteration number: ", h)
-    #     print("Matched groups formed: ", len(units_in_g))
-    #     unmatched_treated = df_unmatched[treatment_column_name].sum()
-    #     unmatched_control = len(df_unmatched) - unmatched_treated
-    #     print("Unmatched treated units: ", unmatched_treated)
-    #     print("Unmatched control units: ", unmatched_control)
           
     # Here, we begin the iterative dropping procedure of FLAME
     while True:
