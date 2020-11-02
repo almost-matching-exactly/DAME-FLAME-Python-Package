@@ -2,6 +2,8 @@ language: python
 python:
   - "3.5"
 cache: pip
+before_script:
+  - pip install -r requirements.txt
 install:
   - pip install -r requirements.txt
 script:
