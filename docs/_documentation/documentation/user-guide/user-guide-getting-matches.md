@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Getting Matches
-nav_order: 3
+nav_order: 4
 permalink: /documentation/user-guide/Getting-Matches
 parent: User Guide
 grand_parent: Documentation
@@ -69,16 +69,6 @@ print(result)
 ###### References
 For more details on this algorithm, see 
 [Dieng, Awa, et al. "Interpretable almost-exact matching for causal inference."](https://arxiv.org/abs/1806.06802)
-
-## Hybrid FLAME-DAME
-
-
-The hybrid algorithm works by ...
- (quick example)
-
-###### References
-For more details on this algorithm, see 
-[Dieng, Awa, et al. "Interpretable almost-exact matching for causal inference."](https://arxiv.org/abs/1806.06802) 
  
 ## Variations in the learning of the best covariate set
 

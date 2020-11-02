@@ -195,14 +195,14 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         try:
             if ((early_stops.unmatched_t == True or repeats == False) and 
                 (1 not in df_unmatched[treatment_column_name].values)): 
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
-                      "We finished with no more units to match")
+                print(orig_len_df_all - len(df_unmatched), "units matched. "\
+                      "We finished with no more treated units to match")
                 break
             
             if ((early_stops.unmatched_c == True or repeats == False) and 
                 (0 not in df_unmatched[treatment_column_name].values)):
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
-                      "We finished with no more units to match")
+                print(orig_len_df_all - len(df_unmatched), "units matched. "\
+                      "We finished with no more control units to match")
                 break
         except TypeError:
             break
@@ -214,7 +214,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         
         # Hard stop criteria: exceeded the number of iters user asked for?
         if (early_stops.iterations != False and early_stops.iterations == h):
-            print((len(df_all) - len(df_unmatched)), "units matched. "\
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped before doing iteration number: ", h)
             break
         
@@ -244,7 +244,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
                 
         # quit if there are no more covariate sets to choose from
         if (len(consider_dropping) == 1):
-            print((len(df_all) - len(df_unmatched)), "units matched. "\
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "No more covariate sets to consider dropping")
             break
                         
@@ -275,13 +275,13 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             
         if (early_stops.bf != False):
             if (bf < early_stops.bf):
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                       "We stopped matching with a balancing factor of ", bf)
                 break
             
         if (early_stops.pe != False):
             if pe >= early_stops.pe:
-                print((len(df_all) - len(df_unmatched)), "units matched. "\
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
                 break
         

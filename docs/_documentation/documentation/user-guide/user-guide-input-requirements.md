@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Data Requirements for DAME-FLAME
+title: Discrete Observation Requirement
 nav_order: 3
 permalink: /documentation/user-guide/data-requirements
 parent: User Guide
@@ -8,7 +8,7 @@ grand_parent: Documentation
 has_children: true
 ---
 
-# DAME-FLAME requirements
+# DAME-FLAME data requirements
 That is the question
 {: .no_toc }
 
@@ -22,11 +22,11 @@ That is the question
 </details>
 
 
-## Data Requirements for DAME-FLAME
+## Discrete Observation Requirement for DAME-FLAME
 
-The main requirements for researchers to justify the use of matching methods also hold for DAME-FLAME. Those are discussed [here](https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/documentation/user-guide/to-match-or-not).
+The main requirements for researchers to justify the use of matching methods also hold for DAME-FLAME. Those are discussed [here](https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/documentation/user-guide/to-match-or-not). In sum, we require SUTVA, ignorability, and some overlap. 
 
-In addition to SUTVA, ignorability, and some overlap requirements, we also require that all observational covariates be discrete. We discuss this further below. The outcome data can be continuous. The treatment indicator column must be binary. 
+Additionally, we require that all observational covariates be discrete. The outcome data can be continuous. The treatment indicator column must be binary. 
 
 We **do not** recommend users bin continous covariates.
 
@@ -34,14 +34,14 @@ The only exception that could be made is a scenario where users are confident th
 
 ### Example of Acceptable Binning
 
-In research incorporating infant births, gestation time could be binned and used in `DAME-FLAME`. Classifications of gestational age are well established norms adhered to in obstetric publications.  *Early term* is considered 37 0/7 weeks of gestation through 38 6/7 weeks of gestation, *full term*  is 39 0/7 weeks of gestation through 40 6/7 weeks of gestation, etc. The American College of Obstetricians and Gynecologists and the Society for Maternal-Fetal Medicine endorse and encourage these categories.
+In research incorporating infant births, gestation time could be binned and used in `DAME-FLAME` as an observational covariate. Classifications of gestational age are well established norms adhered to in obstetric publications.  *Early term* is considered 37 0/7 weeks of gestation through 38 6/7 weeks of gestation, *full term*  is 39 0/7 weeks of gestation through 40 6/7 weeks of gestation, etc. The American College of Obstetricians and Gynecologists and the Society for Maternal-Fetal Medicine endorse and encourage these categories.
 
 ###### Reference
 [ACOG Committee Opinion No 579: definition of term pregnancy](https://journals.lww.com/greenjournal/Fulltext/2013/11000/Committee_Opinion_No_579___Definition_of_Term.39.aspx)
 
 ### Input Format Example
 
-The `DAME-FLAME` package requires input data to have specific format. The input data can be either a file, or a **Python Pandas Data Frame**. However, all covariates in the input data should be categorical covariates, represented as an *integer* data type. If there are continuous covariates, please consider regrouping. In addition to input data columns, the input data must contain (1) A column indicating the outcome variable as an *integer* or *float* data type, and (2) A column specifying whether a unit is treated or control (treated = 1, control = 0) as an *integer* data type. There are no requirements for input data column names or order of columns. Below is an example of input data with n units and m covariates.
+Below, we provide an example of the format that the `DAME-FLAME` package requires input data to be in. The input data can be either a file, or a **Python Pandas Data Frame**. All covariates in the input data should be categorical covariates. If there are continuous covariates, we only recommend users regroup the data if they are sure they are doing so in a way that is typical of their research question. In addition to input observational data columns, the input data must contain (1) A column indicating the outcome variable as an *integer* or *float* data type, and (2) A column specifying whether a unit is treated or control (treated = 1, control = 0) as an *integer* data type. There are no requirements for input data column names or order of columns. Below is an example of input data with n units and m covariates.
 
 
 *Column-name / unit-id*  | x_1 | x_2 |...| x_m | outcome | treated
