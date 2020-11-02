@@ -15,24 +15,6 @@ from sklearn.metrics import mean_squared_error
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer  
 
-def verbose_output(iteration_number, num_matched_groups, num_unmatched_t,
-                   num_unmatched, orig_len_df_all, tot_treated, pe,
-                   prev_iter_num_unmatched, curr_covar_set):
-    
-    print("Iteration number: ", iteration_number)
-    print("\tNumber of matched groups formed in total: ", num_matched_groups)
-    print("\tUnmatched treated units: ", num_unmatched_t, "out of a total of ",
-          tot_treated, "treated units")
-    print("\tUnmatched control units: ", num_unmatched-num_unmatched_t,
-          "out of a total of ", orig_len_df_all-tot_treated, "control units")
-    print("\tPredictive error of covariates chosen this iteration: ", pe)
-    print("\tNumber of matches made in this iteration: ", 
-          prev_iter_num_unmatched - num_unmatched)
-    print("\tNumber of matches made so far: ", 
-          orig_len_df_all - num_unmatched)
-    print("\tIn this iteration, the covariates dropped are: ", curr_covar_set)
-    
-
 def compute_bf(matched_rows, treatment_column_name, df_unmatched):
     '''
     Helper function to compute the balancing factor

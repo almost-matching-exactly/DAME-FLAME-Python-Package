@@ -127,6 +127,8 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     all_covs.remove(outcome_column_name)
     df_unmatched = df_all.copy(deep=True) 
     
+            
+            
     # The items getting returned
     return_pe= [] # list of predictive errors, 
     return_bf = []
@@ -137,12 +139,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
                            index = df_all.index)
                   
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
-
-    # Initialize variables used in checking stopping criteria
-    orig_len_df_all = len(df_all) # Need this bc of case where repeats=False
-    tot_treated = df_all[treatment_column_name].sum()
-    tot_control = len(df_all) - tot_treated
-
     # As an initial step, we attempt to match on all covariates
 
     covs_match_on = all_covs
@@ -179,16 +175,12 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         
 
     h = 1 # The iteration number
-
-    if verbose == 3:
-        flame_dame_helpers.verbose_output(h, len(MG_units),
-            df_unmatched[treatment_column_name].sum(), len(df_unmatched), 
-            orig_len_df_all, tot_treated, 0, orig_len_df_all, set())
-        
-    prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
+    tot_treated = df_all[treatment_column_name].sum()
+    tot_control = len(df_all) - tot_treated
+    
     consider_dropping = set(i for i in all_covs)
     prev_dropped = set()
-        
+          
     # Here, we begin the iterative dropping procedure of FLAME
     while True:
         # Iterates while there are units to match to match in
@@ -301,14 +293,18 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         if verbose == 1:
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10==0)) or verbose == 3):
-            
-            flame_dame_helpers.verbose_output(h, len(MG_units),
-                df_unmatched[treatment_column_name].sum(), len(df_unmatched), 
-                orig_len_df_all, tot_treated, pe, prev_iter_num_unmatched, 
-                new_drop)
-
+            print("Iteration number: ", h)
+            print("Matched groups formed: ", len(units_in_g))
+            if (early_stops.un_t_frac == False and 
+                early_stops.un_c_frac == False):
+                unmatched_treated = df_unmatched[treatment_column_name].sum()
+                unmatched_control = len(df_unmatched) - unmatched_treated
+            print("Unmatched treated units: ", unmatched_treated)
+            print("Unmatched control units: ", unmatched_control)
+            print("Predictive error of covariates chosen this iteration: ", pe)
+            print("The covariate dropped during this iteration: ", new_drop)
             if want_bf == True:
-                print("\tBalancing Factor of this iteration: ", bf)
+                print("Balancing Factor of this iteration: ", bf)
        
         # Do we switch to DAME?
         if (pre_dame != False and pre_dame <= h):
@@ -323,10 +319,9 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             print((len(df_all) - len(df_unmatched)), "units matched. "\
                   "Moving to DAME algorithm")
             return_matches_dame = dame_algorithm.algo1(
-                df_all, treatment_column_name, weight_array, 
-                outcome_column_name, adaptive_weights, alpha, df_holdout, 
-                repeats, want_pe, verbose, want_bf, missing_holdout_replace, 
-                early_stops)
+                df_all, treatment_column_name, False, outcome_column_name, 
+                adaptive_weights, alpha, df_holdout, repeats, want_pe, 
+                verbose, want_bf, missing_holdout_replace, early_stops)
             
             # when dame is done, we
             # return the matches we made here, plus the matches made in dame.

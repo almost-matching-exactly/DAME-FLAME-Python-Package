@@ -327,7 +327,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
         df, treatment_column_name, outcome_column_name, adaptive_weights)
 
     alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df, 
-                                           alpha, True, weight_array, C)
+                                           alpha, True, [], C)
     
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,

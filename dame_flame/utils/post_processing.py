@@ -8,13 +8,6 @@ from .. import matching
 import pandas as pd
 import numpy as np
 
-'''
-Doing a reformat. The new goal is utils->post_processing.mmg and 
-treatment_effects->CATE, etc. 
-I think I need to declare things in the init of the subfolders for this.
-
-And then I need data->gendata functions
-'''
 
 def validate_matching_obj(matching_object):
     '''
@@ -142,9 +135,8 @@ def CATE(matching_object, unit_ids):
         # Warn user that unit has no matches
         else:
             CATEs.append(np.nan)
-            if (matching_object.verbose != 0):
-                print('Unit ' + str(unit) + " does not have any matches, so " \
-                      "can't find the CATE")
+            print('Unit ' + str(unit) + " does not have any matches, so " \
+                  "can't find the CATE")
             
     # Format output
     if len(CATEs) == 1:
@@ -171,7 +163,7 @@ def ATE(matching_object):
     array_MGs = matching_object.return_array[1]
     num_groups_per_unit = matching_object.return_array[0]['weights']
     # Recover CATEs
-    CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
+    CATEs = [0] * len(array_MGs)
     for group_id in range(len(array_MGs)):
         group_data = matching_object.input_data.loc[array_MGs[group_id], 
                                                     [matching_object.treatment_column_name,
@@ -210,9 +202,8 @@ def ATT(matching_object):
     # pretty sure this function will break in those cases
         
     num_groups_per_unit = matching_object.return_array[0]['weights']
-    matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
-    treated = matched_df.loc[matched_df[matching_object.treatment_column_name] == 1]
-    control = matched_df.loc[matched_df[matching_object.treatment_column_name] == 0]
+    treated = matching_object.input_data.loc[matching_object.input_data[matching_object.treatment_column_name] == 1]
+    control = matching_object.input_data.loc[matching_object.input_data[matching_object.treatment_column_name] == 0]
     # Compute ATT
     avg_treated = sum(treated[matching_object.outcome_column_name])/len(treated.index)
     # Stores weights for all control units

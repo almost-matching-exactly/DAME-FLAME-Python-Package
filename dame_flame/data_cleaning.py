@@ -107,15 +107,11 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     return early_stops_obj
 
 def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME, 
-                     weight_array=[], C=0.0, verbose=0):
+                     weight_array=[], C=0.0):
     '''
     This function processes the parameters that were passed to DAME/FLAME
     that aren't directly the input file or related to stop_criteria. 
     '''
-    
-    if (verbose not in [0,1,2,3]):
-        raise Exception('Invalid input error. The verbose option must be'\
-                        'the integer 0,1,2 or 3.')
             
     # Checks on the weight array...if the weight array needs to exist
     if (adaptive_weights == False):
@@ -222,6 +218,16 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     '''
     This function deals with all the missing data related stuff
     '''
+    #Ensuring that no entries are non-integers
+    for index, row in df.iterrows():
+        for i in all_covs:
+            if type(row[i])!=int:
+                raise Exception('Input dataframe has non-integer entries')
+    for index, row in df_holdout.iterrows():
+        for i in all_covs:
+            if type(row[i])!=int:
+                raise Exception('Holdout dataframe has non-integer entries')
+    
     mice_on_matching = False
     mice_on_holdout = False
     if (missing_data_replace == 0 and df.isnull().values.any() == True):
@@ -283,7 +289,11 @@ def process_input_file(df, treatment_column_name, outcome_column_name,
     directly the input file.
     
     '''
-    
+
+                
+    if df.index.is_unique==False:
+        raise Exception('Input has nonunique indices')
+            
     # Confirm that the treatment column name exists. 
     if (treatment_column_name not in df.columns):
         raise Exception('Invalid input error. Treatment column name does not'\
