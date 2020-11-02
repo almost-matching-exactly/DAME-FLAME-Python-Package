@@ -1,17 +1,8 @@
 language: python
 python:
   - "3.5"
-  - "3.6"     
-  - "3.7"
-  - "3.8"
 cache: pip
-os: windows
-language: sh
-before_install:
-        - choco install python3
-        - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
-        - python -m pip install --upgrade pip wheel
 install:
-python -m pip install requirements.txt
+  - pip install -r requirements.txt
 script:
-  - pytest
+  - python tests.py

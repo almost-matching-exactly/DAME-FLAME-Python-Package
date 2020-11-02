@@ -218,6 +218,16 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     '''
     This function deals with all the missing data related stuff
     '''
+    #Ensuring that no entries are non-integers
+    for index, row in df.iterrows():
+        for i in all_covs:
+            if type(row[i])!=int:
+                raise Exception('Input dataframe has non-integer entries')
+    for index, row in df_holdout.iterrows():
+        for i in all_covs:
+            if type(row[i])!=int:
+                raise Exception('Holdout dataframe has non-integer entries')
+    
     mice_on_matching = False
     mice_on_holdout = False
     if (missing_data_replace == 0 and df.isnull().values.any() == True):
@@ -279,11 +289,7 @@ def process_input_file(df, treatment_column_name, outcome_column_name,
     directly the input file.
     
     '''
-    #Ensuring that no entries are non-integers
-    for index, row in df_all.iterrows():
-        for i in all_covs:
-            if type(row[i])!=int:
-                raise Exception('Input has non-integer entries')
+
                 
     if df.index.is_unique==False:
         raise Exception('Input has nonunique indices')
