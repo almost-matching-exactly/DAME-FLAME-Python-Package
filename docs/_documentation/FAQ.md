@@ -3,15 +3,23 @@ layout: default
 title: FAQ and Vocabulary Guide
 nav_order: 5
 permalink: /FAQ
-has_children: true
 ---
 
 
 # FAQ and Vocabulary Guide
-{: .fs-9 }
-{: .fs-6 .fw-300 }
+{: .no_toc }
 
 ---
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+1. TOC
+{:toc}
+</details>
+
 ## Vocabulary Guide
 
 We briefly define some of the terms we use interchangeably throughout this User Guide and in this documentation below.

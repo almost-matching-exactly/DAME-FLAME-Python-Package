@@ -5,7 +5,6 @@ nav_order: 6
 permalink: /documentation/user-guide/Algorithm-Controls
 parent: User Guide
 grand_parent: Documentation
-has_children: true
 ---
 
 # Early Stopping Controls

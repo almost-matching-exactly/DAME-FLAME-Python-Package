@@ -47,21 +47,25 @@ In this example, because of the toy sized small dataset, we set the holdout data
 ```python
 import pandas as pd
 import dame_flame
+
 df = pd.read_csv("dame_flame/data/sample.csv")
 model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False)
 model.fit(holdout_data=df)
 result = model.predict(input_data=df)
+
 print(result)
 #>    x1   x2   x3   x4
 #> 0   0   1    1    *     
 #> 1   0   1    1    *     
 #> 2   1   0    *    1     
-#> 3   1   0    *    1     
+#> 3   1   0    *    1   
+
 print(model.groups_per_unit)
 #> 0    1.0
 #> 1    1.0
 #> 2    1.0
 #> 3    1.0
+
 print(model.units_per_group)
 #> [[2, 3], [0, 1]]
 ```

@@ -5,7 +5,6 @@ nav_order: 7
 permalink: /documentation/user-guide/Missing-Data
 parent: User Guide
 grand_parent: Documentation
-has_children: true
 ---
 
 # Missing Data Handling
@@ -61,6 +60,11 @@ The built-in imputation method that we include is  the "Multiple Imputation by C
 
 The underlying MICE implementation is done using scikit learn's experimental IterativeImpute package, and relies on DecisionTreeRegressions in the imputation process, to ensure that the data generated is fit for unordered categorical data. 
 
-###### [](#header-6)Further Reference
-
-For further reference on the MICE missing data handling technique, we recommend [Azur, Melissa J., et al. "Multiple imputation by chained equations: what is it and how does it work?."](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3074241/).
+<div class="language-markdown highlighter-rouge">
+  <h4>Further Readings</h4>
+  <br/>
+  For more information on the MICE missing data handling technique, we recommend
+  <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3074241/">
+    Azur, Melissa J., et al. <i>Multiple imputation by chained equations: what is it and how does it work?</i>.
+  </a>
+</div>

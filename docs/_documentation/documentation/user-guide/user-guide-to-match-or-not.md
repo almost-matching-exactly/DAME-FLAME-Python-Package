@@ -5,12 +5,11 @@ nav_order: 2
 permalink: /documentation/user-guide/to-match-or-not
 parent: User Guide
 grand_parent: Documentation
-has_children: true
 ---
 
 # To Match or Not To Match
-That is the question
 {: .no_toc }
+That is the question
 
 <details open markdown="block">
   <summary>
@@ -46,7 +45,7 @@ A common problem in causal inference is overlap or imbalance between treatment a
 A more moderate issue is partial overlap. In this case, some units do not have matches. Because the `DAME-FLAME` package allows for algorithm controls, even if all units could be matched in theory, users of the algorithm might prefer to avoid matching all units. Regardless of the cause, units that are unmatched do not have a CATE estimate, and they are not included in the treatment effect calculations either. 
 
 
-## Additional Requirements For `DAME-FLAME`
+## Additional Requirements For DAME-FLAME
 
 Since `DAME-FLAME` is a package for matching treatment and control groups, we require all of the above criteria for users. 
 
@@ -58,7 +57,11 @@ Additionally, we impose one additional crucial requirement: that the datasets th
 
 Secondly, the matches should also be *high quality*. If an oracle could tell us the exact result of doing treatment on any individual whose treatment we did not observe, then would we find that our estimate of the effect of treatment on that individual is accurate? 
 
-###### [](#header-6)Further Reference
-
-For further reference on causal inference research and its assumptions and issues, we recommend [Imbens, Guido W., and Donald B. Rubin. *Causal inference in statistics, social, and biomedical sciences.*](https://books.google.com/books?hl=en&lr=&id=Bf1tBwAAQBAJ&oi=fnd&pg=PR17&ots=jeVGafZSDE&sig=x9LYF4V9-wYQRQRxpudyA-d9nI0).
-
+<div class="language-markdown highlighter-rouge">
+  <h4>Further Readings</h4>
+  <br/>
+  For more information on causal inference research and its assumptions and issues, we recommend 
+  <a href="https://books.google.com/books?hl=en&lr=&id=Bf1tBwAAQBAJ&oi=fnd&pg=PR17&ots=jeVGafZSDE&sig=x9LYF4V9-wYQRQRxpudyA-d9nI0">
+    Imbens, Guido W., and Donald B. Rubin. <i>Causal inference in statistics, social, and biomedical sciences</i>.
+  </a>
+</div>

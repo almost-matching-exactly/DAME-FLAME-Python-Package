@@ -15,11 +15,11 @@ As the FLAME algorithm progresses to match units that do not have identical twin
 
 However, DAME will consider any covariate set options that will yield the highest-quality matches. The size of covariates matched on does not necessarily need to decrease over iterations of the algorithm.
 
-This one of the key advantages the DAME algorithm has over FLAME. DAME produces higher quality matches, meaning that *more units are matched on a large number of covariates*. We show this below, running the same dataset on FLAME and DAME for 10 iterations.
+This one of the key advantages the DAME algorithm has over FLAME. DAME produces higher quality matches, meaning that *more units are matched on a large number of covariates*. We show this below using matplotlib <a href="#references">[1]</a>, running the same dataset on FLAME and DAME for 10 iterations.
 
 
-<div class="early_stop" markdown="1">
-```python
+<div class="code-example" markdown="1">
+``` python
 
 import numpy as np
 import pandas as pd
@@ -86,11 +86,14 @@ plt.show()
 
 ![Bar graphs](https://github.com/nehargupta/dame-flame-experiments/raw/master/flame_vs_dame_quality.png "Match Quality")
 
-[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/flame_vs_dame_quality.ipynb){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/flame_vs_dame_quality.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
-
-###### References
-[Matplotlib graphing](https://matplotlib.org/3.3.2/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py)
-
+<div id="references" class="language-markdown highlighter-rouge">
+  <h4>References</h4>
+  <a class="number" href="/#comparing-match-quality-of-dame-and-flame">[1]</a> 
+  <a href="https://matplotlib.org/3.3.2/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py">
+    Matplotlib: Grouped bar chart with labels
+  </a>
+</div>
 
 {: .fs-6 .fw-300 }

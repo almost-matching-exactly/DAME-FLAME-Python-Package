@@ -5,7 +5,6 @@ nav_order: 1
 permalink: /documentation/api-documentation/DAME
 parent: API Documentation
 grand_parent: Documentation
-has_children: true
 ---
 
 # dame_flame.matching.DAME
@@ -99,9 +98,6 @@ If missing_holdout_replace=2, the number of imputations.
 **missing_data_imputations**: int, optional (default=1)  
 If missing_data_replace=3, the number of imputations. 
 
-## References
-[Dieng, Awa, et al. "Interpretable almost-exact matching for causal inference."](https://arxiv.org/abs/1806.06802)
-
 ## Example
 
 ```python
@@ -153,3 +149,11 @@ Perform match and return matches
 | Parameters: | *input_data*: dataframe-like (default=None). The dataframe on which to perform the matching   |
 |-------------|-----------------------------------------------------------------------------------------------|
 | Returns:    | *Result*: Pandas dataframe of matched units and covariates matched on                         |
+
+<div class="language-markdown highlighter-rouge">
+  <h4>Further Readings</h4>
+  <br/>
+  <a href="https://arxiv.org/abs/1806.06802">
+    Liu, Dieng, et al. <i>Interpretable Almost Matching Exactly For Causal Inference</i>.
+  </a>
+</div>

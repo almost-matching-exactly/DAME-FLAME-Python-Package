@@ -12,8 +12,8 @@ Both the FLAME and DAME algorithms begin by matching identical twins ("exact mat
 
 From this example, we see that if high accuraccy between the estimated treatment effect and true treatment effect is a priority, then this algorithm should be stopped early. 
 
-<div class="early_stop" markdown="1">
-```python
+<div class="code-example" markdown="1">
+``` python
 import numpy as np
 import pandas as pd
 import dame_flame
@@ -67,6 +67,6 @@ draw_scatter(axes[1], true_catt_full, estimated_catt_full, "DAME, matching all u
 
 ![Two Graphs](https://github.com/nehargupta/dame-flame-experiments/raw/master/early_stopping.png "Early Stopping")
 
-[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/early_stopping.ipynb){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/early_stopping.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
 {: .fs-6 .fw-300 }

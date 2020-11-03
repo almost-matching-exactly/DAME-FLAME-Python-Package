@@ -20,8 +20,8 @@ We see from the output that the FLAME algorithm drops unimportant covariates ear
 
 In this example, we also graph the number of units that were placed in a matched group based on each covariate. You can see that most units were matched using the most important covariate, and the least important covariate is used in comparatively fewer matches. 
 
-<div class="early_stop" markdown="1">
-```
+<div class="code-example" markdown="1">
+``` python
 import numpy as np
 import dame_flame
 import matplotlib.pyplot as plt
@@ -43,8 +43,8 @@ result_flame = model_flame.predict(df)
 ![interpretability verbose](https://github.com/nehargupta/dame-flame-experiments/raw/master/verbose_interpretability2.PNG "interpretability")
 
 
-<div class="early_stop" markdown="1">
-```
+<div class="code-example" markdown="1">
+``` python
 # replace all the '*'s with NAs so we can get a count of the NAs. 
 result_flame = result_flame.replace(to_replace='*', value=np.nan)
 result_dame = result_dame.replace(to_replace='*', value=np.nan)
@@ -91,7 +91,7 @@ plt.savefig('covariate_importance.png')
 ![covar importance](https://github.com/nehargupta/dame-flame-experiments/raw/master/covariate_importance.png "covarimportance")
 
 
-[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/interpretability.ipynb){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/interpretability.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
 
 {: .fs-6 .fw-300 }

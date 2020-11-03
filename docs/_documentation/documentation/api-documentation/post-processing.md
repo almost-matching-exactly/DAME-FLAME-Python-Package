@@ -5,7 +5,6 @@ nav_order: 3
 permalink: /documentation/api-documentation/post-processing
 parent: API Documentation
 grand_parent: Documentation
-has_children: true
 ---
 
 # dame_flame.utils.post_processing
@@ -28,7 +27,6 @@ ATE(matching_object)
 
 # The average treatment effect on the treated for the matching data
 ATT(matching_object)
-
 ```
 </div>
 

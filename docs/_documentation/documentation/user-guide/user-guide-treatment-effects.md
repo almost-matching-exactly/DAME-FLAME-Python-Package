@@ -5,7 +5,6 @@ nav_order: 5
 permalink: /documentation/user-guide/Treatment-Effects
 parent: User Guide
 grand_parent: Documentation
-has_children: true
 mathjax: true
 ---
 
@@ -71,9 +70,14 @@ Let $q_i$ denote the number of matched groups that unit $i$ appears in. Then, fo
 
 So, finally, we estimate ATE as $\frac{\sum_{m\in\mathbb{M}}CATE_m*w_m}{\sum_{m\in\mathbb{M}}w_m}$
 
-###### [](#header-6)Further Reference
-
-For further reference on treatment effects, see [Imbens, Guido W. "Nonparametric estimation of average treatment effects under exogeneity: A review." ](https://www.mitpressjournals.org/doi/pdfplus/10.1162/003465304323023651?casa_token=fkH1Z_M2FG4AAAAA:MC8V9YAzYAn9YeT4cVvHQF0ZL12QsL8ZVFDX4juiQysLG5auaWyxdSzVrKINkH8nXwlN4P2r0wRq).
+<div class="language-markdown highlighter-rouge">
+  <h4>Further Readings</h4>
+  <br/>
+  For more information on treatment effects, we recommend 
+  <a href="https://www.mitpressjournals.org/doi/pdfplus/10.1162/003465304323023651?casa_token=fkH1Z_M2FG4AAAAA:MC8V9YAzYAn9YeT4cVvHQF0ZL12QsL8ZVFDX4juiQysLG5auaWyxdSzVrKINkH8nXwlN4P2r0wRq">
+    Imbens, Guido W. <i>Nonparametric estimation of average treatment effects under exogeneity: A review</i>.
+  </a>
+</div>
 
 
 

@@ -5,7 +5,6 @@ nav_order: 1
 permalink: /documentation/user-guide/Introduction
 parent: User Guide
 grand_parent: Documentation
-has_children: true
 ---
 
 # Introduction
@@ -32,7 +31,12 @@ When estimating causal effects in an observational setting, one common approach 
 
 In large datasets where we observe many characteristics about individuals, few "identical twins", (referred to as "exact matches") exist. What is the best way to match individuals that were treated and controlled? Only once they're matched are we able to apply common *treatment effect estimators* to the groups of matched individuals, in order to try to determine the effect of treatment.
 
-###### [](#header-6)Further Reference
-
-For further reference on causal inference research and its assumptions and issues, we recommend [Imbens, Guido W., and Donald B. Rubin. *Causal inference in statistics, social, and biomedical sciences.*](https://books.google.com/books?hl=en&lr=&id=Bf1tBwAAQBAJ&oi=fnd&pg=PR17&ots=jeVGafZSDE&sig=x9LYF4V9-wYQRQRxpudyA-d9nI0).
+<div class="language-markdown highlighter-rouge">
+  <h4>Further Readings</h4>
+  <br/>
+  For more information on causal inference research and its assumptions and issues, we recommend
+  <a href="https://books.google.com/books?hl=en&lr=&id=Bf1tBwAAQBAJ&oi=fnd&pg=PR17&ots=jeVGafZSDE&sig=x9LYF4V9-wYQRQRxpudyA-d9nI0">
+    Imbens, Guido W., and Donald B. Rubin. <i>Causal inference in statistics, social, and biomedical sciences</i>.
+  </a>
+</div>
 

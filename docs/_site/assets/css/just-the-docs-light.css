@@ -2249,3 +2249,7 @@ figure.highlight pre, figure.highlight code { padding: 0; margin: 0; border: 0; 
   .text-small { font-size: 8pt !important; }
   pre.highlight { border: 1px solid #eeebee; }
   .main { max-width: none; margin-left: 0; } }
+#references a { white-space: normal; }
+#references h4 { padding-bottom: 0.5rem; }
+#references .number { color: #27262b; font-weight: 400; }
+#references .number:hover { text-decoration: underline; }
