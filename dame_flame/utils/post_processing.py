@@ -168,8 +168,8 @@ def ATE(matching_object):
     # also, if the flame algorithm was run with pre-dame, then more work.
     # pretty sure this function will break in those cases. 
 
-    array_MGs = matching_object.return_array[1]
-    num_groups_per_unit = matching_object.return_array[0]['weights']
+    array_MGs = matching_object.units_per_group
+    num_groups_per_unit = matching_object.groups_per_unit
     # Recover CATEs
     CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
     for group_id in range(len(array_MGs)):
