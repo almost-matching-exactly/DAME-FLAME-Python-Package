@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.linear_model import Ridge
-from sklearn.linear_model import RidgeCV
+from sklearn.model_selection import cross_val_score
 
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
@@ -69,27 +69,36 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
         if type(X_treated) == bool:
             return False
         
-        if adaptive_weights == "ridge":
+        if adaptive_weights == "ridge" or adaptive_weights == "ridgeCV":
             clf = Ridge(alpha=alpha_given)
-        elif adaptive_weights == "ridgeCV":
-            clf = RidgeCV(alphas=alpha_given)
-        elif adaptive_weights == "decision tree":
+        elif adaptive_weights == "decisiontree" or adaptive_weights == "decisiontreeCV":
             clf = DecisionTreeRegressor()
         else:
             return False
         
-        # Calculate treated MSE
-        clf.fit(X_treated, Y_treated) 
-        predicted = clf.predict(X_treated)
-        MSE_treated = mean_squared_error(Y_treated, predicted)
+        if adaptive_weights == "ridge" or adaptive_weights == "decisiontree":
         
-        # Calculate control MSE
-        clf.fit(X_control, Y_control) 
-        predicted = clf.predict(X_control)
-        MSE_control = mean_squared_error(Y_control, predicted)
-    
+            # Calculate treated MSE
+            clf.fit(X_treated, Y_treated) 
+            predicted = clf.predict(X_treated)
+            MSE_treated = mean_squared_error(Y_treated, predicted)
+            
+            # Calculate control MSE
+            clf.fit(X_control, Y_control) 
+            predicted = clf.predict(X_control)
+            MSE_control = mean_squared_error(Y_control, predicted)
+                
+        else:
+            # calculate MSE via cross validation. 
+            MSE_treated = -1*np.mean(cross_val_score(clf, X_treated, Y_treated,
+                                                     scoring='neg_mean_squared_error',
+                                                     cv=5))
+            MSE_control = -1*np.mean(cross_val_score(clf, X_control, Y_control,
+                                                     scoring='neg_mean_squared_error',
+                                                     cv=5))
+            
         pe_array.append(MSE_treated + MSE_control)
-        
+
     PE = np.mean(pe_array)
     return PE
 
@@ -104,7 +113,8 @@ def create_mice_dfs(df_holdout, num_imputes):
                                estimator=DecisionTreeRegressor())
         imp.fit(df_holdout)
         df_holdout_array.append(pd.DataFrame(data=np.round(imp.transform(df_holdout)), 
-                                             columns=df_holdout.columns, index=df_holdout.index))
+                                             columns=df_holdout.columns, 
+                                             index=df_holdout.index))
         
     return df_holdout_array
     

@@ -151,11 +151,12 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
         
         # make sure that adaptive_weights is a valid value.
         if (adaptive_weights != "ridge" and 
-            adaptive_weights != "decision tree" and
-            adaptive_weights != "ridgeCV"):
+            adaptive_weights != "decisiontree" and
+            adaptive_weights != "ridgeCV" and
+            adaptive_weights != "decisiontreeCV"):
             raise Exception("Invalid input error. The acceptable values for "\
                             "the adaptive_weights parameter are 'ridge', "\
-                            "'decision tree', or 'ridgeCV'. Additionally, "\
+                            "'decisiontree', 'decisiontreeCV', or 'ridgeCV'. Additionally, "\
                             "adaptive-weights may be 'False' along "\
                             "with a weight array")
 
