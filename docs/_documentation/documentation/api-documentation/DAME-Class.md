@@ -60,8 +60,19 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 | missing_holdout_imputations | int | 10 | If missing_holdout_replace=2, the number of imputations. |
 | missing_data_imputations | int | 1 | If missing_data_replace=3, the number of imputations. |
 
+## Attributes
 
-## Example
+| Attribute Name   | Type                                        | Description                                                         |
+|------------------|---------------------------------------------|---------------------------------------------------------------------|
+| units_per_group | Array | This is an array of arrays. Each sub-array is a matched group, and each item in each sub-array is an int, indicating the unit in that matched group. If matching is done with `repeats=False` then no unit will appear more than once. If `repeats=True` then the first group in which a unit appears is its main matched group. |
+| df_units_and_covars_matched | dataframe | This is the resulting matches of DAME. Each matched unit is in this array, and the covariates they were matched on have the value used to match. The covariates units were not matched on are indicated with a `*` |
+| groups_per_unit | Array | The length of this is equal to the number of units in the input array. Each item in this array corresponds to the number of times that each item was matched. If matching is done with repeats=False, then this number will be either 0 or 1. |
+| bf_each_iter | Array | if `want_bf` parameter is True, this will contain the balancing factor of the chosen covariate set at each iteration |
+| pe_each_iter | Array | if `want_pe` parameter is True, this will contain the predictive error of the chosen covariate set at each iteration |
+
+
+
+## Quick Example
 
 ```python
 import pandas as pd
