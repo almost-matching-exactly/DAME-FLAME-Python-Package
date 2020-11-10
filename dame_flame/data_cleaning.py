@@ -219,9 +219,12 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     This function deals with all the missing data related stuff
     '''
     #Ensuring that no entries are non-integers
+    all_covs=list (df.columns)
+    all_covs.remove(treatment_column_name)
+    all_covs.remove(outcome_column_name)
     for index, row in df.iterrows():
         for i in all_covs:
-            if type(row[i])!=int:
+            if type(row[i])!=int and all:
                 raise Exception('Input dataframe has non-integer entries')
     for index, row in df_holdout.iterrows():
         for i in all_covs:

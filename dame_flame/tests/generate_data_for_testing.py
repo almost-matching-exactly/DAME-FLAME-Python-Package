@@ -47,3 +47,6 @@ def create_1k():
         #    continue 
         
     return df, df_holdout
+
+df=create_data()
+print (df)
