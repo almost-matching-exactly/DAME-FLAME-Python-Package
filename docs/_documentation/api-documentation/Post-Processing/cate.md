@@ -1,21 +1,22 @@
 ---
 layout: default
-title: Matched Group
-nav_order: 3
-permalink: /documentation/api-documentation/matched-group
-parent: API Documentation
-grand_parent: Documentation
+title: CATE
+nav_order: 5
+permalink: /api-documentation/post-processing/CATE
+parent: Post Processing
+grand_parent: API Documentation
 ---
 
-# dame_flame.utils.post_processing.MG
+
+# dame_flame.utils.post_processing.CATE
 {: .no_toc }
  
-The matched group of a unit
+The conditional average treatment effect estimate of a subset of the data
 
 
 <div class="code-example" markdown="1">
 ```python
-MG(matching_object, unit_ids, output_style=1)
+CATE(matching_object, unit_ids)
 ```
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
@@ -25,21 +26,20 @@ MG(matching_object, unit_ids, output_style=1)
   </a>
 </div>
 
-Uses the matches created by the FLAME and DAME algorithms to provide main matched groups of units.
+Uses the matches created by the FLAME and DAME algorithms to provide CATE of subsets of the dataset.
 
-Read more about matched groups in the [User Guide](../user-guide/Getting-Matches.html)
+Read more about Conditional Average Treatment Effect (CATE) estimates in the [User Guide](../user-guide/Treatment-Effects.html)
 
 
 | Parameter Name   | Type | Description |
 |------------------|---------------------------------------------|---------|
 | matching_object | {dame_flame.matching.DAME, dame_flame.matching.FLAME} | The matching object used to run DAME and FLAME, after the .fit() and .predict() methods have been called to create the matches. If the matching_object's parameter for `verbose` is not 0, then as units without matches appear, the function will print this. |
 | unit_ids | {int, list} | A unit id or list of unit ids | 
-| output_style | int: {0,1} (default=1) | If 1, the covariates which were not used in matching for the group of the unit will have a "*" rather than the covariate value. Otherwise, it will output all covariate values. |
+
 
 | Return Name | Type | Description  |
 |-------------|------| --------------------------------------------------------------------|
-| MMGs    | {list, dataframe, np.nan} | If one unit id was provided, this is a single dataframe containing the main matched group of the unit. If the unit does not have a match, the return will be np.nan. If multiple unit ids were provided, this will be a list of dataframes with the main matched group of each unit provided. If any unit does not have a match, rather than a dataframe, at its place will be np.nan. |
-
+| MMGs    | {list, float, np.nan} | If one unit id was provided, this is a single float representing the conditional average treatment effect of the unit. This is equal to the CATE of the group that the unit is in. If the unit does not have a match, the return will be np.nan. If multiple unit ids were provided, this will be a list of floats with the CATE of each unit provided. If any unit does not have a match, rather than a float within the list, at its place will be np.nan. |
 
 ## Quick Example
 

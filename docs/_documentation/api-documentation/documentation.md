@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Documentation
+title: API Documentation
 nav_order: 3
-permalink: /documentation
+permalink: /api-documentation
 has_children: true
 ---
 
-# Documentation
+# API Documentation
 {: .fs-9 }
 
 {: .fs-6 .fw-300 }

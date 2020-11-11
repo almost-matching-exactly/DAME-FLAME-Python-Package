@@ -30,6 +30,13 @@ When estimating causal effects in an observational setting, one common approach 
 
 In large datasets where we observe many characteristics about individuals, few "identical twins", (referred to as "exact matches") exist. What is the best way to match individuals that were treated and controlled? Only once they're matched are we able to apply common *treatment effect estimators* to the groups of matched individuals, in order to try to determine the effect of treatment.
 
+
+## Challenges in Matching Methods
+
+"Exact matching" isn't possible when we a dataset has lots of characteristics about individuals, or is high dimensional. So, matching methods performing the best-possible alternative should be *interpretable*. Users of matching algorithms need to be able to easily understand which covariates were selected to be most important to their outcome, and need be able to find out why they were selected. This is important so that causal analysis can provide crucial information on who benefits from treatment most, where resources should be spent for future treatments, and why some individuals benefit from treatment while others were not. This can also help researchers determine what type of additional data must be collected. 
+
+Secondly, the matches should also be *high quality*. If an oracle could tell us the exact result of doing treatment on any individual whose treatment we did not observe, then would we find that our estimate of the effect of treatment on that individual is accurate? 
+
 <div class="language-markdown highlighter-rouge">
   <h4>Further Readings</h4>
   <br/>

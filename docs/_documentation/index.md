@@ -15,7 +15,7 @@ permalink: /
 
 ---
 
-**dame-flame** is a **Python** package for performing *matching* for *observational causal inference* on datasets containing discrete covariates. It implements the *Dynamic Almost Matching Exactly (DAME)* and *Fast, Large-Scale Almost Matching Exactly (FLAME)* algorithms, which match treatment and control units on subsets of the covariates. The resulting matched groups are interpretable,  because the matches are made on covariates (rather than, for instance, propensity scores), and high-quality, because machine learning is used to determine which covariates are important to match on.
+**dame-flame** is a **Python** package for performing *matching* for *observational causal inference* on datasets containing discrete covariates. It implements the *Dynamic Almost Matching Exactly (DAME)* and *Fast, Large-Scale Almost Matching Exactly (FLAME)* algorithms, which match treatment and control units on subsets of the covariates. The resulting matched groups are interpretable,  because the matches are made on covariates, and high-quality, because machine learning is used to determine which covariates are important to match on.
 
 ## Contact
 Please reach out to let our team know if you're using this, or if you have any questions! Contact 

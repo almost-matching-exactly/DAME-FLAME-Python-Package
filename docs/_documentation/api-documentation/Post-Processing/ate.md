@@ -1,21 +1,21 @@
 ---
 layout: default
-title: ATT
-nav_order: 6
-permalink: /documentation/api-documentation/ATT
-parent: API Documentation
-grand_parent: Documentation
+title: ATE
+nav_order: 4
+permalink: /api-documentation/post-processing/ATE
+parent: Post Processing
+grand_parent: API Documentation
 ---
 
-# dame_flame.utils.post_processing.ATT
+# dame_flame.utils.post_processing.ATE
 {: .no_toc }
  
-The average treatment effect estimate on the treated units in the data
+The average treatment effect estimate of the data
 
 
 <div class="code-example" markdown="1">
 ```python
-ATT(matching_object)
+ATE(matching_object)
 ```
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
@@ -25,9 +25,9 @@ ATT(matching_object)
   </a>
 </div>
 
-Uses the matches created by the FLAME and DAME algorithms to provide ATT of the dataset.
+Uses the matches created by the FLAME and DAME algorithms to provide ATE of the dataset.
 
-Read more about Average Treatment Effect on treated units (ATT) in the [User Guide](../user-guide/Treatment-Effects.html)
+Read more about Average Treatment Effect (ATE) in the [User Guide](../user-guide/Treatment-Effects.html)
 
 
 | Parameter Name   | Type | Description |
@@ -37,7 +37,7 @@ Read more about Average Treatment Effect on treated units (ATT) in the [User Gui
 
 | Return Name | Type | Description  |
 |-------------|------| --------------------------------------------------------------------|
-| ATT    | {float, np.nan} | A float representing the ATT of the dataset. If no units were matched, then the output will be np.nan. |
+| ATE    | {float, np.nan} | A float representing the ATE of the dataset. If no units were matched, then the output will be np.nan. |
 
 
 ## Quick Example

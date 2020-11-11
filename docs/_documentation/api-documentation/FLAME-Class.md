@@ -1,18 +1,19 @@
 ---
 layout: default
-title: DAME
-nav_order: 1
-permalink: /documentation/api-documentation/DAME
+title: FLAME
+nav_order: 2
+permalink: /api-documentation/FLAME
 parent: API Documentation
-grand_parent: Documentation
 ---
 
-# dame_flame.matching.DAME
+# dame_flame.matching.FLAME
 {: .no_toc }
  
+The FLAME algorithm class
+
 <div class="code-example" markdown="1">
 ```python
-class dame_flame.matching.DAME(adaptive_weights='ridge', alpha=0.1, 
+class dame_flame.matching.FLAME(adaptive_weights='ridge', alpha=0.1, 
         repeats=True,
          verbose=2, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac=False, 
@@ -31,7 +32,7 @@ class dame_flame.matching.DAME(adaptive_weights='ridge', alpha=0.1,
   </a>
 </div>
 
-This class creates the matches based on the DAME "Dynamic Almost Matching Exactly" algorithm. It has built in support for stopping criteria and missing data handling. 
+This class creates the matches based on the FLAME "Fast Large-Scale Almost Matching Exactly" algorithm. It has built in support for stopping criteria and missing data handling. 
 
 Read more in the [User Guide](../user-guide/Getting-Matches.html)
 
@@ -65,7 +66,7 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 | Attribute Name   | Type                                        | Description                                                         |
 |------------------|---------------------------------------------|---------------------------------------------------------------------|
 | units_per_group | Array | This is an array of arrays. Each sub-array is a matched group, and each item in each sub-array is an int, indicating the unit in that matched group. If matching is done with `repeats=False` then no unit will appear more than once. If `repeats=True` then the first group in which a unit appears is its main matched group. |
-| df_units_and_covars_matched | dataframe | This is the resulting matches of DAME. Each matched unit is in this array, and the covariates they were matched on have the value used to match. The covariates units were not matched on are indicated with a `*` |
+| df_units_and_covars_matched | dataframe | This is the resulting matches of FLAME. Each matched unit is in this array, and the covariates they were matched on have the value used to match. The covariates units were not matched on are indicated with a `*` |
 | groups_per_unit | Array | The length of this is equal to the number of units in the input array. Each item in this array corresponds to the number of times that each item was matched. If matching is done with repeats=False, then this number will be either 0 or 1. |
 | bf_each_iter | Array | if `want_bf` parameter is True, this will contain the balancing factor of the chosen covariate set at each iteration |
 | pe_each_iter | Array | if `want_pe` parameter is True, this will contain the predictive error of the chosen covariate set at each iteration |
@@ -78,7 +79,7 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 import pandas as pd
 import dame_flame
 df = pd.read_csv("dame_flame/data/sample.csv")
-model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False)
+model = dame_flame.matching.FLAME(repeats=False, verbose=1, early_stop_iterations=False)
 model.fit(holdout_data=df)
 result = model.predict(input_data=df)
 print(result)
@@ -133,7 +134,7 @@ Provide self with holdout data
 | treatment_column_name | string | "treated" | This is the name of the column with a binary indicator for whether a row is a treatment or control unit. |
 | outcome_column_name | string | "outcome" | This is the name of the column with the outcome variable of each unit. |
 | adaptive_weights | {bool, "ridge", "decision tree", "ridgeCV"} | "ridge" | The method used to decide what covariate set should be dropped next. |
-| weight_array | array | optional | If adaptive_weights = False, these are the weights to the covariates in input_data, for the non-adaptive version of DAME. Must sum to 1. In this case, we do not use machine learning for the weights, they are manually entered as weight_array. |
+| weight_array | array | optional | If adaptive_weights = False, these are the weights to the covariates in input_data, for the non-adaptive version of FLAME. Must sum to 1. In this case, we do not use machine learning for the weights, they are manually entered as weight_array. |
 
 <div class="code-example" markdown="1">
 ```python
@@ -151,16 +152,20 @@ Perform match and return matches
 
 | `predict` Parameter Name   | Type  | Default | Description |
 |--------------|------------------|--------- | ---- |
-| input_data | {string, dataframe} | Required Parameter | The dataframe on which to perform the matching, or the location of the CSV with the dataframe |  
+| input_data | {string, dataframe} | Required Parameter | The dataframe on which to perform the matching, or the location of the CSV with the dataframe |
+| C | float | 0.1 | The tradeoff parameter between the balancing factor and the predictive error when deciding which covariates to match on |
+| pre_dame | {bool, integer} | False | If an integer is provided, this is the number of iterations to run the FLAME algorithm for before switching to DAME, in order for a hybrid FLAME-DAME option. | 
+
 
 | `predict` Return | Description  |
 |-------------|-----------------------------------------------------------------------------------------------|
 | Result    | Pandas dataframe of matched units and covariates matched on, with a "*" at each covariate that a unit did not use in matching                        |
 
+
 <div class="language-markdown highlighter-rouge">
   <h4>Further Readings</h4>
   <br/>
-  <a href="https://arxiv.org/abs/1806.06802">
-    Liu, Dieng, et al. <i>Interpretable Almost Matching Exactly For Causal Inference</i>.
+  <a href="https://arxiv.org/abs/1707.06315">
+    Wang, Morucci, et al. <i>FLAME: A Fast Large-scale Almost Matching Exactly Approach to Causal Inference</i>.
   </a>
 </div>

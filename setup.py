@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 
 setuptools.setup(name='dame_flame',
-      version='0.2',
+      version='0.31',
       description='Causal Inference Covariate Matching',
       long_description=long_description,
       keywords='Causal Inference Matching Covariates FLAME DAME',
@@ -15,7 +15,7 @@ setuptools.setup(name='dame_flame',
       author='Neha Gupta',
       author_email='neha.r.gupta@duke.edu',
       license='MIT',
-      packages=['dame_flame'],
+      packages=setuptools.find_packages(),
       install_requires=[
           'scikit-learn>=0.21.3',
           'scipy>=0.14',
