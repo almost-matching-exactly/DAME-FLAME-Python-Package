@@ -36,7 +36,7 @@ We briefly define some of the terms we use interchangeably throughout this User 
 ## FAQ
 
 ### Why Don't You Support Continuous Data?
-The `DAME-FLAME` package implements the DAME and FLAME algorithms, which are designed to find the best matches on datasets that are discrete. We believe this package will be useful for researchers regardless, due to the existence of several research problems that do rely on discrete data. 
+The FLAME and DAME algorithms use Hamming distance as the distance metric, which is only relevant for discrete data. If you have continuous data, we provide recommendations on discretizations here: [here](https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/documentation/user-guide/data-requirements).
 
 ### Why doesn't the machine learning step support my preferred method?
 At this time, we have provided implementations for three options: ridge regressions with a pre-specified alpha, ridge regressions with cross validation, and decision trees. We chose these based on what we know researchers want at this time. We definitely would love to add more if you wish! Please see our contributing guide. 
@@ -54,10 +54,18 @@ For each of these, we provide a link to our github repository, and encourage use
 
 ### Why should I use this instead of another package? Other ones seem more common!
 
-We know lots of other matching algorithms are popular. We won't become more common unless people like you will consider using us anyways, and we hope you'll spread the word once you decide you like `DAME-FLAME` :) 
+The matches produced by the `dame-flame` package are higher quality. `dame-flame` doesn't use uninterpretable propensity scores, it matches on actual covariates. It doesn't require the user to specify the metric like CEM, since it uses machine learning to learn the metric adaptively. It is not based on a black box machine learning method like Causal Forest or BART, but it can often be just as accurate, and it’s much easier to troubleshoot! <a href="#references">[1]</a> <a href="#references">[2]</a>. You can see our simulation [here](https://github.com/nehargupta/dame-flame-experiments/blob/master/DAME_vs_FLAME_vs_Matchit.ipynb) comparing `dame-flame` against MatchIt’s propensity score matching. This simulation shows that our package results in higher-quality matches. Also, the features of the `dame-flame` package are really useful. We offer several built-in treatment effect estimators so that users don’t have to rely on other packages or compute their own, and we offer built-in missing data handling.
 
-We believe that the algorithms other matching packages rely on result in low-quality, uninterpretable matches. We define low-quality matches as matches with poor treatment effect estimates, and uninterpretable matches as the inability to determine from a match which covariates influence the decision of matched units. The most popular matching algorithm is propensity score matching. Coarsened Exact Matching is another popular technique. Propensity score matching reduces a dataset to one dimension, so matches are produced without an aim of highlighting important covariates. Coarsened exact matching also pre-defines distance metrics, which will often be dominated by irrelevant covariates [(Dieng, et al.)](https://arxiv.org/abs/1806.06802). Causal Forests are gaining popularity too, but we claim that isn't a matching method in [Wang, et al.](https://arxiv.org/abs/1707.06315).
-
-Please see our simulation [here](https://github.com/nehargupta/dame-flame-experiments/blob/master/DAME_vs_FLAME_vs_Matchit.ipynb) comparing `DAME-FLAME` against MatchIt's propensity score matching. This simulation shows that our package results in higher-quality matches.
-
-Lastly, we hope you'll consider using `DAME-FLAME` when you compare the features of the `DAME-FLAME` package against other popular matching packages that implement the algorithms discussed above. We offer several built-in treatment effect estimators so that users don't have to rely on other packages or compute their own, and we offer built-in missing data handling. 
+<div id="references" class="language-markdown highlighter-rouge">
+  <h4>References</h4>
+  <a class="number" href="#flame">[1]</a>
+  <a href="https://arxiv.org/abs/1707.06315">
+    Wang, Morucci, et al. <i>FLAME: A Fast Large-scale Almost Matching Exactly Approach to Causal Inference</i>.
+  </a>
+  <br/>
+  <a class="number" href="#dame">[2]</a>
+  <a href="https://arxiv.org/abs/1806.06802">
+    Liu, Dieng, et al. <i>Interpretable Almost Matching Exactly For Causal Inference</i>.
+  </a>
+  <br/>
+</div>

@@ -8,7 +8,7 @@ parent: Examples
 
 # Early Stopping and Treatment Effect Estimates
 {: .fs-9 }
-Both the FLAME and DAME algorithms begin by matching identical twins ("exact matches") in the dataset. As iterations of the algorithm progress, later matched units are likely to have the highest error in estimated treatment effects. For this reason, there are situations where a user may wish to stop the FLAME or DAME algorithm in order to avoid poor quality matches, and if its not critical that all units are matched. 
+Both the FLAME and DAME algorithms begin by matching any units that are exactly the same on all covariates in the dataset ("identical twins"). As iterations of the algorithm progress, later matched units are likely to have the highest error in estimated treatment effects. For this reason, there are situations where a user may wish to stop the FLAME or DAME algorithm in order to avoid poor quality matches, and if its not critical that all units are matched. 
 
 From this example, we see that if high accuraccy between the estimated treatment effect and true treatment effect is a priority, then this algorithm should be stopped early. 
 

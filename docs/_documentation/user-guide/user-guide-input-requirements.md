@@ -28,11 +28,15 @@ Additionally, we require that all observational covariates be discrete. The outc
 
 We **do not** recommend users bin continous covariates.
 
-The only exception that could be made is a scenario where users are confident they are binning variables in a way that is a typical for their research. In this scenario, categories must be pre-defined and considered acceptable in their domain of work. 
+The exception that could be made is a scenario where users are confident they are binning variables in a way that is a typical for their research. In this scenario, categories must be pre-defined and considered acceptable in their domain of work. 
 
 ## Example of Acceptable Binning
 
 In research incorporating infant births, gestation time could be binned and used in `DAME-FLAME` as an observational covariate. Classifications of gestational age are well established norms adhered to in obstetric publications.  *Early term* is considered 37 0/7 weeks of gestation through 38 6/7 weeks of gestation, *full term*  is 39 0/7 weeks of gestation through 40 6/7 weeks of gestation, etc. The American College of Obstetricians and Gynecologists and the Society for Maternal-Fetal Medicine endorse and encourage these categories <a href="#references">[1]</a>.
+
+## Example using Binned Data
+
+This documentation provides an example [here](https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/examples/natality_experiment/), where  we aim to examine the effect of “extreme smoking” of a mother during pregancy on her newborn’s birthweight. We discuss using two binned continuous variables, father's age, and mother's education attainment. 
 
 ## Input Format Example
 
