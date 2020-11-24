@@ -56,6 +56,10 @@ For each of these, we provide a link to our github repository, and encourage use
 
 The matches produced by the `dame-flame` package are higher quality. `dame-flame` doesn't use uninterpretable propensity scores, it matches on actual covariates. It doesn't require the user to specify the metric like CEM, since it uses machine learning to learn the metric adaptively. It is not based on a black box machine learning method like Causal Forest or BART, but it can often be just as accurate, and it’s much easier to troubleshoot! <a href="#references">[1]</a> <a href="#references">[2]</a>. You can see our simulation [here](https://github.com/nehargupta/dame-flame-experiments/blob/master/DAME_vs_FLAME_vs_Matchit.ipynb) comparing `dame-flame` against MatchIt’s propensity score matching. This simulation shows that our package results in higher-quality matches. Also, the features of the `dame-flame` package are really useful. We offer several built-in treatment effect estimators so that users don’t have to rely on other packages or compute their own, and we offer built-in missing data handling.
 
+### I have a question not covered here
+
+Please reach out to let our team know if you’re using this, or if you have any questions. Contact Neha Gupta at neha.r.gupta "at" duke "dot" edu.
+
 <div id="references" class="language-markdown highlighter-rouge">
   <h4>References</h4>
   <a class="number" href="#flame">[1]</a>

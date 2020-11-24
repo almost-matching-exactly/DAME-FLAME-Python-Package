@@ -1,13 +1,11 @@
 ---
 layout: default
-title: Getting Started
-nav_order: 2
-permalink: /getting-started
+title: Installation and Quickstart Example
+nav_order: 1
+permalink: /getting-started/installation_example/
+parent: Getting Started
 ---
-# Getting Started
-{: .no_toc }
-Here, we aim to get you launched
-{: .fs-6 .fw-300 }
+# Installation and Quickstart Example
 
 <details open markdown="block">
   <summary>
