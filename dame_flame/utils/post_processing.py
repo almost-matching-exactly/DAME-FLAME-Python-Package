@@ -1,27 +1,18 @@
 # -*- coding: utf-8 -*-
+""" Find Treatment Effect Estimators, and Matched Groups, of matched units.
 """
-Created on Sun Oct 11 17:00:00 2020
 
-@author: Neha
-"""
+# author: Neha Gupta, Tommy Howell, Duke University
+# Copyright Duke University 2020
+# License: MIT
+
 from .. import matching
 import pandas as pd
 import numpy as np
 
-'''
-Doing a reformat. The new goal is utils->post_processing.mmg and 
-treatment_effects->CATE, etc. 
-I think I need to declare things in the init of the subfolders for this.
-
-And then I need data->gendata functions
-'''
-
 def validate_matching_obj(matching_object):
-    '''
-    This is a helper function
-    '''
+    """ Check matching_object's type and that .fit(), .predict() done"""
     
-    # validate input matching_object:
     if (matching.MatchParent not in type(matching_object).__bases__):
         raise Exception("The matching_object input parameter needs to be "\
                         "of type DAME or FLAME")
@@ -33,7 +24,7 @@ def validate_matching_obj(matching_object):
     return
     
     
-def MG(matching_object, unit_ids, output_style=1, mice_param=0):
+def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     '''
     This function returns the main matched groups for all specified unit
     indices
@@ -54,21 +45,20 @@ def MG(matching_object, unit_ids, output_style=1, mice_param=0):
     # or if the unit ids dont exist, need to throw an error. 
     
     validate_matching_obj(matching_object)
-        
-    # todo: if the dame/flame algorithm was run using mice, then more work is needed
-    # also, if the flame algorithm was run with pre-dame, then more work.
-    # pretty sure this function will break in those cases. 
+
     if (matching_object.missing_data_replace != 3):
         array_mgs = matching_object.return_array[1]
         df_matched_units = matching_object.return_array[0]
     else:
-        pass
+        array_mgs = matching_object.units_per_group[mice_iter]
+        df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]    
+        
             
     MMGs = []
     
     # Now we recover MMG
     for unit in unit_ids:
-        if unit in matching_object.return_array[0].index:
+        if unit in df_matched_units.index:
             # Iterate through all matched groups
             for group in array_mgs:
                 # The first group to contain the specified unit is the MMG
@@ -92,7 +82,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_param=0):
     return MMGs
 
 
-def CATE(matching_object, unit_ids):
+def CATE(matching_object, unit_ids, mice_iter=0):
     '''
     This function returns the CATEs for all specified unit indices
     
@@ -109,19 +99,17 @@ def CATE(matching_object, unit_ids):
     # Accept int or list for unit_id
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
-    # todo: error check this. If it's not an int or an iteratable object of ints,
+    # todo: error trap this. If it's not an int or an iteratable object of ints,
     # or if the unit ids dont exist, need to throw an error. 
     
     validate_matching_obj(matching_object)
     
-    # todo: if the dame/flame algorithm was run using mice, then more work is needed
-    # also, if the flame algorithm was run with pre-dame, then more work.
-    # pretty sure this function will break in those cases. 
     if (matching_object.missing_data_replace != 3):
         array_MGs = matching_object.return_array[1]
-        df_matched_units = matching_object.return_array[0]
+        df_matched_units = matching_object.df_units_and_covars_matched
     else:
-        pass
+        array_MGs = matching_object.units_per_group[mice_iter]
+        df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
     
     # Recover CATEs
     CATEs = []
@@ -151,7 +139,7 @@ def CATE(matching_object, unit_ids):
         CATEs = CATEs[0]
     return CATEs
 
-def ATE(matching_object):
+def ATE(matching_object, mice_iter=0):
     '''
     This function returns the ATE for the matching data
     
@@ -164,12 +152,13 @@ def ATE(matching_object):
 
     validate_matching_obj(matching_object)
     
-    # todo: if the dame/flame algorithm was run using mice, then more work is needed
-    # also, if the flame algorithm was run with pre-dame, then more work.
-    # pretty sure this function will break in those cases. 
-
-    array_MGs = matching_object.units_per_group
-    num_groups_per_unit = matching_object.groups_per_unit
+    if matching_object.missing_data_replace != 3:
+        array_MGs = matching_object.units_per_group
+        num_groups_per_unit = matching_object.groups_per_unit
+    else:
+        array_MGs = matching_object.units_per_group[mice_iter]
+        num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
+        
     # Recover CATEs
     CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
     for group_id in range(len(array_MGs)):
@@ -191,8 +180,10 @@ def ATE(matching_object):
         weighted_CATE_sum += MG_weight * CATEs[group_id]
     ATE = weighted_CATE_sum / weight_sum
     return ATE
+    
+        
 
-def ATT(matching_object):
+def ATT(matching_object, mice_iter=0):
     '''
     This function returns the ATT for the matching data using
     balancing estimation
@@ -205,12 +196,13 @@ def ATT(matching_object):
     
     validate_matching_obj(matching_object)
     
-    # todo: if the dame/flame algorithm was run using mice, then more work is needed
-    # also, if the flame algorithm was run with pre-dame, then more work.
-    # pretty sure this function will break in those cases
+    if matching_object.missing_data_replace != 3:
+        num_groups_per_unit = matching_object.return_array[0]['weights']
+        matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
+    else:
+        num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
+        matched_df = matching_object.input_data.loc[matching_object.df_units_and_covars_matched[mice_iter].index]
         
-    num_groups_per_unit = matching_object.return_array[0]['weights']
-    matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
     treated = matched_df.loc[matched_df[matching_object.treatment_column_name] == 1]
     control = matched_df.loc[matched_df[matching_object.treatment_column_name] == 0]
     # Compute ATT

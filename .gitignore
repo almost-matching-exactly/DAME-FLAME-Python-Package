@@ -7,8 +7,3 @@
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
 /*.egg
-dame_flame/data/hold_prop_hollande_pr12t1_an
-dame_flame/data/tests_with_vittorio/result.csv
-dame_flame/data/try3.csv
-*.csv
-dame_flame/tests/generate_new_active_sets_test.py

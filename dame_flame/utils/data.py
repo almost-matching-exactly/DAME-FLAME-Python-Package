@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Oct 25 13:59:18 2020
-@author: Neha
-"""
+"""Generate data for examples"""
+
+# author: Neha Gupta, Tianyu Wang, Duke University; Awa Dieng, Yameng Liu
+# Copyright Duke University 2020
+# License: MIT
 
 import pandas as pd
 import numpy as np
@@ -21,13 +22,10 @@ def generate_uniform_given_importance(num_control=1000, num_treated=1000,
     
     treatment_eff_coef = np.random.normal(bi_mean, bi_stdev, size=num_cov) # this is beta
     treatment_effect = np.dot(xt, treatment_eff_coef) # this is beta*x
-        
-    #second = construct_sec_order(xt[:,:2])           
-    #treatment_eff_sec = np.sum(second, axis=1) # this is the last term, x_i*x_gamma
-    
+            
     # note that yc is just the 1st term of the below summation. Thus, the CATT is the 2nd term
-    yt = np.dot(xt, np.array(covar_importance)) + treatment_effect #+ treatment_eff_sec
-    true_catt = treatment_effect #+ treatment_eff_sec
+    yt = np.dot(xt, np.array(covar_importance)) + treatment_effect
+    true_catt = treatment_effect
     
     df1 = pd.DataFrame(xc, columns = range(num_cov))
     df1['outcome'] = yc
@@ -58,13 +56,10 @@ def generate_binomial_given_importance(num_control=1000, num_treated=1000,
     
     treatment_eff_coef = np.random.normal(bi_mean, bi_stdev, size=num_cov) # this is beta
     treatment_effect = np.dot(xt, treatment_eff_coef) # this is beta*x
-        
-    #second = construct_sec_order(xt[:,:2])           
-    #treatment_eff_sec = np.sum(second, axis=1) # this is the last term, x_i*x_gamma
-    
+            
     # note that yc is just the 1st term of the below summation. Thus, the CATT is the 2nd term
-    yt = np.dot(xt, np.array(covar_importance)) + treatment_effect #+ treatment_eff_sec
-    true_catt = treatment_effect #+ treatment_eff_sec
+    yt = np.dot(xt, np.array(covar_importance)) + treatment_effect
+    true_catt = treatment_effect
     
     df1 = pd.DataFrame(xc, columns = range(num_cov))
     df1['outcome'] = yc
@@ -97,13 +92,10 @@ def generate_binomial_decay_importance(num_control=1000, num_treated=1000,
     
     treatment_eff_coef = np.random.normal(bi_mean, bi_stdev, size=num_cov) # this is beta
     treatment_effect = np.dot(xt, treatment_eff_coef) # this is beta*x
-        
-    #second = construct_sec_order(xt[:,:2])           
-    #treatment_eff_sec = np.sum(second, axis=1) # this is the last term, x_i*x_gamma
-    
+            
     # note that yc is just the 1st term of the below summation. Thus, the CATT is the 2nd term
-    yt = np.dot(xt, np.array(dense_bs)) + treatment_effect #+ treatment_eff_sec
-    true_catt = treatment_effect #+ treatment_eff_sec
+    yt = np.dot(xt, np.array(dense_bs)) + treatment_effect 
+    true_catt = treatment_effect 
     
     df1 = pd.DataFrame(xc, columns = range(num_cov))
     df1['outcome'] = yc

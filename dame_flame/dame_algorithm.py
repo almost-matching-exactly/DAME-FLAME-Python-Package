@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
-
-
-This file implements Algorithm 1 in the DAME paper
-"""
+""" The main place where the DAME algorithm happens"""
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
 
 import numpy as np
 import pandas as pd
@@ -168,7 +165,7 @@ def algo1(df_all, treatment_column_name = "T", weight_array = [],
     if missing_holdout_replace != False:
         # now df_holdout is actually an array of imputed datasets
         df_holdout = flame_dame_helpers.create_mice_dfs(
-            df_holdout, missing_holdout_replace)
+            df_holdout, missing_holdout_replace, outcome_column_name)
     else:
         # df_holdout is type array regardless, just size 1 and equal to itself
         # if not doing mice. 

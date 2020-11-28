@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
-"""
+"""Helper functions for the flame_algorithm.py and dame_algorithm.py files"""
+
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
+
 import numpy as np
 import pandas as pd
 
@@ -102,19 +104,24 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     PE = np.mean(pe_array)
     return PE
 
-def create_mice_dfs(df_holdout, num_imputes):
+def create_mice_dfs(df_holdout, num_imputes, outcome_col_name):
     '''
     This creates num_imputes number of imputed datasets
     '''
     df_holdout_array = []
     for i in range(num_imputes):
         imp = IterativeImputer(max_iter=10, random_state=i, 
-                               sample_posterior=True, 
                                estimator=DecisionTreeRegressor())
         imp.fit(df_holdout)
-        df_holdout_array.append(pd.DataFrame(data=np.round(imp.transform(df_holdout)), 
+        tmp_df = pd.DataFrame(data=np.round(imp.transform(df_holdout)), 
                                              columns=df_holdout.columns, 
-                                             index=df_holdout.index))
+                                             index=df_holdout.index)
+        
+        # convert floats to ints because MICE creates floats
+        cols = list(tmp_df.columns)
+        cols.remove(outcome_col_name)
+        tmp_df[cols] = tmp_df[cols].astype('int64')
+        df_holdout_array.append(tmp_df)
         
     return df_holdout_array
     

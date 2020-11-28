@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha
-"""
-
+"""Testing file"""
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
 
 from dame_flame import matching
 import unittest
@@ -18,14 +18,6 @@ class TestFlame(unittest.TestCase):
     
     def test_large_C_repeats_F(self):
         
-        #df_path = (os.path.dirname(__file__))+"basicTestData.csv"
-        #df = pd.read_csv(r"../data/basicTestData.csv")
-        #df = pd.read_csv(df_path)
-        
-        #df = pd.read_csv(R"basicTestData.csv")
-        
-        
-    
         df_path = os.path.join((os.path.dirname(__file__)), 'basicTestData.csv')
         df = pd.read_csv(df_path)
     
@@ -56,7 +48,3 @@ class TestFlame(unittest.TestCase):
         self.assertEqual(1, dfs_equal, 
                          msg='Data frames not equal on index {0}, col {1}'.format(index, col))
                           
-    
-#if __name__ == '__main__':
-#    unittest.main()
-    

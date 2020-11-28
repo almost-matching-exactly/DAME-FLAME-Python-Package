@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
 
-This is algorithm 2 in the paper.
-"""
+"""Does the bit matching algo from "Fast Large Scale..."(Wang, et al)"""
+
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
 
 import numpy as np
 from operator import itemgetter
@@ -27,10 +27,9 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
         all_units_in_g: list of unit ids for all matched groups created
     
     '''
-    
     # Find max of columns and make sure list of columns and list of maximums
     # is sorted from least to greatest
-    
+
     # This is a list of tuples (max_of_column, column_name)
     covs_max_tuples = [(max(df_unmatched[x])+1,x) for x in covs_match_on]
     covs_max_tuples = sorted(covs_max_tuples,key=itemgetter(0))
@@ -53,14 +52,14 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
 
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
-    
+        
     # Each element in this list represents a matched group and contains all of
     # the unit ids belonging to that particular group
     all_units_in_g = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
         units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
-
+        
         # Which of the units of this new group haven't been matched yet? 
         # unique_matched is a subset of units in the matched group, just the
         # ones for whom this is their main matched group.        
@@ -68,7 +67,6 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
         # Only need to proceed to fill in the return table if someone's MMG found. 
         if len(newly_matched) != 0:
             
-            # Append newly created matched group
             all_units_in_g.append(list(units_in_g))
             
             # Now, we figure out: What does the group look like? eg [1,2,*,1]
@@ -89,5 +87,6 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
             # store the bi in a column with df_all and also a column for "pair" with another
             # persons unit id. 
             # don't update that when someone gets added to an auxiliary matched group
-            # then at the end, iterate through it and create the nicely formatteed output.
+            # then at the end, iterate through it and create the nicely formatted output.
+            
     return matched_rows, return_groups, all_units_in_g

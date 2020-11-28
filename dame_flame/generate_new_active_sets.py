@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
-"""
+"""Algorithm to generate sets in "Dynamic Almost Matching" (Liu, et al)"""
+
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
+
 import itertools
 
 def algo3GenerateNewActiveSets(newly_dropped, prev_processed):

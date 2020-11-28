@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
-"""
+"""For organizing all of the early stopping criteria options"""
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
 
 class EarlyStops:
     def __init__(self):

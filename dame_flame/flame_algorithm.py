@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
-"""
+"""The main file for the FLAME algorithm"""
+
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
+
 import pandas as pd
 import numpy as np
 
@@ -120,7 +122,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     pre_dame(False, integer): Indicates whether the algorithm will move to 
     DAME and after integer number of iterations.
     '''
-            
+    
     # Initialize variables. These are all moving/temporary throughout algo
     all_covs = df_all.columns.tolist()
     all_covs.remove(treatment_column_name) 
@@ -159,7 +161,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
         for index in range(len(unique_units)):
             weights['weights'][unique_units[index]] += occurrences[index]  
-             
+    
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
         
@@ -170,7 +172,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     if missing_holdout_replace != False:
         # now df_holdout is actually an array of imputed datasets
         df_holdout_array = flame_dame_helpers.create_mice_dfs(
-            df_holdout, missing_holdout_replace)
+            df_holdout, missing_holdout_replace, outcome_column_name)
     else:
         # df_holdout_array exists regardless, just size 1 and equal to itself
         # if not doing mice. 
@@ -320,7 +322,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             
             
             # call dame algorithm
-            print((len(df_all) - len(df_unmatched)), "units matched. "\
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "Moving to DAME algorithm")
             return_matches_dame = dame_algorithm.algo1(
                 df_all, treatment_column_name, weight_array, 

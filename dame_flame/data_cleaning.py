@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: Neha Gupta, Duke University.
-Copyright Duke University 2020
+Cleans data prior to doing matching. Called by the matching.py file.
 """
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
 
 import pandas as pd
 import numpy as np
@@ -58,16 +60,6 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     # todo: add check for epsilon on FLAME
     
     early_stops_obj = early_stops.EarlyStops()
-    
-    # todo: pretty sure we don't need this one after thinking about it a bit
-    # but check with team. Because maybe you want to match as many as possible
-    # of both, and just stop when there's no more covar sets to check? 
-    
-    # Validate
-    #if (stop_unmatched_c == False and stop_unmatched_t == False):
-    #   raise Exception('Either stop_unmatched_c or stop_unmatched_t, or both'\
-    #         ' must be true, so the algorithm terminates if there are no '\
-    #         'units left to match')
     
     if (early_stop_un_t_frac > 1.0 or early_stop_un_t_frac < 0.0):
         raise Exception('The value provided for the early stopping critera '\
@@ -198,7 +190,12 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
                 if (math.isnan(df[col][item_num]) == True):
                     df.loc[item_num, col] = max_val + 1
                     max_val += 1
-    return df.astype('int64')
+                    
+    cols = list(df.columns)
+    cols.remove(outcome_column_name)
+    df[cols] = df[cols].astype('int64')
+    
+    return df
 
 def drop_missing(df, treatment_column_name, outcome_column_name, 
                  missing_indicator):
@@ -213,6 +210,7 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)
         df = df.dropna()
+        
     
     return df
     
@@ -223,6 +221,7 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
     '''
     This function deals with all the missing data related stuff
     '''
+    
     mice_on_matching = False
     mice_on_holdout = False
     if (missing_data_replace == 0 and df.isnull().values.any() == True):
@@ -250,7 +249,7 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
         # Reorder if they're not in order:
         df = df.loc[:, df.max().sort_values(ascending=True).index]
         
-    if (missing_data_replace == 3):
+    if (missing_data_replace == 3):    
         # this means do mice but only if theres something actually missing. 
         df = df.replace(missing_indicator, np.nan)
         if df.isnull().values.any() == True:
@@ -268,13 +267,33 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
                                   outcome_column_name, missing_indicator)
         
     if (missing_holdout_replace == 2):
-        # this means do mice ugh lol. 
+        # this means do mice. 
         df_holdout = df_holdout.replace(missing_indicator, np.nan)
         # but if there is actually nothing missing in the dataset, then dont
         # need to do this. 
         if (df_holdout.isnull().values.any() == True):
             mice_on_holdout = missing_holdout_imputations
-    
+            
+    # converts float inputs to ints
+    if mice_on_matching == False: 
+        try:
+            cols = list(df.columns)
+            cols.remove(outcome_column_name)
+            df[cols] = df[cols].astype('int64')
+        except:
+            raise Exception('Invalid input error. Ensure all inputs asides from '\
+                            'the outcome column are integers, and if missing' \
+                            ' values exist, ensure they are handled.')
+    if mice_on_holdout == False:
+        try:
+            cols = list(df_holdout.columns)
+            cols.remove(outcome_column_name)
+            df_holdout[cols] = df_holdout[cols].astype('int64')
+        except:
+            raise Exception('Invalid input error. Ensure all inputs asides from '\
+                            'the outcome column are integers, and if missing' \
+                            ' values exist, ensure they are handled.')
+        
     return df, df_holdout, mice_on_matching, mice_on_holdout
 
 def process_input_file(df, treatment_column_name, outcome_column_name, 
@@ -319,8 +338,5 @@ def process_input_file(df, treatment_column_name, outcome_column_name,
     else:
         # Reorder if they're not in order:
         df = df.loc[:, df.max().sort_values(ascending=True).index]
-                
         
-        
-
     return df

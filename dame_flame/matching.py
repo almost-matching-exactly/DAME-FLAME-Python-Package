@@ -1,25 +1,11 @@
 # -*- coding: utf-8 -*-
-""" Wrapper around user input, starting the input parsing and validation.
-@author: Neha Gupta, Duke University
-
-DAME-FLAME Python Package
-
-This package provides a package for the DAME algorithm from the paper
-"Interpretable Almost-Exact Matching For Causual Inference" 
-(Liu, Dieng, Roy, Rudin, Volfovsky), https://arxiv.org/abs/1806.06802, as well 
-as the FLAME algorithm from the paper "FLAME: A Fast Large-scale Almost
-Matching Exactly Approach to Causal Inference" (Wang, Morucci, Awan, Liu, Roy,
-Rudin, Volfovsky) https://arxiv.org/pdf/1707.06315.pdf
-
-This file in particular is just a wrapper around the algorithms that accepts 
-user input and kicks off the input parsing and validation prior to calling
-the algorithms. 
-
-
-For examples, see the main github page at:
-https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/
-
+""" 
+DAME and FLAME Matching Methods for Causal Inference. Starts matching methods.
 """
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
+
 import pandas as pd
 import numpy as np
 
@@ -30,8 +16,60 @@ from . import flame_dame_helpers
 from . import early_stops
 
 class MatchParent:
-    """
-    I hope this works ugh.
+    """ Matching via DAME or FLAME algorithms
+    
+    MatchParent aims to create and object for matching a given dataset.
+    Read more in the documentation User Guide: 
+    https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/
+    
+    Parameters
+    -----------
+    adaptive_weights (bool, str): Weight dropping method. False, 'ridge', 
+        'decision tree', or 'ridgeCV'.
+    alpha (float): This is the alpha for ridge regression. We use the 
+        scikit package for ridge regression, so it is "regularization 
+        strength". Larger values specify stronger regularization. 
+        Must be positive float.
+    repeats (bool): whether values for whom a MMG has been found can
+        be used again and placed in an auxiliary matched group.
+    verbose (default: 2): If 1, provides iteration num, if 2 provides
+        iteration number and number of units left to match on every 10th 
+        iter, if 3 does this print on every iteration. If 0, nothing. 
+    early_stop_iterations (optional int): If provided, a number of iters 
+        to hard stop the algorithm after.
+    stop_unmatched_c, stop_unmatched_t (bools): specifies whether
+        the algorithm stops when there are no units remaining to match
+    early_stop_un_c_frac, early_stop_un_t_frac (optional float, 
+        from 0.0 - 1.0): If provided, a fraction of unmatched control/
+        treatment units. When threshold met, hard stop the algo.
+    early_stop_pe, early_stop_bf: Whether the covariate set chosen to match
+        on has a pe/bf lower than the parameter early_stop_pe_frac, at 
+        which point the algorithm will stop.
+    early_stop_pe_frac, early_stop_bf_frac: If early_stop_pe/bf is true, 
+        then if the covariate set chosen to match on has a PE lower than 
+        this value, the algorithm will stop
+    missing_holdout_replace (0,1,2): default 0.
+        if 0, assume no missing holdout data and proceed
+        if 1, drop all missing_indicator values from holdout dataset
+        if 2, do mice on holdout dataset for missing_holdout_imputations
+        number of imputations
+    missing_data_replace (0,1,2,3): default 0.
+        if 0, assume no missing data in matching data and proceed
+        if 1, drop all missing_indicator values from matching data
+        if 2, replace all missing_indicator values with unique large vals
+        so they essentially get skipped in the matching
+        if 3, do mice on matching dataset for missing_data_imputations
+        number of imputations.
+    missing_holdout_imputations: If missing_holdout_replace=2, the number
+        of imputations on the holdout set.
+    missing_data_imputations: If missing_data_replace=3, the number of 
+        imputations on the matching set. 
+    missing_indicator: This is the character/number/np.nan that indicates 
+        missing vals in the holdout/matching data. 
+    want_pe: whether the output of the algorithm will include the 
+        predictive error of the covariate sets matched on in each iteration
+    want_bf: whether the output will include the balancing factor of each 
+        iteration.
     """
     def __init__(self, adaptive_weights='ridge', alpha=0.1, repeats=True,
                  verbose=2, early_stop_iterations=False, 
@@ -42,9 +80,7 @@ class MatchParent:
                  missing_indicator=np.nan, missing_data_replace=0, 
                  missing_holdout_replace=0, missing_holdout_imputations=10, 
                  missing_data_imputations=1, want_pe=False, want_bf=False):
-        """
-        Here, pass in some params and get them set.
-        """
+
         self.adaptive_weights = adaptive_weights
         self.alpha = alpha
         self.repeats = repeats
@@ -69,7 +105,28 @@ class MatchParent:
     def fit(self, holdout_data=False, treatment_column_name='treated',
             outcome_column_name='outcome', weight_array=False):
         """
-        Do the fit
+        Save model data that will be used to fit the matching method.
+        
+        Parameters
+        ----------
+        holdout_data : {string, dataframe, float, False }, default = False
+            This is the holdout dataset. If a string is given, that should be 
+            the location of a CSV file to input. If a float between 0.0 and 1.0
+            is given, that corresponds the percent of the input dataset to 
+            randomly select for holdout data. If False, the holdout data is 
+            equal to the entire input data.
+        treatment_column_name : string, default="treated"
+            the name of the column with a binary indicator for whether a row is
+            a treatment or control unit.
+        outcome_column_name : string, default="outcome"
+            This is the name of the column with the outcome variable of each 
+            unit.
+        weight_array : array, optional
+            If adaptive_weights = False, these are the weights to the 
+            covariates in input_data, for the non-adaptive version of DAME. 
+            Must sum to 1. In this case, we do not use machine learning for the
+            weights, they are manually entered as weight_array.
+
         """
         self.holdout_data = holdout_data
         self.treatment_column_name = treatment_column_name
@@ -80,7 +137,13 @@ class DAME(MatchParent):
     
     def predict(self, input_data):
         """
-        ah
+        Performs match and returns matched data.
+        
+        Parameters
+        ----------
+        input_data: {string, dataframe}, required parameter
+            The dataframe on which to perform the matching, or the location of 
+            the CSV with the dataframe
         """
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
@@ -128,9 +191,17 @@ class FLAME(MatchParent):
     
     def predict(self, input_data, pre_dame=False, C=0.1):
         """
-        fill me in
-        """
+        Performs match and returns matched data.
         
+        Parameters
+        ----------
+        input_data: {string, dataframe}, required parameter
+            The dataframe on which to perform the matching, or the location of 
+            the CSV with the dataframe
+        pre_dame (int, False): Indicates whether to switch to dame and after
+            int number of iterations. 
+        C (float, 0.1): The tradeoff between PE and BF in computing MQ
+        """
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
         
@@ -160,16 +231,57 @@ class FLAME(MatchParent):
                 self.pe_each_iter = self.return_array[2]
             if (self.want_bf == True):
                 self.bf_each_iter = self.return_array[-1]
+                
+        elif (pre_dame == True):
+            
+            # the first few items all look the same, then the last item is from dame
+            self.df_units_and_covars_matched = self.return_array[0]
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(self.return_array[-1][0])
+            if self.repeats == True:
+                # we have to aggregate the indexes appearing more than once,
+                # those are the ones which were matched units in both dame and flame:
+        
+                df_wrepeats = self.df_units_and_covars_matched
+                # this is a df without repeat indexes
+                df_no_repeats = df_wrepeats[~df_wrepeats.index.duplicated(keep='first')].copy()
+                
+                #iterate through repeat indexes and sum weight column
+                matched_twice_ind = df_wrepeats[df_wrepeats.index.duplicated()].index.unique()
+                for index in matched_twice_ind:
+                    df_no_repeats.loc[index, 'weights'] = df_wrepeats.loc[index].copy()['weights'].sum()
+                    
+                self.df_units_and_covars_matched = df_no_repeats
+                
+            self.df_units_and_covars_matched.replace(np.nan, "*")
+            self.groups_per_unit = self.df_units_and_covars_matched['weights']
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
+            self.units_per_group = self.return_array[1]
+            self.units_per_group += self.return_array[-1][1]
+            if (self.want_pe == True):
+                self.pe_each_iter = self.return_array[2]
+                self.pe_each_iter += self.return_array[-1][2]
+            if (self.want_bf == True):
+                self.bf_each_iter = self.return_array[-2]
+                self.bf_each_iter += self.return_array[-1][-2]
+                
         else:
-            # in the mice case or pre_dame case, we have multiple return vals
-            array_of_dfs = []
-            array_of_groups_per_unit = []
-            for arr in self.return_array:
-                temp_df = self.return_array[0]
-                array_of_groups_per_unit.append(temp_df['weights'])
-                array_of_dfs.append(temp_df.drop(columns=['weights']))
-            self.groups_per_unit = array_of_groups_per_unit
-            self.df_units_and_covars_matched = array_of_dfs     
+            # This is the mice case, where we have multiple return values. 
+            # We leave those as arrays. 
+            self.df_units_and_covars_matched = []
+            self.groups_per_unit = []
+            self.df_units_and_covars_matched = []
+            self.units_per_group = []
+            self.pe_each_iter = []
+            self.bf_each_iter = []
+            for return_val in self.return_array:
+                self.df_units_and_covars_matched.append(return_val[0].drop(columns = ['weights']))
+                self.groups_per_unit.append(return_val[0]['weights'])
+                self.units_per_group.append(return_val[1])
+                if (self.want_pe == True):
+                    self.pe_each_iter.append(return_val[2])
+                if (self.want_bf == True):
+                    self.bf_each_iter.append(return_val[-1])
+            
             
         return self.df_units_and_covars_matched
     
@@ -187,62 +299,7 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     """ Accepts user input, validates, error-checks, calls DAME algorithm.
 
     Args:
-        input_data(str, df): The data being matched. 
-        treatment_column_name (str): Indicates the name of the column that 
-            contains the binary indicator for whether each row is a treatment 
-            group or not.
-        weight_array (array, bool): array of weights of all covariates that are
-            in input_data. Only needed if adaptive_weights = False.
-        outcome_column_name (str): Indicates the name of the column that 
-            contains the outcome values. 
-        adaptive_weights (bool, str): Weight dropping method. False, 'ridge', 
-            'decision tree', or 'ridgeCV'.
-        alpha (float): This is the alpha for ridge regression. We use the 
-            scikit package for ridge regression, so it is "regularization 
-            strength". Larger values specify stronger regularization. 
-            Must be positive float.
-        holdout_data (str, df): If doing an adaptive_weights version this is
-            for the training step.
-        repeats (bool): whether values for whom a MMG has been found can
-            be used again and placed in an auxiliary matched group.
-        early_stop_iterations (optional int): If provided, a number of iters 
-            to hard stop the algorithm after.
-        stop_unmatched_c, stop_unmatched_t (bools): specifies whether
-            the algorithm stops when there are no units remaining to match
-        early_stop_un_c_frac, early_stop_un_t_frac (optional float, 
-            from 0.0 - 1.0): If provided, a fraction of unmatched control/
-            treatment units. When threshold met, hard stop the algo.
-        early_stop_pe, early_stop_bf: Whether the covariate set chosen to match
-            on has a pe/bf lower than the parameter early_stop_pe_frac, at 
-            which point the algorithm will stop.
-        early_stop_pe_frac, early_stop_bf_frac: If early_stop_pe/bf is true, 
-            then if the covariate set chosen to match on has a PE lower than 
-            this value, the algorithm will stop
-        verbose (default: 2): If 1, provides iteration num, if 2 provides
-            iteration number and number of units left to match on every 10th 
-            iter, if 3 does this print on every iteration. If 0, nothing. 
-        missing_holdout_replace (0,1,2): default 0.
-            if 0, assume no missing holdout data and proceed
-            if 1, drop all missing_indicator values from holdout dataset
-            if 2, do mice on holdout dataset for missing_holdout_imputations
-            number of imputations
-        missing_data_replace (0,1,2,3): default 0.
-            if 0, assume no missing data in matching data and proceed
-            if 1, drop all missing_indicator values from matching data
-            if 2, replace all missing_indicator values with unique large vals
-            so they essentially get skipped in the matching
-            if 3, do mice on matching dataset for missing_data_imputations
-            number of imputations.
-        missing_holdout_imputations: If missing_holdout_replace=2, the number
-            of imputations on the holdout set.
-        missing_data_imputations: If missing_data_replace=3, the number of 
-            imputations on the matching set. 
-        missing_indicator: This is the character/number/np.nan that indicates 
-            missing vals in the holdout/matching data. 
-        want_pe: whether the output of the algorithm will include the 
-            predictive error of the covariate sets matched on in each iteration
-        want_bf: whether the output will include the balancing factor of each 
-            iteration.
+        See description in MatchParent class above.
 
     Returns:
         return_df: df of units with the column values of their main matched
@@ -287,7 +344,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
               "points, with the parameter missing_data_replace=2.")
         
         # first we get the imputed datasets
-        df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_match)
+        df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_match,
+                                                      outcome_column_name)
         return_array = []
         for i in range(len(df_array)):
             return_array.append(dame_algorithm.algo1(
@@ -325,7 +383,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
             
     df = data_cleaning.process_input_file(
         df, treatment_column_name, outcome_column_name, adaptive_weights)
-
+        
     alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df, 
                                            alpha, True, weight_array, C)
     
@@ -348,17 +406,24 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     else:
         # this would mean we need to run mice on the matching data, which means
         # that we have to run flame_generic multiple times
+        if pre_dame != False:
+            raise Exception("Invalid Input Error. At this time, we do not "\
+                            "allow users to run the hybrid algorithm while "\
+                            "running MICE on the matching dataset.")
+        
         print("Warning: You have opted to run MICE on the matching dataset. "\
               "This is slow, and not recommended. We recommend that instead,"\
               " you run the algorithm and skip matching on missing data "\
               "points, with the parameter missing_data_replace=2.")
         
         # first we get the imputed datasets
-        df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_match)
+        df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_match,
+                                                      outcome_column_name)
+        
         return_array = []
         for i in range(len(df_array)):
             return_array.append(flame_algorithm.flame_generic(
-                df, treatment_column_name, weight_array, outcome_column_name, 
+                df_array[i], treatment_column_name, weight_array, outcome_column_name, 
                 adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
                 want_bf, mice_on_hold, early_stops, pre_dame, C))
             
