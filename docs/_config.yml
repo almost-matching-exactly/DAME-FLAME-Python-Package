@@ -65,6 +65,8 @@ aux_links:
 aux_links_new_tab: true
 # Color scheme
 color_scheme: blue
+# Google Analytics
+google_analytics: "G-QR30W6S6QJ"
 # Collections
 collections:
   documentation:

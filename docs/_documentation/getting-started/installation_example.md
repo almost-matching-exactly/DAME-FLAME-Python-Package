@@ -6,6 +6,7 @@ permalink: /getting-started/installation_example/
 parent: Getting Started
 ---
 # Installation and Quickstart Example
+{: .no_toc }
 
 <details open markdown="block">
   <summary>
