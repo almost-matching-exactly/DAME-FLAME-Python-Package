@@ -14,8 +14,7 @@ The FLAME algorithm class
 <div class="code-example" markdown="1">
 ```python
 class dame_flame.matching.FLAME(adaptive_weights='ridge', alpha=0.1, 
-        repeats=True,
-         verbose=2, early_stop_iterations=False, 
+         repeats=True, verbose=2, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac=False, 
          stop_unmatched_t=False, early_stop_un_t_frac=False, 
          early_stop_pe=False, early_stop_pe_frac=0.01, 
@@ -27,7 +26,7 @@ class dame_flame.matching.FLAME(adaptive_weights='ridge', alpha=0.1,
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L79">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L190">
     <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -79,20 +78,19 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 import pandas as pd
 import dame_flame
 df = pd.read_csv("dame_flame/data/sample.csv")
-model = dame_flame.matching.FLAME(repeats=False, verbose=1, early_stop_iterations=False)
-model.fit(holdout_data=df)
-result = model.predict(input_data=df)
+model = dame_flame.matching.FLAME()
+model.fit(df)
+result = model.predict(df)
 print(result)
 #>    x1   x2   x3   x4
-#> 0   0   1    1    *     
-#> 1   0   1    1    *     
-#> 2   1   0    *    1     
-#> 3   1   0    *    1     
+#> 0   *   1    1    1     
+#> 2   *   *    1    1     
+#> 3   *   0    1    1     
 ```
 
 ## Methods
 
-| `fit(self, holdout_data, treatment_col....)`  | Provide self with holdout data      |
+| `fit(self, holdout_data, treatment_col....)`  | Provide self with holdout training data      |
 | `predict(self, input_data...)`                | Perform the match on the input data |
 
 <div class="code-example" markdown="1">
@@ -106,7 +104,7 @@ missing_holdout_imputations=10, missing_data_imputations=1, want_pe=False, want_
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L36">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L74">
   <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -121,7 +119,7 @@ weight_array=False))
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L69">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L105">
   <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -130,7 +128,7 @@ Provide self with holdout data
 
 | `fit` Parameter Name   | Type                                        | Default | Description                                                         |
 |------------------|---------------------------------------------|---------|---------------------------------------------------------------------|
-| holdout_data | {string, dataframe, float, False } | False | This is the holdout dataset. If a string is given, that should be the location of a CSV file to input. If a float between 0.0 and 1.0 is given, that corresponds the percent of the input dataset to randomly select for holdout data. If False, the holdout data is equal to the entire input data. |  
+| holdout_data | {string, dataframe, float, False } | False | This is the holdout training dataset. If a string is given, that should be the location of a CSV file to input. If a float between 0.0 and 1.0 is given, that corresponds the percent of the input dataset to randomly select for holdout data. If False, the holdout data is equal to the entire input data. |  
 | treatment_column_name | string | "treated" | This is the name of the column with a binary indicator for whether a row is a treatment or control unit. |
 | outcome_column_name | string | "outcome" | This is the name of the column with the outcome variable of each unit. |
 | adaptive_weights | {bool, "ridge", "decision tree", "ridgeCV"} | "ridge" | The method used to decide what covariate set should be dropped next. |
@@ -143,7 +141,7 @@ predict(self, input_data)
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L69">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L192">
   <h6><u>Source Code</u></h6>
   </a>
 </div>

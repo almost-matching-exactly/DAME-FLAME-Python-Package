@@ -323,7 +323,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,
         missing_holdout_replace, missing_holdout_imputations,
-        missing_data_imputations, treatment_column_name, outcome_column_name)
+        missing_data_imputations, treatment_column_name, outcome_column_name,
+        adaptive_weights)
     
     early_stops = data_cleaning.check_stops(
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
@@ -390,7 +391,8 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,
         missing_holdout_replace, missing_holdout_imputations,
-        missing_data_imputations, treatment_column_name, outcome_column_name)
+        missing_data_imputations, treatment_column_name, outcome_column_name,
+        adaptive_weights)
 
     early_stops = data_cleaning.check_stops(
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,

@@ -217,10 +217,18 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
 def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
                    missing_holdout_replace, missing_holdout_imputations,
                    missing_data_imputations, treatment_column_name, 
-                   outcome_column_name):
+                   outcome_column_name, adaptive_weights):
     '''
     This function deals with all the missing data related stuff
     '''
+    # No missing data allowed in the fixed weights version.
+    # This is because having a weight array for pre-determined weights wouldn't
+    # make sense...how would a user have even predetermined the weights?
+    # If this is changed later, pay attention to MICE case (multiple weight 
+    # arrays needed?) and also sorting columns in replace unique large. 
+    if (missing_data_replace != 0 and adaptive_weights == False):
+        raise Exception('Invalid input error. We do not support missing data '\
+                        'handing in the fixed weights version of algorithms')
     
     mice_on_matching = False
     mice_on_holdout = False

@@ -39,33 +39,40 @@ pip install dame-flame
 
 We run the DAME function with the following basic command. In this example, we provide only the basic inputs: (1) input data as a dataframe or file, (2) the name of the outcome column, and (3) the name of the treatment column.
 
-In this example, because of the toy sized small dataset, we set the holdout dataset equal to the complete input dataset.
-
 <div class="code-example" markdown="1">
 ```python
 import pandas as pd
 import dame_flame
 
-df = pd.read_csv("dame_flame/data/sample.csv")
-model = dame_flame.matching.DAME(repeats=False, verbose=1, early_stop_iterations=False)
-model.fit(holdout_data=df)
-result = model.predict(input_data=df)
+df = pd.DataFrame([[0,1,1,1,0,5], [0,1,1,0,0,6], [1,0,1,1,1,7], [1,1,1,1,1,7]], 
+                  columns=["x1", "x2", "x3", "x4", "treated", "outcome"])
+
+print(df.head())
+#> x1  x2  x3  x4  treated      outcome
+#>  0   0   1   1   1        0        5
+#>  1   0   1   1   0        0        6
+#>  2   1   0   1   1        1        7
+#>  3   1   1   1   1        1        7
+
+model = dame_flame.matching.DAME()
+model.fit(df)
+result = model.predict(df)
 
 print(result)
 #>    x1   x2   x3   x4
-#> 0   0   1    1    *     
-#> 1   0   1    1    *     
-#> 2   1   0    *    1     
-#> 3   1   0    *    1   
+#> 0   *   1    1    1     
+#> 1   *   1    1    *     
+#> 2   *   *    1    1     
+#> 3   *   1    1    1   
 
 print(model.groups_per_unit)
-#> 0    1.0
+#> 0    3.0
 #> 1    1.0
 #> 2    1.0
-#> 3    1.0
+#> 3    3.0
 
 print(model.units_per_group)
-#> [[2, 3], [0, 1]]
+#> [[0, 3], [0, 2, 3], [0, 1, 3]]
 ```
 </div>
 
@@ -82,11 +89,11 @@ To find the main matched group of a particular unit or group of units after DAME
 
 <div class="code-example" markdown="1">
 ```python
-mmg = dame_flame.utils.post_processing.MG(matching_object=model, unit_id=0)
+mmg = dame_flame.utils.post_processing.MG(matching_object=model, unit_ids=0)
 print(mmg)
 #>      x1    x2    x3    x4    treated    outcome
-#> 0    0     1     1     *     0          5
-#> 1    0     1     1     *     1          6
+#> 0    *     1     1     1     0          5
+#> 3    *     1     1     1     1          7
 ```
 </div>
 
@@ -94,9 +101,9 @@ To find the conditional treatment effect (CATE) for the main matched group of a 
 
 <div class="code-example" markdown="1">
 ```python
-te = dame_flame.utils.post_processing.CATE(matching_object=model, unit_id=0)
-print(te)
-#> 3.0
+cate = dame_flame.utils.post_processing.CATE(matching_object=model, unit_ids=0)
+print(cate)
+#> 2.0
 ```
 </div>
 
@@ -106,9 +113,9 @@ To find the average treatment effect (ATE) or average treatment effect on the tr
 ```python
 ate = dame_flame.utils.post_processing.ATE(matching_object=model)
 print(ate)
-#> 2.0
-att = dame_flame.utils.post_processing.MG(matching_object=model)
+#> 1.825
+att = dame_flame.utils.post_processing.ATT(matching_object=model)
 print(att)
-#> 2.0
+#> 1.75
 ```
 </div>

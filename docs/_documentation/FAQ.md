@@ -31,6 +31,8 @@ We briefly define some of the terms we use interchangeably throughout this User 
 | Treatment Effects | We have a whole page on this. See [here](https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/documentation/user-guide/Treatment-Effects). |
 | Matched group, matches | The group that a unit is assigned to based on the result of the matching algorithm |
 | Main matched group | If units are assigned to multiple groups, each group has one group which is its main group, in which it is matched to units which it is most similar to. Other groups it is in will have less similar covariates  |
+| Input dataset, matching dataset | The dataset on which matches will be made  |
+| Holdout training data, holdout data, training data | The dataset that will be used to compute predictive error (PE) in deciding which covariates to match on. In future versions of the code, this will be called "training data". |
 
 
 ## FAQ

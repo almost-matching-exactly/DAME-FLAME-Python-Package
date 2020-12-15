@@ -20,7 +20,7 @@ ATE(matching_object)
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/utils/post_processing.py#L36">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/utils/post_processing.py#L142">
     <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -45,14 +45,12 @@ Read more about Average Treatment Effect (ATE) in the [User Guide](../user-guide
 ```python
 import pandas as pd
 import dame_flame
-df = pd.read_csv("dame_flame/data/sample.csv")
-model = dame_flame.matching.FLAME(repeats=False, verbose=1, early_stop_iterations=False)
-model.fit(holdout_data=df)
-result = model.predict(input_data=df)
-print(result)
-#>    x1   x2   x3   x4
-#> 0   0   1    1    *     
-#> 1   0   1    1    *     
-#> 2   1   0    *    1     
-#> 3   1   0    *    1     
+df = pd.DataFrame([[0,1,1,1,0,5], [0,1,1,0,0,6], [1,0,1,1,1,7], [1,1,1,1,1,7]], 
+                  columns=["x1", "x2", "x3", "x4", "treated", "outcome"])
+
+model = dame_flame.matching.DAME()
+model.fit(df)
+result = model.predict(df)
+
+ate = dame_flame.utils.post_processing.ATE(model)
 ```

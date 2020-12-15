@@ -71,6 +71,21 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
         if type(X_treated) == bool:
             return False
         
+        # binarize holdout dataset if categorical:
+        if (adaptive_weights == "decisiontree" or adaptive_weights == "decisiontreeCV"):
+            
+            # first binarize non-binary columns in the treated dataset
+            bool_cols = bool_cols = [col for col in X_treated if np.isin(X_treated[col].unique(), [0, 1]).all()]
+            non_bool_cols = X_treated.columns.difference(bool_cols)
+            binarized_df = pd.get_dummies(X_treated.loc[:, non_bool_cols].astype(str))
+            X_treated = pd.concat([binarized_df, X_treated.loc[:, bool_cols]], axis=1)
+            
+            # binarize non-binary columns in the control dataset
+            bool_cols = bool_cols = [col for col in X_control if np.isin(X_control[col].unique(), [0, 1]).all()]
+            non_bool_cols = X_control.columns.difference(bool_cols)
+            binarized_df = pd.get_dummies(X_control.loc[:, non_bool_cols].astype(str))
+            X_control = pd.concat([binarized_df, X_control.loc[:, bool_cols]], axis=1)
+                    
         if adaptive_weights == "ridge" or adaptive_weights == "ridgeCV":
             clf = Ridge(alpha=alpha_given)
         elif adaptive_weights == "decisiontree" or adaptive_weights == "decisiontreeCV":
