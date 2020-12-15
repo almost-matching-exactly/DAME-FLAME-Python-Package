@@ -18,7 +18,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: AME Lab
+title: DAME-FLAME Python Package
 email: almost-matching-exactly@duke.edu
 description: >- # this means to ignore newlines until "baseurl:"
   Matching for causal inference with machine learning algorithms
@@ -65,6 +65,8 @@ aux_links:
 aux_links_new_tab: true
 # Color scheme
 color_scheme: blue
+# Google Analytics
+google_analytics: "G-QR30W6S6QJ"
 # Collections
 collections:
   documentation:
