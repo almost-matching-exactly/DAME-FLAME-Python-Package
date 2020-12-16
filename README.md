@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/almost-matching-exactly/DAME-FLAME-Python-Package.svg?branch=master)](https://travis-ci.org/almost-matching-exactly/DAME-FLAME-Python-Package)
 
 <!-- Comment hi.  -->
 # DAME-FLAME
