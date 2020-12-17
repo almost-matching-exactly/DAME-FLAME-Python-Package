@@ -3,5 +3,8 @@ python:
   - "3.6.5"
 # command to install dependencies
 install: pip install -r requirements.txt
+
+before_script:
+  - composer install  --no-interaction
 # command to run tests
 script: nosetests
