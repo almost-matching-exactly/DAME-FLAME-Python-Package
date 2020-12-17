@@ -2,7 +2,9 @@ language: python
 python:
   - "3.6.5"
 # command to install dependencies
-install: pip install -r requirements.txt
+install: 
+ - pip install -r requirements.txt
+ - pip install coverage
 
 # command to run tests
 script: nosetests  --with-coverage --cover-package=dame_flame
