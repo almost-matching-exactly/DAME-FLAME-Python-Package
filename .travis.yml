@@ -5,6 +5,12 @@ python:
 install: 
  - pip install -r requirements.txt
  - pip install coverage
+ - pip install python-coveralls
+ - pip install coveralls
 
 # command to run tests
-script: nosetests  --with-coverage --cover-package=dame_flame
+script: 
+  - nosetests  --with-coverage --cover-package=dame_flame
+
+after_success:
+  coveralls
