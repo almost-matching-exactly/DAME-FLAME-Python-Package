@@ -12,7 +12,7 @@ import pandas as pd
 import os
 import sys
 
-def test_statistics(model,unit_id = 1):
+def check_statistics(model,unit_id = 1):
     ATE_ = ATE(model)
     ATT_ = ATT(model)
     MG_ = MG(model,unit_id)
@@ -78,7 +78,7 @@ class TestFlame(unittest.TestCase):
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
 
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0
                     break
 
@@ -97,7 +97,7 @@ class TestFlame(unittest.TestCase):
                 model = matching.FLAME(repeats=False)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0   
                     break
 
@@ -120,7 +120,7 @@ class TestFlame(unittest.TestCase):
             model = matching.FLAME(repeats=True)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
-            if test_statistics(model):
+            if check_statistics(model):
                 is_correct = 0   
 
         except (KeyError, ValueError):
@@ -137,7 +137,7 @@ class TestFlame(unittest.TestCase):
                 model = matching.FLAME(repeats=True,verbose=verbose)
                 model.fit(holdout_data=0.5)
                 output = model.predict(df)
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0 
 
             except (KeyError, ValueError):
@@ -156,7 +156,7 @@ class TestFlame(unittest.TestCase):
                 model = matching.FLAME(repeats=True)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0 
 
         except (KeyError, ValueError):
@@ -181,7 +181,7 @@ class TestFlame(unittest.TestCase):
                     model = matching.FLAME(missing_holdout_replace = missing_holdout_replace,missing_data_replace=missing_data_replace )
                     model.fit(holdout_data=0.5)
                     output = model.predict(df)
-                    if test_statistics(model):
+                    if check_statistics(model):
                         is_correct = 0 
                         break
 
@@ -206,7 +206,7 @@ class TestFlame(unittest.TestCase):
                     model = matching.FLAME(want_pe=want_pe,want_bf=want_bf)
                     model.fit(holdout_data=holdout)
                     output = model.predict(df)
-                    if test_statistics(model) or (want_pe and len(model.pe_each_iter)==0) or (want_bf and len(model.bf_each_iter)==0):
+                    if check_statistics(model) or (want_pe and len(model.pe_each_iter)==0) or (want_bf and len(model.bf_each_iter)==0):
                         is_correct = 0
                         break
 
@@ -264,7 +264,7 @@ class TestDame(unittest.TestCase):
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
 
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0
                     break
 
@@ -283,7 +283,7 @@ class TestDame(unittest.TestCase):
                 model = matching.DAME(repeats=False)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0   
                     break
 
@@ -306,7 +306,7 @@ class TestDame(unittest.TestCase):
 #             model = matching.DAME(repeats=True)
 #             model.fit(holdout_data=holdout)
 #             output = model.predict(df)
-#             if test_statistics(model):
+#             if check_statistics(model):
 #                 is_correct = 0   
 
 #         except (KeyError, ValueError):
@@ -323,7 +323,7 @@ class TestDame(unittest.TestCase):
                 model = matching.DAME(repeats=True,verbose=verbose)
                 model.fit(holdout_data=0.5)
                 output = model.predict(df)
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0 
 
             except (KeyError, ValueError):
@@ -342,7 +342,7 @@ class TestDame(unittest.TestCase):
                 model = matching.DAME(repeats=True)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
-                if test_statistics(model):
+                if check_statistics(model):
                     is_correct = 0 
 
         except (KeyError, ValueError):
@@ -367,7 +367,7 @@ class TestDame(unittest.TestCase):
                     model = matching.DAME(repeats = False,missing_holdout_replace = missing_holdout_replace,missing_data_replace=missing_data_replace )
                     model.fit(holdout_data=0.5)
                     output = model.predict(df)
-                    if test_statistics(model):
+                    if check_statistics(model):
                         is_correct = 0 
                         break
 
@@ -392,7 +392,7 @@ class TestDame(unittest.TestCase):
                     model = matching.DAME(want_pe=want_pe,want_bf=want_bf)
                     model.fit(holdout_data=holdout)
                     output = model.predict(df)
-                    if test_statistics(model) or (want_pe and len(model.pe_each_iter)==0) or (want_bf and len(model.bf_each_iter)==0):
+                    if check_statistics(model) or (want_pe and len(model.pe_each_iter)==0) or (want_bf and len(model.bf_each_iter)==0):
                         is_correct = 0
                         break
 
