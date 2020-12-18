@@ -180,18 +180,18 @@ class TestFlame(unittest.TestCase):
 
         
     def test_miss_data_F(self):
-        #Test missig data handling
-        df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
-        #Create missing df
-        m,n = df.shape
-        for i in range(int(m/100)):
-            for j in [0,int(n/2)]:
-                df.iloc[i,j] = np.nan
-        holdout = df.copy()
         is_correct = 1
         try:
             for missing_holdout_replace in [0,1,2]:
                 for missing_data_replace in [0,1,2,3]:
+                    df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
+                    #Create missing df
+                    m,n = df.shape
+                    for i in range(int(m/100)):
+                        for j in [0,int(n/2)]:
+                            df.iloc[i,j] = np.nan
+                    holdout = df.copy()
+
                     model = matching.FLAME(missing_holdout_replace = missing_holdout_replace,missing_data_replace=missing_data_replace )
                     model.fit(holdout_data=holdout)
                     output = model.predict(df)
@@ -416,18 +416,19 @@ class TestDame(unittest.TestCase):
 
         
     def test_miss_data_F(self):
-        #Test missig data handling
-        df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
-        #Create missing df
-        m,n = df.shape
-        for i in range(int(m/50)):
-            for j in [0,int(n/2)]:
-                df.iloc[i,j] = np.nan
-        holdout = df.copy()
+
         is_correct = 1
         try:
             for missing_holdout_replace in [0,1,2]:
                 for missing_data_replace in [0,1,2]:
+                    #Test missig data handling
+                    df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
+                    #Create missing df
+                    m,n = df.shape
+                    for i in range(int(m/10)):
+                        for j in [0,int(n/2)]:
+                            df.iloc[i,j] = np.nan
+                    holdout = df.copy()
                     model = matching.DAME(repeats = False,missing_holdout_replace = missing_holdout_replace,missing_data_replace=missing_data_replace )
                     model.fit(holdout_data=holdout)
                     output = model.predict(df)
@@ -507,3 +508,4 @@ class TestDame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when other parameters')
+
