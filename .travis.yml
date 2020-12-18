@@ -18,7 +18,7 @@ install:
   - pip install pytest-cov
   - pip install coveralls
 script:
-  - pytest --cov=dame_flame
+  - pytest --cov=dame_flame tests/
 after_success:
   - coveralls
 
