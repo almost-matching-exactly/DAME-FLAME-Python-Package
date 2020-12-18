@@ -3,10 +3,11 @@ python:
   - "3.6.5"
 # command to install dependencies
 install: 
+ - pip install coveralls
  - pip install -r requirements.txt
  - pip install coverage
  - pip install python-coveralls
- - pip install coveralls
+
 
 # command to run tests
 script: 
