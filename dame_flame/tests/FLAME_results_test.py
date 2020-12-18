@@ -378,12 +378,12 @@ class TestDame(unittest.TestCase):
         
     def test_want_pebf_F(self):
         #Test 
-        df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100, 
-                                              num_cov=7, min_val=0,
-                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
+        df, true_TE = generate_uniform_given_importance(num_control=3000, num_treated=3000, 
+                                              num_cov=6, min_val=0,
+                                              max_val=3, covar_importance=[4,3,2,1,0,0])
         holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100, 
-                                              num_cov=7, min_val=0,
-                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                                              num_cov=6, min_val=0,
+                                              max_val=3, covar_importance=[4,3,2,1,0,0])
 
         is_correct = 1
         try:
