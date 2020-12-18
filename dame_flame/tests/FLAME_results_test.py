@@ -94,7 +94,7 @@ class TestFlame(unittest.TestCase):
 
                 if check_statistics(model):
                     is_correct = 0
-                    break
+                    
 
             except (KeyError, ValueError):
                 is_correct = 0
@@ -247,7 +247,7 @@ class TestFlame(unittest.TestCase):
             output = model2.predict(df, pre_dame = True)
             if check_statistics(model1) or check_statistics(model2) :
                 is_correct = 0
-                break
+                
         except (KeyError, ValueError):
             is_correct = 0
 
