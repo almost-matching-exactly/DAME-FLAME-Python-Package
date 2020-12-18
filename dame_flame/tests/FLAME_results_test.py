@@ -304,7 +304,7 @@ class TestDame(unittest.TestCase):
 
             
     def test_PE_F(self):
-        for adaptive_weights in [False, 'ridge', 'decisiontree', 'ridgeCV','decisiontreeCV']: #
+        for adaptive_weights in [ 'ridge', 'decisiontree', 'ridgeCV','decisiontreeCV']: #
             is_correct = 1
             try:
                 model = None
