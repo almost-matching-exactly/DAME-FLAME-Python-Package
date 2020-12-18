@@ -187,13 +187,13 @@ class TestFlame(unittest.TestCase):
         for i in range(int(m/100)):
             for j in [0,int(n/2)]:
                 df.iloc[i,j] = np.nan
-
+        holdout = df.copy()
         is_correct = 1
         try:
             for missing_holdout_replace in [0,1,2]:
                 for missing_data_replace in [0,1,2,3]:
                     model = matching.FLAME(missing_holdout_replace = missing_holdout_replace,missing_data_replace=missing_data_replace )
-                    model.fit(holdout_data=0.5)
+                    model.fit(holdout_data=holdout)
                     output = model.predict(df)
                     if check_statistics(model):
                         is_correct = 0
@@ -254,56 +254,54 @@ class TestFlame(unittest.TestCase):
         self.assertEqual(1, is_correct,
                          msg='FLAME-Error when we use pre_dame')
         
-def test_other_param_F(self):
-    try:
-        df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
-                                              num_cov=7, min_val=0,
-                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
-        holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
-                                              num_cov=7, min_val=0,
+    def test_other_param_F(self):
+        try:
+            df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
+                                                  num_cov=7, min_val=0,
                                                   max_val=3, covar_importance=[4,3,2,1,0,0,0])
-        
-        model = matching.FLAME( early_stop_pe= 10, verbose=0)
-        model.fit(holdout_data=holdout)
-        output = model.predict(df)
-        if check_statistics(model):
-            is_correct = 0
-        model = matching.FLAME( stop_unmatched_c= True, verbose=0)
-        model.fit(holdout_data=holdout)
-        output = model.predict(df)
-        if check_statistics(model):
-            is_correct = 0
-        model = matching.FLAME(stop_unmatched_t= True, verbose=0)
-        model.fit(holdout_data=holdout)
-        output = model.predict(df)
-        if check_statistics(model):
-            is_correct = 0
-        model = matching.FLAME(early_stop_un_c_frac = 0.5, verbose=0)
-        model.fit(holdout_data=holdout)
-        output = model.predict(df)
-        if check_statistics(model):
-            is_correct = 0
-        model = matching.FLAME(early_stop_un_t_frac = 0.5, verbose=0)
-        model.fit(holdout_data=holdout)
-        output = model.predict(df)
-        if check_statistics(model):
-            is_correct = 0
-        model = matching.FLAME(early_stop_iterations= 2, verbose=0)
-        model.fit(holdout_data=holdout)
-        output = model.predict(df)
-        if check_statistics(model):
-            is_correct = 0
+            holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                                  num_cov=7, min_val=0,
+                                                      max_val=3, covar_importance=[4,3,2,1,0,0,0])
             
-    except (KeyError, ValueError):
-        is_correct = 0
-    self.assertEqual(1, is_correct, msg='FLAME-Error when other parameters')
+            model = matching.FLAME( early_stop_pe= 10, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.FLAME( stop_unmatched_c= True, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.FLAME(stop_unmatched_t= True, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.FLAME(early_stop_un_c_frac = 0.5, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.FLAME(early_stop_un_t_frac = 0.5, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.FLAME(early_stop_iterations= 2, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+                
+        except (KeyError, ValueError):
+            is_correct = 0
+        self.assertEqual(1, is_correct, msg='FLAME-Error when other parameters')
 
 
 class TestDame(unittest.TestCase):
-    '''
-    This file tests the overall FLAME algorithm against results that were
-    confirmed to be correct by comparing to the FLAME R package.
-    '''
+
+
             
     def test_PE_F(self):
         for adaptive_weights in [False, 'ridge', 'decisiontree', 'ridgeCV','decisiontreeCV']: #
@@ -422,16 +420,16 @@ class TestDame(unittest.TestCase):
         df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
         #Create missing df
         m,n = df.shape
-        for i in range(int(m/100)):
+        for i in range(int(m/50)):
             for j in [0,int(n/2)]:
                 df.iloc[i,j] = np.nan
-
+        holdout = df.copy()
         is_correct = 1
         try:
             for missing_holdout_replace in [0,1,2]:
                 for missing_data_replace in [0,1,2]:
                     model = matching.DAME(repeats = False,missing_holdout_replace = missing_holdout_replace,missing_data_replace=missing_data_replace )
-                    model.fit(holdout_data=0.5)
+                    model.fit(holdout_data=holdout)
                     output = model.predict(df)
                     if check_statistics(model):
                         is_correct = 0
@@ -509,6 +507,3 @@ class TestDame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when other parameters')
-
-
-
