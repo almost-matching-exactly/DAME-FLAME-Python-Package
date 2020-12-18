@@ -255,6 +255,7 @@ class TestFlame(unittest.TestCase):
                          msg='FLAME-Error when we use pre_dame')
         
     def test_other_param_F(self):
+        is_correct = 1
         try:
             df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
                                                   num_cov=7, min_val=0,
@@ -466,6 +467,7 @@ class TestDame(unittest.TestCase):
         self.assertEqual(1, is_correct, msg='DAME Error when want_pe = {0} want_bf = {1}'.format(str(want_pe),str(want_bf)))
         
     def test_other_param_F(self):
+        is_correct = 1
         try:
             df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
                                                   num_cov=7, min_val=0,
