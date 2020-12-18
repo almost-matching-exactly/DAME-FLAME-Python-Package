@@ -10,8 +10,7 @@ install:
 
 # command to run tests
 script:
-  - coverage run --source=dame_flame-m pytest tests/
-#  - nosetests  --with-coverage --cover-package=dame_flame
+  - nosetests  --with-coverage --cover-package=dame_flame
 
 after_success:
   coveralls
