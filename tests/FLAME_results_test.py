@@ -103,7 +103,9 @@ class TestFlame(unittest.TestCase):
                              msg='FLAME-Error when we use PE method: {0} '.format(str(adaptive_weights)))
 
     def test_datasets_F(self):
-        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance,'basicTestData.csv']:
+        df_path = os.path.join((os.path.dirname(__file__)), 'basicTestData.csv')
+
+        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance,df_path]:
             is_correct = 1
             try:
                 df = None
@@ -362,7 +364,8 @@ class TestDame(unittest.TestCase):
                              msg='DAME-Error when we use PE method: {0} '.format(adaptive_weights))
 
     def test_datasets_F(self):
-        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance,'basicTestData.csv']:
+        df_path = os.path.join((os.path.dirname(__file__)), 'basicTestData.csv')
+        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance,df_path]:
             is_correct = 1
             try:
                 df = None
