@@ -1,8 +1,6 @@
 [![Build Status](https://travis-ci.org/ALEXLANGLANG/DAME-FLAME-Python-Package.svg?branch=master)](https://travis-ci.org/ALEXLANGLANG/DAME-FLAME-Python-Package)
 [![Coverage Status](https://coveralls.io/repos/github/ALEXLANGLANG/DAME-FLAME-Python-Package/badge.svg?branch=master)](https://coveralls.io/github/ALEXLANGLANG/DAME-FLAME-Python-Package?branch=master)
 
-
-
 <!-- Comment hi.  -->
 # DAME-FLAME
 A Python package for performing matching for observational causal inference on datasets containing discrete covariates
