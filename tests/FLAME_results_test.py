@@ -157,7 +157,7 @@ class TestFlame(unittest.TestCase):
         for verbose in [0,1,2,3]:
             is_correct = 1
             try:
-                df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
                                                               num_cov=7, min_val=0,
                                                               max_val=3, covar_importance=[4,3,2,1,0,0,0])
                 holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
@@ -418,7 +418,7 @@ class TestDame(unittest.TestCase):
         for verbose in [0,1,2,3]:
             is_correct = 1
             try:
-                df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
                                                               num_cov=7, min_val=0,
                                                               max_val=3, covar_importance=[4,3,2,1,0,0,0])
                 holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
