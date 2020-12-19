@@ -76,11 +76,13 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     if (early_stop_pe_frac > 1.0 or early_stop_pe_frac < 0.0):
         raise Exception('The value provided for the early stopping critera of'\
                         ' PE needs to be between 0.0 and 1.0')
-    if (early_stop_bf == True):
-        early_stop_bf = early_stop_bf_frac
-    if (early_stop_bf_frac > 1.0 or early_stop_bf_frac < 0.0):
-        raise Exception('The value provided for the early stopping critera of'\
-                        'BF needs to be between 0.0 and 1.0')
+#    if (early_stop_bf == True):
+#        early_stop_bf = early_stop_bf_frac
+#        print("Please do not use BF")
+#    if (early_stop_bf_frac > 1.0 or early_stop_bf_frac < 0.0):
+#        print("Please do not use BF")
+#        raise Exception('The value provided for the early stopping critera of'\
+#                        'BF needs to be between 0.0 and 1.0')
         
     if (type(early_stop_iterations) != int and early_stop_iterations != False):
         raise Exception('The value provided for early_stop_iteration needs '\
