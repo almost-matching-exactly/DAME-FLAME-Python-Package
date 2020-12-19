@@ -13,7 +13,7 @@ install:
 script:
 #  - nosetests  --with-coverage --cover-package=dame_flame
 
- - coverage run -m pytest FLAME_results_test.py
+ - coverage run -m pytest dame_flame
  - coverage html --omit="*/test*" -d tests/coverage
 
 after_success:
