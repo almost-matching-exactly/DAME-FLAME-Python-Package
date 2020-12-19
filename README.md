@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/almost-matching-exactly/DAME-FLAME-Python-Package.svg?branch=master)](https://travis-ci.org/almost-matching-exactly/DAME-FLAME-Python-Package)
+[![Coverage Status](https://coveralls.io/repos/github/almost-matching-exactly/DAME-FLAME-Python-Package/badge.svg)](https://coveralls.io/github/almost-matching-exactly/DAME-FLAME-Python-Package)
 
 <!-- Comment hi.  -->
 # DAME-FLAME
