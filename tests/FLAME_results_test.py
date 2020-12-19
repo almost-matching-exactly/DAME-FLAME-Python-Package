@@ -103,14 +103,21 @@ class TestFlame(unittest.TestCase):
                              msg='FLAME-Error when we use PE method: {0} '.format(str(adaptive_weights)))
 
     def test_datasets_F(self):
-        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance]:
+        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance,'basicTestData.csv']:
             is_correct = 1
             try:
-                df, true_TE = gen()
-                holdout, true_TE = gen()
+                df = None
+                holdout = None
+                if type(gen) != str:
+                    df, true_TE = gen()
+                    holdout, true_TE = gen()
+                else:
+                    df  = gen
+                    holdout = gen
                 model = matching.FLAME(repeats=False)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
+            
                 if check_statistics(model):
                     is_correct = 0
                     break
@@ -148,6 +155,17 @@ class TestFlame(unittest.TestCase):
         for verbose in [0,1,2,3]:
             is_correct = 1
             try:
+                df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                                              num_cov=7, min_val=0,
+                                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                                      num_cov=7, min_val=0,
+                                                          max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                covar_importance = np.array([4,3,2,1,0,0,0])
+                weight_array = covar_importance/covar_importance.sum()
+                model = matching.FLAME(missing_data_replace = 2, want_bf = True, verbose = verbose)
+                model.fit(holdout_data=holdout)
+                output = model.predict(df)
                 model = matching.FLAME(repeats=True,verbose=verbose)
                 model.fit(holdout_data=0.5)
                 output = model.predict(df)
@@ -268,7 +286,7 @@ class TestFlame(unittest.TestCase):
                                                   num_cov=7, min_val=0,
                                                       max_val=3, covar_importance=[4,3,2,1,0,0,0])
             
-            model = matching.FLAME( early_stop_pe= 10, verbose=0)
+            model = matching.FLAME( early_stop_pe= 1, verbose=0)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
             if check_statistics(model):
@@ -344,14 +362,22 @@ class TestDame(unittest.TestCase):
                              msg='DAME-Error when we use PE method: {0} '.format(adaptive_weights))
 
     def test_datasets_F(self):
-        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance]:
+        for gen in [generate_uniform_given_importance,generate_binomial_given_importance,generate_binomial_decay_importance,'basicTestData.csv']:
             is_correct = 1
             try:
-                df, true_TE = gen()
-                holdout, true_TE = gen()
+                df = None
+                holdout = None
+                if type(gen) != str:
+                    df, true_TE = gen()
+                    holdout, true_TE = gen()
+                else:
+                    df  = gen
+                    holdout = gen
                 model = matching.DAME(repeats=False)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
+                
+                        
                 if check_statistics(model):
                     is_correct = 0
                     break
@@ -389,6 +415,18 @@ class TestDame(unittest.TestCase):
         for verbose in [0,1,2,3]:
             is_correct = 1
             try:
+                df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                                              num_cov=7, min_val=0,
+                                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                                      num_cov=7, min_val=0,
+                                                          max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                covar_importance = np.array([4,3,2,1,0,0,0])
+                weight_array = covar_importance/covar_importance.sum()
+                model = matching.FLAME(missing_data_replace = 2, want_bf = True, verbose = verbose)
+                model.fit(holdout_data=holdout)
+                output = model.predict(df)
+
                 model = matching.DAME(repeats=True,verbose=verbose)
                 model.fit(holdout_data=0.5)
                 output = model.predict(df)
@@ -480,7 +518,7 @@ class TestDame(unittest.TestCase):
                                                   num_cov=7, min_val=0,
                                                       max_val=3, covar_importance=[4,3,2,1,0,0,0])
 
-            model = matching.DAME( early_stop_pe= 10, verbose=0)
+            model = matching.DAME( early_stop_pe= 1, verbose=0)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
             if check_statistics(model):
