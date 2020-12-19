@@ -11,7 +11,8 @@ install:
 # command to run tests
 script:
 #  - nosetests  --with-coverage --cover-package=dame_flame
-  - coverage html --omit="*/test*" -d tests/coverage
+ - coverage run -m pytest
+ - coverage html --omit="*/test*" -d tests/coverage
 
 after_success:
   coveralls
