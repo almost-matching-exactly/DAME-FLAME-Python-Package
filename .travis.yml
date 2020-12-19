@@ -14,7 +14,7 @@ script:
 #  - nosetests  --with-coverage --cover-package=dame_flame
 
  - coverage run -m pytest dame_flame
- - coverage html --omit="*dame_flame/tests/FLAME_results_test.py*" -d tests/coverage
+# - coverage html --omit="*dame_flame/tests/FLAME_results_test.py*" -d tests/coverage
 
 after_success:
   coveralls
