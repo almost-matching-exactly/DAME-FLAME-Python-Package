@@ -8,10 +8,12 @@ install:
 # - pip install python-coveralls
  - pip install coveralls
 
+
 # command to run tests
 script:
 #  - nosetests  --with-coverage --cover-package=dame_flame
- - coverage run -m pytest
+
+ - coverage run -m pytest FLAME_results_test.py
  - coverage html --omit="*/test*" -d tests/coverage
 
 after_success:
