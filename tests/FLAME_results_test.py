@@ -426,11 +426,11 @@ class TestDame(unittest.TestCase):
                                                           max_val=3, covar_importance=[4,3,2,1,0,0,0])
                 covar_importance = np.array([4,3,2,1,0,0,0])
                 weight_array = covar_importance/covar_importance.sum()
-                model = matching.FLAME(missing_data_replace = 2, want_bf = True, verbose = verbose)
+                model = matching.DAME(missing_data_replace = 2, want_bf = True, verbose = verbose)
                 model.fit(holdout_data=holdout)
                 output = model.predict(df)
 
-                model = matching.DAME(repeats=True,verbose=verbose)
+                model = matching.DAME(verbose=verbose) # repeats = True
                 model.fit(holdout_data=0.5)
                 output = model.predict(df)
                 if check_statistics(model):
