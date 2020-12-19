@@ -1,0 +1,4 @@
+[report]
+omit =
+    */venv/*
+    */dame_flame/FLAME_results_test.py
