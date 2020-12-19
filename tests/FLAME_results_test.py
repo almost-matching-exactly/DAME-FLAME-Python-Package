@@ -239,10 +239,10 @@ class TestFlame(unittest.TestCase):
         try:
             covar_importance = np.array([4,3,2,1,0,0,0])
             weight_array = covar_importance/covar_importance.sum()
-            model1 = matching.FLAME(repeats=False, verbose=0,adaptive_weights = False)
+            model1 = matching.FLAME(repeats=True,want_pe = True, want_df = True,verbose=0,adaptive_weights = False)
             model1.fit(holdout_data=holdout,weight_array = list(weight_array))
             output = model1.predict(df, pre_dame = True)
-            model2 = matching.FLAME(repeats=False, verbose=0,adaptive_weights = 'decisiontreeCV')
+            model2 = matching.FLAME(repeats=True, want_pe = True, want_df = True,verbose=0,adaptive_weights = 'decisiontreeCV')
             model2.fit(holdout_data=holdout)
             output = model2.predict(df, pre_dame = True)
             if check_statistics(model1) or check_statistics(model2) :
@@ -510,4 +510,6 @@ class TestDame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when other parameters')
+
+
 
