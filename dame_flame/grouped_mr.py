@@ -31,7 +31,7 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     # is sorted from least to greatest
 
     # This is a list of tuples (max_of_column, column_name)
-    covs_max_tuples = [(max(df_unmatched[x])+1,x) for x in covs_match_on]
+    covs_max_tuples = [(max(df_all[x])+1,x) for x in covs_match_on]
     covs_max_tuples = sorted(covs_max_tuples,key=itemgetter(0))
     # Now covs_match_on is a list of covars and covs_max_list is their maximums
     covs_max_list, covs_match_on = map(list,zip(*covs_max_tuples))

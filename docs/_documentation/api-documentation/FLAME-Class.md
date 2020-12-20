@@ -39,7 +39,7 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 
 | Parameter Name   | Type                                        | Default | Description                                                         |
 |------------------|---------------------------------------------|---------|---------------------------------------------------------------------|
-| adaptive_weights | {bool, 'ridge', 'decision tree', 'ridgeCV'} | 'ridge' | The method used to decide what covariate set should be dropped next. |
+| adaptive_weights | {bool, 'ridge', 'decisiontree', 'ridgeCV', 'decisiontreeCV'} | 'ridge' | The method used to decide what covariate set should be dropped next. |
 | alpha | float | 0.1 | If adaptive_weights is set to ridge, this is the alpha for ridge regression. | 
 | repeats | bool | True | Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. |
 | verbose | int: {0,1,2,3} | 2 | Style of printout while algorithm runs. If 0, no output. If 1, provides iteration number. If 2, provides iteration number and additional information on the progress of the matching at every 10th iteration. If 3, provides iteration number and additional information on the progress of the matching at every iteration |
@@ -131,7 +131,7 @@ Provide self with holdout data
 | holdout_data | {string, dataframe, float, False } | False | This is the holdout training dataset. If a string is given, that should be the location of a CSV file to input. If a float between 0.0 and 1.0 is given, that corresponds the percent of the input dataset to randomly select for holdout data. If False, the holdout data is equal to the entire input data. |  
 | treatment_column_name | string | "treated" | This is the name of the column with a binary indicator for whether a row is a treatment or control unit. |
 | outcome_column_name | string | "outcome" | This is the name of the column with the outcome variable of each unit. |
-| adaptive_weights | {bool, "ridge", "decision tree", "ridgeCV"} | "ridge" | The method used to decide what covariate set should be dropped next. |
+| adaptive_weights | {bool, "ridge", "decisiontree", "ridgeCV", "decisiontreeCV"} | "ridge" | The method used to decide what covariate set should be dropped next. |
 | weight_array | array | optional | If adaptive_weights = False, these are the weights to the covariates in input_data, for the non-adaptive version of FLAME. Must sum to 1. In this case, we do not use machine learning for the weights, they are manually entered as weight_array. |
 
 <div class="code-example" markdown="1">
