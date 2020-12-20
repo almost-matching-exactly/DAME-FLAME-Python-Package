@@ -12,7 +12,7 @@ import numpy as np
 
 def validate_matching_obj(matching_object):
     """ Check matching_object's type and that .fit(), .predict() done"""
-    
+
     if (matching.MatchParent not in type(matching_object).__bases__):
         raise Exception("The matching_object input parameter needs to be "\
                         "of type DAME or FLAME")
@@ -20,10 +20,10 @@ def validate_matching_obj(matching_object):
         hasattr(matching_object, 'return_array') == False):
         raise Exception("This function can be only called after a match has "\
                        "been formed using the .fit() and .predict() functions")
-        
+
     return
-    
-    
+
+
 def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     '''
     This function returns the main matched groups for all specified unit
@@ -32,18 +32,18 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     Args:
         matching_object (DAME or FLAME object)
         unit_ids (int, list): units for which MG will be returned
-        
+
     Returns:
         MMGs: list of datraframes or singular dataframe containing the units
             in the main matched groups for the specified units
-        
+
     '''
     # Accept int or list for unit_id
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
     # todo: error check this. If it's not an int or an iteratable object of ints,
-    # or if the unit ids dont exist, need to throw an error. 
-    
+    # or if the unit ids dont exist, need to throw an error.
+
     validate_matching_obj(matching_object)
 
     if (matching_object.missing_data_replace != 3):
@@ -51,11 +51,11 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
         df_matched_units = matching_object.return_array[0]
     else:
         array_mgs = matching_object.units_per_group[mice_iter]
-        df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]    
-        
-            
+        df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
+
+
     MMGs = []
-    
+
     # Now we recover MMG
     for unit in unit_ids:
         if unit in df_matched_units.index:
@@ -85,32 +85,32 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
 def CATE(matching_object, unit_ids, mice_iter=0):
     '''
     This function returns the CATEs for all specified unit indices
-    
+
     Args:
         matching_object (DAME or FLAME object)
         unit_ids (int, list): units for which MG will be returned
-    
+
     Returns:
         CATEs: list of floats or singular float containing the CATEs
             of the main matched groups for the specified units
-        
+
     '''
-    
+
     # Accept int or list for unit_id
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
     # todo: error trap this. If it's not an int or an iteratable object of ints,
-    # or if the unit ids dont exist, need to throw an error. 
-    
+    # or if the unit ids dont exist, need to throw an error.
+
     validate_matching_obj(matching_object)
-    
+
     if (matching_object.missing_data_replace != 3):
         array_MGs = matching_object.return_array[1]
         df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_MGs = matching_object.units_per_group[mice_iter]
         df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
-    
+
     # Recover CATEs
     CATEs = []
     for unit in unit_ids:
@@ -133,7 +133,7 @@ def CATE(matching_object, unit_ids, mice_iter=0):
             if (matching_object.verbose != 0):
                 print('Unit ' + str(unit) + " does not have any matches, so " \
                       "can't find the CATE")
-            
+
     # Format output
     if len(CATEs) == 1:
         CATEs = CATEs[0]
@@ -142,27 +142,27 @@ def CATE(matching_object, unit_ids, mice_iter=0):
 def ATE(matching_object, mice_iter=0):
     '''
     This function returns the ATE for the matching data
-    
+
     Args:
         matching_object (DAME or FLAME object)
     Returns:
         ATE: the average treatment effect for the matching data
-        
+
     '''
 
     validate_matching_obj(matching_object)
-    
+
     if matching_object.missing_data_replace != 3:
         array_MGs = matching_object.units_per_group
         num_groups_per_unit = matching_object.groups_per_unit
     else:
         array_MGs = matching_object.units_per_group[mice_iter]
         num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
-        
+
     # Recover CATEs
     CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
     for group_id in range(len(array_MGs)):
-        group_data = matching_object.input_data.loc[array_MGs[group_id], 
+        group_data = matching_object.input_data.loc[array_MGs[group_id],
                                                     [matching_object.treatment_column_name,
                                                     matching_object.outcome_column_name]]
         treated = group_data.loc[group_data[matching_object.treatment_column_name] == 1]
@@ -180,29 +180,29 @@ def ATE(matching_object, mice_iter=0):
         weighted_CATE_sum += MG_weight * CATEs[group_id]
     ATE = weighted_CATE_sum / weight_sum
     return ATE
-    
-        
+
+
 
 def ATT(matching_object, mice_iter=0):
     '''
     This function returns the ATT for the matching data using
     balancing estimation
-    
+
     Args:
         matching_object (DAME or FLAME object)
     Returns:
         ATT: the average treatment effect on the treated for the matching data
     '''
-    
+
     validate_matching_obj(matching_object)
-    
+
     if matching_object.missing_data_replace != 3:
         num_groups_per_unit = matching_object.return_array[0]['weights']
         matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
     else:
         num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
         matched_df = matching_object.input_data.loc[matching_object.df_units_and_covars_matched[mice_iter].index]
-        
+
     treated = matched_df.loc[matched_df[matching_object.treatment_column_name] == 1]
     control = matched_df.loc[matched_df[matching_object.treatment_column_name] == 0]
     # Compute ATT
