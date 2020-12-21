@@ -134,14 +134,9 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
 
     else:
         # make sure that the alpha is valid if it's a ridge regression.
-        if (adaptive_weights == 'ridge' and (alpha < 0.0)):
+        if ((adaptive_weights == 'ridge' or adaptive_weights == "ridgeCV") and (alpha < 0.0)):
             raise Exception('Invalid input error. The alpha needs to be '\
                             'positive for ridge regressions.')
-
-        if (adaptive_weights == 'ridgeCV' and (alpha == 0.1)):
-            print('You did not provide a list of alphas for ridgeCV. The '\
-                  'default of [0.001, 0.01, 0.1, 1, 2, 5, 10] will be used')
-            alpha = [0.001, 0.01, 0.1, 1, 2, 5, 10]
 
         # make sure that adaptive_weights is a valid value.
         if (adaptive_weights != "ridge" and
@@ -172,7 +167,7 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
                            ' balancing factor and predictive error must be '\
                            ' nonnegative. ')
 
-    return alpha
+    return
 
 def replace_unique_large(df, treatment_column_name, outcome_column_name,
                          missing_indicator):

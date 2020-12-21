@@ -25,7 +25,7 @@ class MatchParent:
     Parameters
     -----------
     adaptive_weights (bool, str): Weight dropping method. False, 'ridge',
-        'decision tree', or 'ridgeCV'.
+        'decisiontree', 'ridgeCV', or 'decisiontreeCV'.
     alpha (float): This is the alpha for ridge regression. We use the
         scikit package for ridge regression, so it is "regularization
         strength". Larger values specify stronger regularization.
@@ -179,7 +179,7 @@ class DAME(MatchParent):
             array_of_dfs = []
             array_of_groups_per_unit = []
             for arr in self.return_array:
-                temp_df = self.return_array[0]
+                temp_df = arr[0]
                 array_of_groups_per_unit.append(temp_df['weights'])
                 array_of_dfs.append(temp_df.drop(columns=['weights']))
             self.groups_per_unit = array_of_groups_per_unit
@@ -317,8 +317,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     df = data_cleaning.process_input_file(
         df, treatment_column_name, outcome_column_name, adaptive_weights)
 
-    alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df,
-                                           alpha, False, weight_array)
+    data_cleaning.check_parameters(adaptive_weights, df_holdout, df,
+                                   alpha, False, weight_array)
 
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,
@@ -385,8 +385,8 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     df = data_cleaning.process_input_file(
         df, treatment_column_name, outcome_column_name, adaptive_weights)
 
-    alpha = data_cleaning.check_parameters(adaptive_weights, df_holdout, df,
-                                           alpha, True, weight_array, C)
+    data_cleaning.check_parameters(adaptive_weights, df_holdout, df,
+                                   alpha, True, weight_array, C)
 
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,

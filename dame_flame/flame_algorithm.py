@@ -37,6 +37,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
     best_matched_rows = 0
     best_bf = 0
     best_pe = 0
+    best_units_in_g = 0
 
     if adaptive_weights == False:
         # find the covariate that can be dropped with the minimum value in
@@ -257,6 +258,10 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
         # Check for error in above step:
         if (new_drop == False):
+            raise Exception("There may have been an error in your choice of "\
+                            "machine learning algorithm used to choose the "\
+                            "covariate to drop. For help, please reach on "\
+                            "github to the team. ")
             break
 
         if (len(units_in_g)) != 0:
