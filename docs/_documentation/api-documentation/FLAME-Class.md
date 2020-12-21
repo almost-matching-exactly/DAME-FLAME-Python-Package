@@ -17,8 +17,7 @@ class dame_flame.matching.FLAME(adaptive_weights='ridge', alpha=0.1,
          repeats=True, verbose=2, early_stop_iterations=False, 
          stop_unmatched_c=False, early_stop_un_c_frac=False, 
          stop_unmatched_t=False, early_stop_un_t_frac=False, 
-         early_stop_pe=False, early_stop_pe_frac=0.01, 
-         early_stop_bf=False, early_stop_bf_frac=0.01,
+         early_stop_pe=False, early_stop_pe_frac=0.01,
          missing_indicator=np.nan, missing_data_replace=0, 
          missing_holdout_replace=0, missing_holdout_imputations=10, 
          missing_data_imputations=1, want_pe=False, want_bf=False)    
@@ -50,8 +49,6 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 | early_stop_un_t_frac | float | 0.1 | Must be between 0.0 and 1.0. This provides a fraction of unmatched treatment units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 treatment units, the algorithm will stop when 10 control units are unmatched and 90 are matched (or earlier, depending on other stopping conditions). | 
 | early_stop_pe | bool | False | If this is true, then if the covariate set chosen for matching has a predictive error higher than the parameter early_stop_pe_frac, the algorithm will stop. |
 | early_stop_pe_frac | float | 0.01 | If early_stop_pe is true, then if the covariate set chosen for matching has a predictive error higher than this value, the algorithm will stop. |
-| early_stop_bf | bool | False | If this is true, then if the covariate set chosen for matching has a balancing factor lower than early_stop_bf_frac, then the algorithm will stop.|
-| early_stop_bf_frac | float | 0.01 | If early_stop_bf is true, then if the covariate set chosen for matching has a balancing factor lower than this value, then the algorithm will stop.|
 | want_pe | bool | False | If true, the output of the algorithm will include the predictive error of the covariate sets used for matching in each iteration. |
 | want_bf | bool | False | If true, the output will include the balancing factor for each iteration. |
 | missing_indicator | {character, integer, numpy.nan} | numpy.nan | This is the indicator for missing data in the dataset. |
@@ -97,7 +94,7 @@ print(result)
 ```python
 __init__(adaptive_weights='ridge', alpha=0.1, repeats=True, verbose=2, early_stop_iterations=False, 
 stop_unmatched_c=False, early_stop_un_c_frac=False, stop_unmatched_t=False, early_stop_un_t_frac=False,
-early_stop_pe=False, early_stop_pe_frac=0.01, early_stop_bf=False, early_stop_bf_frac=0.01, 
+early_stop_pe=False, early_stop_pe_frac=0.01
 missing_indicator=np.nan, missing_data_replace=0, missing_holdout_replace=0, 
 missing_holdout_imputations=10, missing_data_imputations=1, want_pe=False, want_bf=False)
 ```

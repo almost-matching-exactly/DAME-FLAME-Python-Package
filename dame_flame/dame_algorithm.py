@@ -278,7 +278,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
 
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think.
-        if (want_bf == True or early_stops.bf != False):
+        if (want_bf == True):
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
@@ -289,11 +289,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             else:
                 bf = np.nan
             return_bf.append(bf)
-
-            if bf < early_stops.bf:
-                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-                        "We stopped matching with a balancing factor of ", bf)
-                break
 
         if early_stops.pe != False:
             if pe >= early_stops.pe:

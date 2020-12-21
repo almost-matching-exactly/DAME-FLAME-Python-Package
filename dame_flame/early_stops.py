@@ -13,5 +13,4 @@ class EarlyStops:
         self.un_c_frac = 0.1
         self.un_t_frac = 0.1
         self.pe = 0.1
-        self.bf = 0.1
         self.iterations = False

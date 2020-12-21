@@ -280,12 +280,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             # if we need to track the bf, do so.
             return_bf.append(bf)
 
-        if (early_stops.bf != False):
-            if (bf < early_stops.bf):
-                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-                      "We stopped matching with a balancing factor of ", bf)
-                break
-
         if (early_stops.pe != False):
             if pe >= early_stops.pe:
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
