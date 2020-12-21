@@ -324,24 +324,4 @@ def process_input_file(df, treatment_column_name, outcome_column_name,
         raise Exception('Invalid input error. All rows in the treatment '\
                         'column must have either a 0 or a 1 value.')
 
-    if (adaptive_weights == False):
-        # Ensure that the columns are sorted in order: binary, tertary, etc
-        max_column_size = 1
-        for col_name in df.columns:
-            if ((col_name != treatment_column_name) and
-                (col_name != outcome_column_name)):
-                # Todo: before, this was df[col_name].unique().max(), which I removed when it didnt work
-                # this seems to work, but I wonder if it's a happy accident
-                # because, https://stackoverflow.com/questions/21319929/how-to-determine-whether-a-pandas-column-contains-a-particular-value
-                if (df[col_name].max() >= max_column_size):
-                    max_column_size = df[col_name].max()
-                else:
-                    raise Exception('Invalid input error. Dataframe column '\
-                                    'size must be in increasing order from '\
-                                    'left to right.')
-
-    else:
-        # Reorder if they're not in order:
-        df = df.loc[:, df.max().sort_values(ascending=True).index]
-
     return df
