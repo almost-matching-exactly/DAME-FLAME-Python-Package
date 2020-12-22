@@ -5,8 +5,13 @@
 # License: MIT
 
 class EarlyStops:
+    '''
+    This is the EarlyStops class
+    '''
     def __init__(self):
-        ''' Constructor, defines all of the possible early stops needed '''
+        '''
+        Constructor, defines all of the possible early stops needed
+        '''
         # create the members
         self.unmatched_c = False
         self.unmatched_t = False

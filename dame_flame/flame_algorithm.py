@@ -39,7 +39,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
     best_pe = 0
     best_units_in_g = 0
 
-    if adaptive_weights == False:
+    if not adaptive_weights:
         # find the covariate that can be dropped with the minimum value in
         # the weight array
         min_covar_weight = 1
@@ -66,7 +66,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         BF = flame_dame_helpers.compute_bf(matched_rows,
                                            treatment_column_name, df_unmatched)
 
-        # todo: Update documentation to reflect there being no PE when using
+        # Update documentation to reflect there being no PE when using
         # adaptive_weights=False, and also the verbose output.
         return best_drop, 0, matched_rows, return_matches, BF, units_in_g
 
@@ -80,7 +80,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
                 adaptive_weights, alpha_given)
 
             # error check. PE can be float(0), but not denote error
-            if PE == False and type(PE) == bool:
+            if not PE and type(PE) == bool:
                 return False, False, False, False, False
 
             # The dropping criteria for FLAME is max MQ
@@ -131,13 +131,13 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     df_unmatched = df_all.copy(deep=True)
 
     # The items getting returned
-    return_pe= [] # list of predictive errors,
+    return_pe = [] # list of predictive errors,
     return_bf = []
     MG_units = [] # list of unit ids for each matched group
     # weights indicates the number of times each unit appears in a group
-    weights = pd.DataFrame(np.zeros(shape=(len(df_all.index),1)),
-                           columns = ['weights'],
-                           index = df_all.index)
+    weights = pd.DataFrame(np.zeros(shape=(len(df_all.index), 1)),
+                           columns=['weights'],
+                           index=df_all.index)
 
     return_matches = pd.DataFrame(columns=all_covs, index=df_all.index)
 
@@ -160,17 +160,17 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         # flatten to 1 list, then add occurrences of unique units
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-        for index in range(len(unique_units)):
+        for index, _ in enumerate(unique_units):
             weights['weights'][unique_units[index]] += occurrences[index]
 
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
 
-    if repeats == False:
+    if not repeats:
         df_all = df_unmatched
 
     # set up all the extra dfs if needed
-    if missing_holdout_replace != False:
+    if missing_holdout_replace:
         # now df_holdout is actually an array of imputed datasets
         df_holdout_array = flame_dame_helpers.create_mice_dfs(
             df_holdout, missing_holdout_replace, outcome_column_name)
@@ -185,8 +185,8 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
     if verbose == 3:
         flame_dame_helpers.verbose_output(h, len(MG_units),
-            df_unmatched[treatment_column_name].sum(), len(df_unmatched),
-            orig_len_df_all, tot_treated, 0, orig_len_df_all, set())
+                                          df_unmatched[treatment_column_name].sum(), len(df_unmatched),
+                                          orig_len_df_all, tot_treated, 0, orig_len_df_all, set())
 
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     consider_dropping = set(i for i in all_covs)
@@ -196,14 +196,14 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     while True:
         # Iterates while there are units to match to match in
         try:
-            if ((early_stops.unmatched_t == True or repeats == False) and
-                (1 not in df_unmatched[treatment_column_name].values)):
+            if ((early_stops.unmatched_t or not repeats) and
+                    (1 not in df_unmatched[treatment_column_name].values)):
                 print(orig_len_df_all - len(df_unmatched), "units matched. "\
                       "We finished with no more treated units to match")
                 break
 
-            if ((early_stops.unmatched_c == True or repeats == False) and
-                (0 not in df_unmatched[treatment_column_name].values)):
+            if ((early_stops.unmatched_c or not repeats) and
+                    (0 not in df_unmatched[treatment_column_name].values)):
                 print(orig_len_df_all - len(df_unmatched), "units matched. "\
                       "We finished with no more control units to match")
                 break
@@ -211,12 +211,12 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             break
 
          # Hard stop criteria: stop when there are no more units to match
-        if (len(df_unmatched) == 0):
+        if len(df_unmatched) == 0:
             print("All units have been matched.")
             break
 
         # Hard stop criteria: exceeded the number of iters user asked for?
-        if (early_stops.iterations != False and early_stops.iterations == h):
+        if (early_stops.iterations and early_stops.iterations == h):
             print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped before doing iteration number: ", h)
             break
@@ -228,16 +228,16 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
         # Hard stop criteria: met the threshold of unmatched items to stop?
 
-        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+        if (early_stops.un_t_frac or early_stops.un_c_frac):
             unmatched_treated = df_unmatched[treatment_column_name].sum()
             unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stops.un_t_frac != False and \
+            if (early_stops.un_t_frac and \
                 unmatched_treated/tot_treated < early_stops.un_t_frac):
                 print("We stopped the algorithm when ",
                       unmatched_treated/tot_treated, "of the treated units "\
                       "remained unmatched")
                 break
-            elif (early_stops.un_c_frac != False and \
+            elif (early_stops.un_c_frac and \
                 unmatched_control/tot_control < early_stops.un_c_frac):
                 print("We stopped the algorithm when ",
                       unmatched_control/tot_control, "of the control units "\
@@ -246,23 +246,23 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
 
         # quit if there are no more covariate sets to choose from
-        if (len(consider_dropping) == 1):
+        if len(consider_dropping) == 1:
             print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "No more covariate sets to consider dropping")
             break
 
         new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs,
-            consider_dropping, prev_dropped, df_all, treatment_column_name,
-            outcome_column_name, df_holdout_array, adaptive_weights, alpha,
-            df_unmatched, return_matches, C, weight_array)
-
+                                                                                 consider_dropping, prev_dropped, df_all,
+                                                                                 treatment_column_name,
+                                                                                 outcome_column_name, df_holdout_array,
+                                                                                 adaptive_weights, alpha,
+                                                                                 df_unmatched, return_matches, C, weight_array)
         # Check for error in above step:
-        if (new_drop == False):
+        if not new_drop:
             raise Exception("There may have been an error in your choice of "\
                             "machine learning algorithm used to choose the "\
                             "covariate to drop. For help, please reach on "\
                             "github to the team. ")
-            break
 
         if (len(units_in_g)) != 0:
         # add the newly matched groups to MG_units, which tracks units in groups
@@ -276,11 +276,11 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
         return_pe.append(pe)
 
-        if (want_bf == True):
+        if want_bf:
             # if we need to track the bf, do so.
             return_bf.append(bf)
 
-        if (early_stops.pe != False):
+        if early_stops.pe:
             if pe >= early_stops.pe:
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
@@ -293,7 +293,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
 
-        if repeats == False:
+        if not repeats:
             df_all = df_unmatched
 
         h += 1
@@ -301,18 +301,18 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         # End of iter. Prints output based on verbose.
         if verbose == 1:
             print("Iteration number: ", h)
-        if ((verbose == 2 and (h%10==0)) or verbose == 3):
+        if ((verbose == 2 and (h%10 == 0)) or verbose == 3):
 
             flame_dame_helpers.verbose_output(h, len(MG_units),
-                df_unmatched[treatment_column_name].sum(), len(df_unmatched),
-                orig_len_df_all, tot_treated, pe, prev_iter_num_unmatched,
-                new_drop)
+                                              df_unmatched[treatment_column_name].sum(), len(df_unmatched),
+                                              orig_len_df_all, tot_treated, pe, prev_iter_num_unmatched,
+                                              new_drop)
 
-            if want_bf == True:
+            if want_bf:
                 print("\tBalancing Factor of this iteration: ", bf)
 
         # Do we switch to DAME?
-        if (pre_dame != False and pre_dame <= h):
+        if (pre_dame and pre_dame <= h):
 
             # drop the columns that have already been matched on
             for i in prev_dropped:
@@ -336,9 +336,9 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             return_matches = return_matches.dropna(axis=0) #drop rows with nan
             return_matches = return_matches.join(weights)
             return_package = [return_matches, MG_units]
-            if (want_pe == True):
+            if want_pe:
                 return_package.append(return_pe)
-            if (want_bf == True):
+            if want_bf:
                 return_package.append(return_bf)
             return_package.append(return_matches_dame)
             return return_package
@@ -353,9 +353,9 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     return_package[0] = return_package[0].join(weights)
     return_package.append(MG_units)
 
-    if (want_pe == True):
+    if want_pe:
         return_package.append(return_pe)
-    if (want_bf == True):
+    if want_bf:
         return_package.append(return_bf)
 
     return return_package
