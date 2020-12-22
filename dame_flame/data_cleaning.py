@@ -194,7 +194,7 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
     else:
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)
-        df = df.dropna()
+        df = df.dropna().copy()
 
 
     return df
