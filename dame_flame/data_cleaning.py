@@ -188,9 +188,9 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
     helper, this function drops rows that have missing_indicator in any of the cols
     '''
 
-    if math.isnan(missing_indicator) == True:
+    if type(missing_indicator) != str and math.isnan(missing_indicator) == True:
         # either the missing indicator is already NaN and we just drop those rows
-        df = df.dropna()
+        df = df.dropna().copy()
     else:
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)

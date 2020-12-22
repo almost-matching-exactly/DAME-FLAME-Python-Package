@@ -118,7 +118,7 @@ class TestFlame(unittest.TestCase):
                     df  = gen
                     holdout = gen
                 model = matching.FLAME(repeats=False)
-                model.fit(holdout_data=holdout)
+                model.fit(holdout_data=False)
                 output = model.predict(df)
             
                 if check_statistics(model):
@@ -323,11 +323,63 @@ class TestFlame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='FLAME-Error when other parameters')
+    
+    def test_no_matching_F(self):
+        #Test data split
+        df, true_TE = generate_uniform_given_importance(num_control=3000, num_treated=3000)
 
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,1,2.0],[5,6,0,5.0],[7,8,1,8.0],[9,10,1,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.FLAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+        except (KeyError, ValueError):
+            is_correct = 0
+
+        self.assertEqual(1, is_correct, msg='FLAME-Error when no matching')
+        
+    def test_miss_data_indicator_F(self):
+        is_correct = 1
+        try:
+            df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
+            #Create missing df
+            m,n = df.shape
+            for i in range(int(m/100)):
+                for j in [0,int(n/2)]:
+                    df.iloc[i,j] = 'a'
+            holdout = df.copy()
+
+            model = matching.FLAME(missing_indicator= 'a', missing_holdout_replace = 1,missing_data_replace=1 )
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+
+        except (KeyError, ValueError):
+            is_correct = 0
+        self.assertEqual(1, is_correct, msg='FLAME-Error when missing_indicator')
+    def test_has_unmatched_units_F(self):
+        #Test data split
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,0,2.0],[5,6,0,5.0],[7,8,0,8.0],[9,10,1,10.0],[9,20,0,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.FLAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+
+            if check_statistics(model):
+                is_correct = 0
+        except (KeyError, ValueError):
+            is_correct = 0
+
+        self.assertEqual(1, is_correct, msg='FLAME-Error when no matching')
 
 class TestDame(unittest.TestCase):
-
-
             
     def test_PE_F(self):
         for adaptive_weights in [ 'ridge', 'decisiontree', 'ridgeCV','decisiontreeCV']: #False,
@@ -378,10 +430,9 @@ class TestDame(unittest.TestCase):
                     df  = gen
                     holdout = gen
                 model = matching.DAME(repeats=False)
-                model.fit(holdout_data=holdout)
+                model.fit(holdout_data=False)
                 output = model.predict(df)
-                
-                        
+        
                 if check_statistics(model):
                     is_correct = 0
                     break
@@ -555,10 +606,62 @@ class TestDame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when other parameters')
+        
+    def test_no_matching_F(self):
+        #Test data split
+        df, true_TE = generate_uniform_given_importance(num_control=3000, num_treated=3000)
 
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,1,2.0],[5,6,0,5.0],[7,8,1,8.0],[9,10,1,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.DAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+        except (KeyError, ValueError):
+            is_correct = 0
 
+        self.assertEqual(1, is_correct, msg='DAME-Error when no matching')
 
+    def test_miss_data_indicator_F(self):
+        is_correct = 1
+        try:
+            df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
+            #Create missing df
+            m,n = df.shape
+            for i in range(int(m/100)):
+                for j in [0,int(n/2)]:
+                    df.iloc[i,j] = 'a'
+            holdout = df.copy()
 
+            model = matching.DAME(missing_indicator= 'a', missing_holdout_replace = 1,missing_data_replace=1 )
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+
+        except (KeyError, ValueError):
+            is_correct = 0
+        self.assertEqual(1, is_correct, msg='DAME-Error when missing_indicator')
+
+    def test_has_unmatched_units_F(self):
+        #Test data split
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,0,2.0],[5,6,0,5.0],[7,8,0,8.0],[9,10,1,10.0],[9,20,0,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.DAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+
+            if check_statistics(model):
+                is_correct = 0
+        except (KeyError, ValueError):
+            is_correct = 0
+
+        self.assertEqual(1, is_correct, msg='DAME-Error when no matching')
 
 
 
@@ -850,5 +953,20 @@ class Test_exceptions(unittest.TestCase):
                                 'the outcome column are integers, and if missing' \
                                 ' values exist, ensure they are handled.' in str(holdout_type.exception))
 
+    def test_false_ATE_input(self):
+        def broken_ATE_input():
+            ATE(1)
 
+        with self.assertRaises(Exception) as ATE_input:
+            broken_ATE_input()
+        self.assertTrue("The matching_object input parameter needs to be "\
+                            "of type DAME or FLAME" in str(ATE_input.exception))
 
+    def test_false_ATE_input_model(self):
+        def broken_ATE_input_model():
+            model = matching.FLAME()
+            ATE(model)
+        with self.assertRaises(Exception) as ATE_input_model:
+            broken_ATE_input_model()
+        self.assertTrue("This function can be only called after a match has "\
+                           "been formed using the .fit() and .predict() functions" in str(ATE_input_model.exception))
