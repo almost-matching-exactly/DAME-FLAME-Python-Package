@@ -173,3 +173,66 @@ def separate_dfs(df_holdout, treatment_col_name, outcome_col_name,
         return False, False, False, False
 
     return X_treated, X_control, Y_treated, Y_control
+
+def stop_iterating(early_stops, df_unmatched, repeats, treat_col_name,
+                   orig_len_df_all, h, orig_tot_treated, consider_dropping):
+    """
+    This function is called during the iterations of DAME and FLAME to see
+    if any stopping criteria have been met
+    """
+    
+    # Iterates while there are units to match to match in
+    try:
+        if ((early_stops.unmatched_t == True or repeats == False) and
+            (1 not in df_unmatched[treat_col_name].values)):
+            print(orig_len_df_all - len(df_unmatched), "units matched. "\
+                  "We finished with no more treated units to match")
+            return True
+
+        if ((early_stops.unmatched_c == True or repeats == False) and
+            (0 not in df_unmatched[treat_col_name].values)):
+            print(orig_len_df_all - len(df_unmatched), "units matched. "\
+                  "We finished with no more control units to match")
+            return True
+        
+    except TypeError:
+         return True
+        
+    # Hard stop criteria: stop when there are no more units to match
+    if (len(df_unmatched) == 0):
+        print("All units have been matched.")
+        return True
+        
+    # Hard stop criteria: exceeded the number of iters user asked for?
+    if (early_stops.iterations != False and early_stops.iterations == h):
+        print((orig_len_df_all - len(df_unmatched)), "units matched. "\
+              "We stopped before doing iteration number: ", h)
+        return True
+    
+    # Hard stop criteria: met the threshold of unmatched items to stop?
+    if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+        unmatched_treated = df_unmatched[treat_col_name].sum()
+        unmatched_control = len(df_unmatched) - unmatched_treated
+        orig_tot_control = orig_len_df_all - orig_tot_treated
+        if (early_stops.un_t_frac != False and \
+            unmatched_treated/orig_tot_treated < early_stops.un_t_frac):
+            print("We stopped the algorithm when ",
+                  unmatched_treated/orig_tot_treated, "of the treated "\
+                  "units remained unmatched")
+            return True
+        
+        elif (early_stops.un_c_frac != False and \
+            unmatched_control/orig_tot_control < early_stops.un_c_frac):
+            print("We stopped the algorithm when ",
+                  unmatched_control/orig_tot_control, "of the control "\
+                  "units remained unmatched")
+            return True
+        
+    # quit if there are no more covariate sets to choose from
+    if (len(consider_dropping) == 1):
+        print((orig_len_df_all - len(df_unmatched)), "units matched. "\
+              "No more covariate sets to consider dropping")
+        return True
+        
+    return False
+        

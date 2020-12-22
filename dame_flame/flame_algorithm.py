@@ -143,12 +143,11 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
     # Initialize variables used in checking stopping criteria
     orig_len_df_all = len(df_all) # Need this bc of case where repeats=False
-    tot_treated = df_all[treatment_column_name].sum()
-    tot_control = len(df_all) - tot_treated
+    orig_tot_treated = df_all[treatment_column_name].sum()
 
     # As an initial step, we attempt to match on all covariates
-
     covs_match_on = all_covs
+
     matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
         df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
         outcome_column_name, return_matches)
@@ -186,7 +185,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     if verbose == 3:
         flame_dame_helpers.verbose_output(h, len(MG_units),
             df_unmatched[treatment_column_name].sum(), len(df_unmatched),
-            orig_len_df_all, tot_treated, 0, orig_len_df_all, set())
+            orig_len_df_all, orig_tot_treated, 0, orig_len_df_all, set())
 
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     consider_dropping = set(i for i in all_covs)
@@ -194,61 +193,13 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
     # Here, we begin the iterative dropping procedure of FLAME
     while True:
-        # Iterates while there are units to match to match in
-        try:
-            if ((early_stops.unmatched_t == True or repeats == False) and
-                (1 not in df_unmatched[treatment_column_name].values)):
-                print(orig_len_df_all - len(df_unmatched), "units matched. "\
-                      "We finished with no more treated units to match")
-                break
 
-            if ((early_stops.unmatched_c == True or repeats == False) and
-                (0 not in df_unmatched[treatment_column_name].values)):
-                print(orig_len_df_all - len(df_unmatched), "units matched. "\
-                      "We finished with no more control units to match")
-                break
-        except TypeError:
-            break
-
-         # Hard stop criteria: stop when there are no more units to match
-        if (len(df_unmatched) == 0):
-            print("All units have been matched.")
-            break
-
-        # Hard stop criteria: exceeded the number of iters user asked for?
-        if (early_stops.iterations != False and early_stops.iterations == h):
-            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-                  "We stopped before doing iteration number: ", h)
-            break
-
-
-        # Hard stop criteria: met the threshold of unmatched items to stop?
-        unmatched_treated = df_unmatched[treatment_column_name].sum()
-        unmatched_control = len(df_unmatched) - unmatched_treated
-
-        # Hard stop criteria: met the threshold of unmatched items to stop?
-
-        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
-            unmatched_treated = df_unmatched[treatment_column_name].sum()
-            unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stops.un_t_frac != False and \
-                unmatched_treated/tot_treated < early_stops.un_t_frac):
-                print("We stopped the algorithm when ",
-                      unmatched_treated/tot_treated, "of the treated units "\
-                      "remained unmatched")
-                break
-            elif (early_stops.un_c_frac != False and \
-                unmatched_control/tot_control < early_stops.un_c_frac):
-                print("We stopped the algorithm when ",
-                      unmatched_control/tot_control, "of the control units "\
-                      "remained unmatched")
-                break
-
-
-        # quit if there are no more covariate sets to choose from
-        if (len(consider_dropping) == 1):
-            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-                  "No more covariate sets to consider dropping")
+        # see if any stopping criteria have been met        
+        if (flame_dame_helpers.stop_iterating(early_stops, df_unmatched,
+                                              repeats, treatment_column_name,
+                                              orig_len_df_all, h,
+                                              orig_tot_treated,
+                                              consider_dropping)):
             break
 
         new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs,
@@ -305,7 +256,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
             flame_dame_helpers.verbose_output(h, len(MG_units),
                 df_unmatched[treatment_column_name].sum(), len(df_unmatched),
-                orig_len_df_all, tot_treated, pe, prev_iter_num_unmatched,
+                orig_len_df_all, orig_tot_treated, pe, prev_iter_num_unmatched,
                 new_drop)
 
             if want_bf == True:

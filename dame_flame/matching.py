@@ -129,6 +129,7 @@ class MatchParent:
         self.treatment_column_name = treatment_column_name
         self.outcome_column_name = outcome_column_name
         self.weight_array = weight_array
+        
 
 class DAME(MatchParent):
 
@@ -142,6 +143,7 @@ class DAME(MatchParent):
             The dataframe on which to perform the matching, or the location of
             the CSV with the dataframe
         """
+        
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
 
@@ -235,7 +237,7 @@ class FLAME(MatchParent):
 
             # the first few items all look the same, then the last item is from dame
             self.df_units_and_covars_matched = return_array[0]
-            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0])
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0], sort=True)
             if self.repeats == True:
                 # we have to aggregate the indexes appearing more than once,
                 # those are the ones which were matched units in both dame and flame:
@@ -268,7 +270,6 @@ class FLAME(MatchParent):
             # We leave those as arrays.
             self.df_units_and_covars_matched = []
             self.groups_per_unit = []
-            self.df_units_and_covars_matched = []
             self.units_per_group = []
             self.pe_each_iter = []
             self.bf_each_iter = []
@@ -281,9 +282,8 @@ class FLAME(MatchParent):
                 if (self.want_bf == True):
                     self.bf_each_iter.append(return_val[-1])
 
-
         return self.df_units_and_covars_matched
-
+    
 
 def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
          outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1,
