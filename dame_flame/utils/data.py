@@ -10,7 +10,7 @@ import numpy as np
 
 def generate_uniform_given_importance(num_control=1000, num_treated=1000,
                                       num_cov=4, min_val=0,
-                                      max_val=3, covar_importance=[4,3,2,1],
+                                      max_val=3, covar_importance=[4, 3, 2, 1],
                                       bi_mean=2, bi_stdev=1):
     """
     This generates data according to the discrete uniform distribution
@@ -27,14 +27,14 @@ def generate_uniform_given_importance(num_control=1000, num_treated=1000,
     yt = np.dot(xt, np.array(covar_importance)) + treatment_effect
     true_catt = treatment_effect
 
-    df1 = pd.DataFrame(xc, columns = range(num_cov))
+    df1 = pd.DataFrame(xc, columns=range(num_cov))
     df1['outcome'] = yc
     df1['treated'] = 0
 
-    df2 = pd.DataFrame(xt, columns = range(num_cov))
+    df2 = pd.DataFrame(xt, columns=range(num_cov))
     df2['outcome'] = yt
     df2['treated'] = 1
-    df = pd.concat([df2,df1])
+    df = pd.concat([df2, df1])
 
     df = df.reset_index()
     df = df.drop(['index'], axis=1)
@@ -42,9 +42,9 @@ def generate_uniform_given_importance(num_control=1000, num_treated=1000,
     return df, true_catt
 
 def generate_binomial_given_importance(num_control=1000, num_treated=1000,
-                                   num_cov=5, bernoulli_param=0.5,
-                                   bi_mean=2, bi_stdev=1,
-                                   covar_importance=[4,3,2,1,0.01]):
+                                       num_cov=5, bernoulli_param=0.5,
+                                       bi_mean=2, bi_stdev=1,
+                                       covar_importance=[4, 3, 2, 1, 0.01]):
     '''
     This function generates data where the covariates exponentially decay with
     importance. The x's are all binary.
@@ -61,14 +61,14 @@ def generate_binomial_given_importance(num_control=1000, num_treated=1000,
     yt = np.dot(xt, np.array(covar_importance)) + treatment_effect
     true_catt = treatment_effect
 
-    df1 = pd.DataFrame(xc, columns = range(num_cov))
+    df1 = pd.DataFrame(xc, columns=range(num_cov))
     df1['outcome'] = yc
     df1['treated'] = 0
 
-    df2 = pd.DataFrame(xt, columns = range(num_cov))
+    df2 = pd.DataFrame(xt, columns=range(num_cov))
     df2['outcome'] = yt
     df2['treated'] = 1
-    df = pd.concat([df2,df1])
+    df = pd.concat([df2, df1])
 
     df = df.reset_index()
     df = df.drop(['index'], axis=1)
@@ -77,8 +77,8 @@ def generate_binomial_given_importance(num_control=1000, num_treated=1000,
 
 
 def generate_binomial_decay_importance(num_control=1000, num_treated=1000,
-                                   num_cov=5, bernoulli_param=0.5,
-                                   bi_mean=2, bi_stdev=1):
+                                       num_cov=5, bernoulli_param=0.5,
+                                       bi_mean=2, bi_stdev=1):
     '''
     This function generates data where the covariates exponentially decay with
     importance. The x's are all binary.
@@ -86,7 +86,7 @@ def generate_binomial_decay_importance(num_control=1000, num_treated=1000,
     xc = np.random.binomial(1, bernoulli_param, size=(num_control, num_cov)) # data for control group
     xt = np.random.binomial(1, bernoulli_param, size=(num_treated, num_cov)) # data for treated group
 
-    dense_bs = [ 64*((1/4)**(i+1)) for i in range(num_cov) ]
+    dense_bs = [64*((1/4)**(i+1)) for i in range(num_cov)]
 
     yc = np.dot(xc, np.array(dense_bs)) # y for control group
 
@@ -97,14 +97,14 @@ def generate_binomial_decay_importance(num_control=1000, num_treated=1000,
     yt = np.dot(xt, np.array(dense_bs)) + treatment_effect
     true_catt = treatment_effect
 
-    df1 = pd.DataFrame(xc, columns = range(num_cov))
+    df1 = pd.DataFrame(xc, columns=range(num_cov))
     df1['outcome'] = yc
     df1['treated'] = 0
 
-    df2 = pd.DataFrame(xt, columns = range(num_cov))
+    df2 = pd.DataFrame(xt, columns=range(num_cov))
     df2['outcome'] = yt
     df2['treated'] = 1
-    df = pd.concat([df2,df1])
+    df = pd.concat([df2, df1])
 
     df = df.reset_index()
     df = df.drop(['index'], axis=1)

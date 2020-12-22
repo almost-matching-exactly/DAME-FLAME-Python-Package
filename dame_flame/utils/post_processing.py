@@ -6,23 +6,20 @@
 # Copyright Duke University 2020
 # License: MIT
 
-from .. import matching
 import pandas as pd
 import numpy as np
+from .. import matching
 
 def validate_matching_obj(matching_object):
     """ Check matching_object's type and that .fit(), .predict() done"""
 
-    if (matching.MatchParent not in type(matching_object).__bases__):
+    if matching.MatchParent not in type(matching_object).__bases__:
         raise Exception("The matching_object input parameter needs to be "\
                         "of type DAME or FLAME")
-    if (hasattr(matching_object, 'input_data') == False or \
-        hasattr(matching_object, 'return_array') == False):
+    if (not hasattr(matching_object, 'input_data') or \
+        not hasattr(matching_object, 'return_array')):
         raise Exception("This function can be only called after a match has "\
                        "been formed using the .fit() and .predict() functions")
-
-    return
-
 
 def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     '''
@@ -46,7 +43,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
 
     validate_matching_obj(matching_object)
 
-    if (matching_object.missing_data_replace != 3):
+    if matching_object.missing_data_replace != 3:
         array_mgs = matching_object.return_array[1]
         df_matched_units = matching_object.return_array[0]
     else:
@@ -104,7 +101,7 @@ def CATE(matching_object, unit_ids, mice_iter=0):
 
     validate_matching_obj(matching_object)
 
-    if (matching_object.missing_data_replace != 3):
+    if matching_object.missing_data_replace != 3:
         array_MGs = matching_object.return_array[1]
         df_matched_units = matching_object.df_units_and_covars_matched
     else:
@@ -118,8 +115,8 @@ def CATE(matching_object, unit_ids, mice_iter=0):
             for group in array_MGs:
                 # The first group to contain the specified unit is the MMG
                 if unit in group:
-                    df_mmg = matching_object.input_data.loc[group,[matching_object.treatment_column_name,
-                                                   matching_object.outcome_column_name]]
+                    df_mmg = matching_object.input_data.loc[group, [matching_object.treatment_column_name,
+                                                                    matching_object.outcome_column_name]]
                     break
             # Assuming an MMG has been found, compute CATE for that group
             treated = df_mmg.loc[df_mmg[matching_object.treatment_column_name] == 1]
@@ -130,7 +127,7 @@ def CATE(matching_object, unit_ids, mice_iter=0):
         # Warn user that unit has no matches
         else:
             CATEs.append(np.nan)
-            if (matching_object.verbose != 0):
+            if matching_object.verbose != 0:
                 print('Unit ' + str(unit) + " does not have any matches, so " \
                       "can't find the CATE")
 
@@ -161,19 +158,20 @@ def ATE(matching_object, mice_iter=0):
 
     # Recover CATEs
     CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
-    for group_id in range(len(array_MGs)):
+    for group_id, _ in enumerate(array_MGs):
         group_data = matching_object.input_data.loc[array_MGs[group_id],
                                                     [matching_object.treatment_column_name,
-                                                    matching_object.outcome_column_name]]
+                                                     matching_object.outcome_column_name]]
         treated = group_data.loc[group_data[matching_object.treatment_column_name] == 1]
         control = group_data.loc[group_data[matching_object.treatment_column_name] == 0]
         avg_treated = sum(treated[matching_object.outcome_column_name]) / len(treated.index)
         avg_control = sum(control[matching_object.outcome_column_name]) / len(control.index)
         CATEs[group_id] = avg_treated - avg_control
     # Compute ATE
-    weight_sum = 0; weighted_CATE_sum = 0
-    for group_id in range(len(array_MGs)):
-        MG_weight = 0;
+    weight_sum = 0
+    weighted_CATE_sum = 0
+    for group_id, _ in enumerate(array_MGs):
+        MG_weight = 0
         for unit in array_MGs[group_id]:
             MG_weight += num_groups_per_unit[unit]
         weight_sum += MG_weight
