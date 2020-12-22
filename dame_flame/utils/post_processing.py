@@ -16,8 +16,7 @@ def validate_matching_obj(matching_object):
     if (matching.MatchParent not in type(matching_object).__bases__):
         raise Exception("The matching_object input parameter needs to be "\
                         "of type DAME or FLAME")
-    if (hasattr(matching_object, 'input_data') == False or \
-        hasattr(matching_object, 'return_array') == False):
+    if (hasattr(matching_object, 'input_data') == False):
         raise Exception("This function can be only called after a match has "\
                        "been formed using the .fit() and .predict() functions")
 
@@ -47,8 +46,8 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     validate_matching_obj(matching_object)
 
     if (matching_object.missing_data_replace != 3):
-        array_mgs = matching_object.return_array[1]
-        df_matched_units = matching_object.return_array[0]
+        array_mgs = matching_object.units_per_group
+        df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_mgs = matching_object.units_per_group[mice_iter]
         df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
@@ -105,7 +104,7 @@ def CATE(matching_object, unit_ids, mice_iter=0):
     validate_matching_obj(matching_object)
 
     if (matching_object.missing_data_replace != 3):
-        array_MGs = matching_object.return_array[1]
+        array_MGs = matching_object.units_per_group
         df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_MGs = matching_object.units_per_group[mice_iter]
@@ -197,8 +196,8 @@ def ATT(matching_object, mice_iter=0):
     validate_matching_obj(matching_object)
 
     if matching_object.missing_data_replace != 3:
-        num_groups_per_unit = matching_object.return_array[0]['weights']
-        matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
+        num_groups_per_unit = matching_object.groups_per_unit
+        matched_df = matching_object.input_data.loc[matching_object.df_units_and_covars_matched.index]
     else:
         num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
         matched_df = matching_object.input_data.loc[matching_object.df_units_and_covars_matched[mice_iter].index]

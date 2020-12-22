@@ -93,15 +93,11 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     return early_stops_obj
 
 def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
-                     weight_array=[], C=0.0, verbose=0):
+                     weight_array=[], C=0.0):
     '''
     This function processes the parameters that were passed to DAME/FLAME
     that aren't directly the input file or related to stop_criteria.
     '''
-
-    if (verbose not in [0,1,2,3]):
-        raise Exception('Invalid input error. The verbose option must be'\
-                        'the integer 0,1,2 or 3.')
 
     # Checks on the weight array...if the weight array needs to exist
     if (adaptive_weights == False):
