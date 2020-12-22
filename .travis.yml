@@ -23,6 +23,7 @@ matrix:
       before_install:
         - choco install python --version 3.6
         - python -m pip install --upgrade pip
+        - pip install nose
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
     - name: "Python 3.7 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
@@ -30,6 +31,7 @@ matrix:
       before_install:
         - choco install python --version 3.7
         - python -m pip install --upgrade pip
+        - pip install nose
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: "Python 3.8 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
@@ -37,6 +39,7 @@ matrix:
       before_install:
         - choco install python --version 3.8
         - python -m pip install --upgrade pip
+        - pip install nose
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 install:
  - pip install -r requirements.txt
