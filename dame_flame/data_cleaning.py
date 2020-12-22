@@ -178,7 +178,7 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
 
     cols = list(df.columns)
     cols.remove(outcome_column_name)
-    df[cols] = df[cols].astype('int64')
+    df.loc[:,cols] = df.loc[:, cols].astype('int64')
 
     return df
 
@@ -272,18 +272,18 @@ def check_missings(df, df_holdout,  missing_indicator, missing_data_replace,
         try:
             cols = list(df.columns)
             cols.remove(outcome_column_name)
-            df[cols] = df[cols].astype('int64')
+            df.loc[:, cols] = df.loc[:,cols].astype('int64')
         except:
-            raise Exception('Invalid input error. Ensure all inputs asides from '\
+            raise Exception('Invalid input error on matching dataset. Ensure all inputs asides from '\
                             'the outcome column are integers, and if missing' \
                             ' values exist, ensure they are handled.')
     if mice_on_holdout == False:
         try:
             cols = list(df_holdout.columns)
             cols.remove(outcome_column_name)
-            df_holdout[cols] = df_holdout[cols].astype('int64')
+            df_holdout.loc[:, cols] = df_holdout[cols].astype('int64')
         except:
-            raise Exception('Invalid input error. Ensure all inputs asides from '\
+            raise Exception('Invalid input error on holdout dataset. Ensure all inputs asides from '\
                             'the outcome column are integers, and if missing' \
                             ' values exist, ensure they are handled.')
 

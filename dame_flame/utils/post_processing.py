@@ -64,7 +64,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
                 if unit in group:
                     new_group = matching_object.input_data.loc[group]
                     my_series = df_matched_units.loc[unit]
-                    if output_style == 1 and "*" in my_series.unique():
+                    if output_style == 1 and "*" in my_series.unique().astype(str):
                         # Insert asterisks for unused covariates
                         star_cols = my_series[my_series == "*"].index
                         for col in star_cols:

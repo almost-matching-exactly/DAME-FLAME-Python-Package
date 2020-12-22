@@ -934,7 +934,7 @@ class Test_exceptions(unittest.TestCase):
         with self.assertRaises(Exception) as _data_type:
             broken_data_type()
 
-        self.assertTrue('Invalid input error. Ensure all inputs asides from '\
+        self.assertTrue('Invalid input error on matching dataset. Ensure all inputs asides from '\
                         'the outcome column are integers, and if missing' \
                         ' values exist, ensure they are handled.' in str(_data_type.exception))
     def test_false_holdout_type(self):
@@ -949,7 +949,7 @@ class Test_exceptions(unittest.TestCase):
         with self.assertRaises(Exception) as holdout_type:
             broken_holdout_type()
 
-        self.assertTrue('Invalid input error. Ensure all inputs asides from '\
+        self.assertTrue('Invalid input error on holdout dataset. Ensure all inputs asides from '\
                                 'the outcome column are integers, and if missing' \
                                 ' values exist, ensure they are handled.' in str(holdout_type.exception))
 
