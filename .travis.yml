@@ -5,10 +5,11 @@ python:
   - "3.7"
   - "3.8"
 
-os:
-  - 'windows'
-  - 'osx'
-  - 'linux'
+jobs:
+  include:
+    -os: linux
+    -os: osx
+    language: generic
   
 # command to install dependencies
 install:
