@@ -20,7 +20,33 @@ from sklearn.impute import IterativeImputer
 def verbose_output(iteration_number, num_matched_groups, num_unmatched_t,
                    num_unmatched, orig_len_df_all, tot_treated, pe,
                    prev_iter_num_unmatched, curr_covar_set):
+    '''
+    Parameters
+    ----------
+    iteration_number : TYPE
+        DESCRIPTION.
+    num_matched_groups : TYPE
+        DESCRIPTION.
+    num_unmatched_t : TYPE
+        DESCRIPTION.
+    num_unmatched : TYPE
+        DESCRIPTION.
+    orig_len_df_all : TYPE
+        DESCRIPTION.
+    tot_treated : TYPE
+        DESCRIPTION.
+    pe : TYPE
+        DESCRIPTION.
+    prev_iter_num_unmatched : TYPE
+        DESCRIPTION.
+    curr_covar_set : TYPE
+        DESCRIPTION.
 
+    Returns
+    -------
+    None.
+
+    '''
     print("Iteration number: ", iteration_number)
     print("\tNumber of matched groups formed in total: ", num_matched_groups)
     print("\tUnmatched treated units: ", num_unmatched_t, "out of a total of ",
@@ -46,10 +72,10 @@ def compute_bf(matched_rows, treatment_column_name, df_unmatched):
     available_control = len(df_unmatched) - available_treated
 
     if (available_treated != 0 and available_control != 0):
-        return mg_treated/available_treated + mg_control/available_control
-    elif (available_treated == 0):
+        return (mg_treated/available_treated + mg_control/available_control)
+    elif available_treated == 0:
         return mg_control/available_control
-    elif (available_control == 0):
+    elif available_control == 0:
         return mg_treated/available_treated
 
 
@@ -61,7 +87,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     '''
     # The iteration and mean of array is only used when doing MICE on holdout
     pe_array = []
-    for i in range(len(df_holdout)):
+    for i, _ in enumerate(df_holdout):
 
 
         X_treated, X_control, Y_treated, Y_control = separate_dfs(
@@ -75,13 +101,15 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
         if (adaptive_weights == "decisiontree" or adaptive_weights == "decisiontreeCV"):
 
             # first binarize non-binary columns in the treated dataset
-            bool_cols = bool_cols = [col for col in X_treated if np.isin(X_treated[col].unique(), [0, 1]).all()]
+            bool_cols = bool_cols = [col for col in X_treated
+                                     if np.isin(X_treated[col].unique(), [0, 1]).all()]
             non_bool_cols = X_treated.columns.difference(bool_cols)
             binarized_df = pd.get_dummies(X_treated.loc[:, non_bool_cols].astype(str))
             X_treated = pd.concat([binarized_df, X_treated.loc[:, bool_cols]], axis=1)
 
             # binarize non-binary columns in the control dataset
-            bool_cols = bool_cols = [col for col in X_control if np.isin(X_control[col].unique(), [0, 1]).all()]
+            bool_cols = bool_cols = [col for col in X_control
+                                     if np.isin(X_control[col].unique(), [0, 1]).all()]
             non_bool_cols = X_control.columns.difference(bool_cols)
             binarized_df = pd.get_dummies(X_control.loc[:, non_bool_cols].astype(str))
             X_control = pd.concat([binarized_df, X_control.loc[:, bool_cols]], axis=1)
@@ -129,9 +157,8 @@ def create_mice_dfs(df_holdout, num_imputes, outcome_col_name):
                                estimator=DecisionTreeRegressor())
         imp.fit(df_holdout)
         tmp_df = pd.DataFrame(data=np.round(imp.transform(df_holdout)),
-                                             columns=df_holdout.columns,
-                                             index=df_holdout.index)
-
+                              columns=df_holdout.columns,
+                              index=df_holdout.index)
         # convert floats to ints because MICE creates floats
         cols = list(tmp_df.columns)
         cols.remove(outcome_col_name)
@@ -141,34 +168,32 @@ def create_mice_dfs(df_holdout, num_imputes, outcome_col_name):
     return df_holdout_array
 
 def separate_dfs(df_holdout, treatment_col_name, outcome_col_name,
-                       covs_include):
+                 covs_include):
     """
     This function serves to create the control/treatment dfs for use
     in the decide_drop functions in flame and in dame.
     """
     #X-treated is the df that has rows where treated col = 1 and
     # all cols except: outcome/treated/the covs being dropped
-    X_treated = df_holdout.loc[df_holdout[treatment_col_name]==1,
-                       df_holdout.columns.difference(
-                               [outcome_col_name,
-                                treatment_col_name] + list(covs_include))]
+    X_treated = df_holdout.loc[df_holdout[treatment_col_name] == 1,
+                               df_holdout.columns.difference([outcome_col_name,
+                                                              treatment_col_name] + list(covs_include))]
 
     #X-control is the df that has rows where treated col = 0 and
     # all cols except: outcome/treated/the covs being dropped
-    X_control = df_holdout.loc[df_holdout[treatment_col_name]==0,
-                       df_holdout.columns.difference(
-                               [outcome_col_name,
-                                treatment_col_name] + list(covs_include))]
+    X_control = df_holdout.loc[df_holdout[treatment_col_name] == 0,
+                               df_holdout.columns.difference([outcome_col_name,
+                                                              treatment_col_name] + list(covs_include))]
 
-    Y_treated = df_holdout.loc[df_holdout[treatment_col_name]==1,
+    Y_treated = df_holdout.loc[df_holdout[treatment_col_name] == 1,
                                outcome_col_name]
 
-    Y_control = df_holdout.loc[df_holdout[treatment_col_name]==0,
+    Y_control = df_holdout.loc[df_holdout[treatment_col_name] == 0,
                                outcome_col_name]
 
     # error check. If this is true, we stop matching.
-    if (len(X_treated)==0 or len(X_control) == 0 or \
-        len(Y_treated) == 0 or len(Y_control) ==0 or \
+    if (len(X_treated) == 0 or len(X_control) == 0 or \
+        len(Y_treated) == 0 or len(Y_control) == 0 or \
         len(X_treated.columns) == 0 or len(X_control.columns) == 0):
         return False, False, False, False
 
