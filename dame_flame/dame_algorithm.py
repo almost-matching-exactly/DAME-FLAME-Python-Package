@@ -34,7 +34,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
     """
     curr_covar_set = set()
     best_pe = float("inf")
-    if adaptive_weights == False:
+    if not adaptive_weights:
         # We iterate through all active covariate sets and find the total
         # weight of each . For each possible covariate set, temp_weight counts
         # the total weight of the covs that are going to get used in the match,
@@ -42,7 +42,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         max_weight = 0
         for s in active_covar_sets: # s is a set to consider dropping
             temp_weight = 0
-            for cov_index in range(len(all_covs)):  # iter through all covars
+            for cov_index, _ in enumerate(all_covs):  # iter through all covars
                 if all_covs[cov_index] not in s:
                     # if an item not in s, add weight. finding impact of drop s
                     temp_weight += weights[cov_index]
@@ -62,7 +62,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
                                                           outcome_column_name, s, adaptive_weights,
                                                           alpha_given)
             # error check. PE can be float(0), but not denote error
-            if PE == False and type(PE) == bool:
+            if not PE and type(PE) == bool:
                 return False, False
 
             # Use the smallest PE as the covariate set to drop.
@@ -153,17 +153,17 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # flatten to 1 list, then add occurrences of unique units
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-        for index in range(len(unique_units)):
+        for index, _ in enumerate(unique_units):
             weights['weights'][unique_units[index]] += occurrences[index]
 
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
 
-    if repeats == False:
+    if not repeats:
         df_all = df_unmatched
 
     # set up all the extra dfs if needed
-    if missing_holdout_replace != False:
+    if missing_holdout_replace:
         # now df_holdout is actually an array of imputed datasets
         df_holdout = flame_dame_helpers.create_mice_dfs(
             df_holdout, missing_holdout_replace, outcome_column_name)
@@ -197,13 +197,13 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
 
         # Iterates until there are no more units to mach on.
         try:
-            if ((early_stops.unmatched_t == True or repeats == False) and
+            if ((early_stops.unmatched_t or not repeats) and
                     (1 not in df_unmatched[treatment_column_name].values)):
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
                 break
 
-            if ((early_stops.unmatched_c == True or repeats == False) and
+            if ((early_stops.unmatched_c or not repeats) and
                     (0 not in df_unmatched[treatment_column_name].values)):
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                       "We finished with no more units to match")
@@ -216,22 +216,22 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             break
 
         # Hard stop criteria: exceeded the number of iters user asked for?
-        if (early_stops.iterations != False and early_stops.iterations == h):
+        if (early_stops.iterations and early_stops.iterations == h):
             print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped before doing iteration number: ", h)
             break
 
         # Hard stop criteria: met the threshold of unmatched items to stop?
-        if (early_stops.un_t_frac != False or early_stops.un_c_frac != False):
+        if (early_stops.un_t_frac or early_stops.un_c_frac):
             unmatched_treated = df_unmatched[treatment_column_name].sum()
             unmatched_control = len(df_unmatched) - unmatched_treated
-            if (early_stops.un_t_frac != False and \
+            if (early_stops.un_t_frac and \
                 unmatched_treated/tot_treated < early_stops.un_t_frac):
                 print("We stopped the algorithm when ",
                       unmatched_treated/tot_treated, "of the treated units "\
                       "remained unmatched")
                 break
-            if (early_stops.un_c_frac != False and \
+            if (early_stops.un_c_frac and \
                 unmatched_control/tot_control < early_stops.un_c_frac):
                 print("We stopped the algorithm when ",
                       unmatched_control/tot_control, "of the control units "\
@@ -251,7 +251,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             alpha)
 
         # Check for error in above step:
-        if curr_covar_set == False:
+        if not curr_covar_set:
             print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped when the holdout set was not large enough or "\
                   "there was nothing left to match")
@@ -272,13 +272,13 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             # flatten to 1 list, then add occurrences of unique units
             flat_units_in_g = np.concatenate(units_in_g).ravel()
             unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-            for index in range(len(unique_units)):
+            for index, _ in enumerate(unique_units):
                 weights['weights'][unique_units[index]] += occurrences[index]
 
 
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think.
-        if (want_bf == True):
+        if want_bf:
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
@@ -290,7 +290,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                 bf = np.nan
             return_bf.append(bf)
 
-        if early_stops.pe != False:
+        if early_stops.pe:
             if pe >= early_stops.pe:
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
@@ -314,7 +314,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
 
-        if repeats == False:
+        if not repeats:
             df_all = df_unmatched
 
         h += 1
@@ -329,7 +329,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                                               orig_len_df_all, tot_treated, pe,
                                               prev_iter_num_unmatched,
                                               curr_covar_set)
-            if want_bf == True:
+            if want_bf:
                 print("Balancing factor of this iteration: ", bf)
 
             prev_iter_num_unmatched = len(df_unmatched)
@@ -342,9 +342,9 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     return_package.append(MG_units)
 
     # the optional returns
-    if want_pe == True:
+    if want_pe:
         return_package.append(return_pe)
-    if want_bf == True:
+    if want_bf:
         return_package.append(return_bf)
 
 
