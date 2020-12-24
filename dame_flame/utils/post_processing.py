@@ -16,8 +16,7 @@ def validate_matching_obj(matching_object):
     if matching.MatchParent not in type(matching_object).__bases__:
         raise Exception("The matching_object input parameter needs to be "\
                         "of type DAME or FLAME")
-    if (not hasattr(matching_object, 'input_data') or \
-        not hasattr(matching_object, 'return_array')):
+    if (hasattr(matching_object, 'input_data') == False):
         raise Exception("This function can be only called after a match has "\
                        "been formed using the .fit() and .predict() functions")
 
@@ -43,9 +42,9 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
 
     validate_matching_obj(matching_object)
 
-    if matching_object.missing_data_replace != 3:
-        array_mgs = matching_object.return_array[1]
-        df_matched_units = matching_object.return_array[0]
+    if (matching_object.missing_data_replace != 3):
+        array_mgs = matching_object.units_per_group
+        df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_mgs = matching_object.units_per_group[mice_iter]
         df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
@@ -101,8 +100,9 @@ def CATE(matching_object, unit_ids, mice_iter=0):
 
     validate_matching_obj(matching_object)
 
-    if matching_object.missing_data_replace != 3:
-        array_MGs = matching_object.return_array[1]
+
+    if (matching_object.missing_data_replace != 3):
+        array_MGs = matching_object.units_per_group
         df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_MGs = matching_object.units_per_group[mice_iter]

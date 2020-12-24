@@ -96,10 +96,6 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
     that aren't directly the input file or related to stop_criteria.
     '''
 
-    if (verbose not in [0, 1, 2, 3]):
-        raise Exception('Invalid input error. The verbose option must be'\
-                        'the integer 0,1,2 or 3.')
-
     # Checks on the weight array...if the weight array needs to exist
     if not adaptive_weights:
 
@@ -185,7 +181,8 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
     helper, this function drops rows that have missing_indicator in any of the cols
     '''
 
-    if math.isnan(missing_indicator):
+
+    if type(missing_indicator) != str and math.isnan(missing_indicator) == True:
         # either the missing indicator is already NaN and we just drop those rows
         df = df.dropna()
     else:
