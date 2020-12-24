@@ -12,6 +12,7 @@ import pandas as pd
 import os
 import sys
 
+
 def check_statistics(model,unit_id = 1):
     ATE_ = ATE(model)
     ATT_ = ATT(model)
@@ -117,7 +118,7 @@ class TestFlame(unittest.TestCase):
                     df  = gen
                     holdout = gen
                 model = matching.FLAME(repeats=False)
-                model.fit(holdout_data=holdout)
+                model.fit(holdout_data=False)
                 output = model.predict(df)
             
                 if check_statistics(model):
@@ -293,16 +294,16 @@ class TestFlame(unittest.TestCase):
             output = model.predict(df)
             if check_statistics(model):
                 is_correct = 0
-#            model = matching.FLAME( stop_unmatched_c= True, verbose=0)
-#            model.fit(holdout_data=holdout)
-#            output = model.predict(df)
-#            if check_statistics(model):
-#                is_correct = 0
-#            model = matching.FLAME(stop_unmatched_t= True, verbose=0)
-#            model.fit(holdout_data=holdout)
-#            output = model.predict(df)
-#            if check_statistics(model):
-#                is_correct = 0
+            model = matching.FLAME( stop_unmatched_c= True, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.FLAME(stop_unmatched_t= True, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
             model = matching.FLAME(early_stop_un_c_frac = 0.5, verbose=0)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
@@ -322,11 +323,63 @@ class TestFlame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='FLAME-Error when other parameters')
+    
+    def test_no_matching_F(self):
+        #Test data split
+        df, true_TE = generate_uniform_given_importance(num_control=3000, num_treated=3000)
 
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,1,2.0],[5,6,0,5.0],[7,8,1,8.0],[9,10,1,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.FLAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+        except (KeyError, ValueError):
+            is_correct = 0
+
+        self.assertEqual(1, is_correct, msg='FLAME-Error when no matching')
+        
+    def test_miss_data_indicator_F(self):
+        is_correct = 1
+        try:
+            df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
+            #Create missing df
+            m,n = df.shape
+            for i in range(int(m/100)):
+                for j in [0,int(n/2)]:
+                    df.iloc[i,j] = 'a'
+            holdout = df.copy()
+
+            model = matching.FLAME(missing_indicator= 'a', missing_holdout_replace = 1,missing_data_replace=1 )
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+
+        except (KeyError, ValueError):
+            is_correct = 0
+        self.assertEqual(1, is_correct, msg='FLAME-Error when missing_indicator')
+    def test_has_unmatched_units_F(self):
+        #Test data split
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,0,2.0],[5,6,0,5.0],[7,8,0,8.0],[9,10,1,10.0],[9,20,0,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.FLAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+
+            if check_statistics(model):
+                is_correct = 0
+        except (KeyError, ValueError):
+            is_correct = 0
+
+        self.assertEqual(1, is_correct, msg='FLAME-Error when no matching')
 
 class TestDame(unittest.TestCase):
-
-
             
     def test_PE_F(self):
         for adaptive_weights in [ 'ridge', 'decisiontree', 'ridgeCV','decisiontreeCV']: #False,
@@ -377,10 +430,9 @@ class TestDame(unittest.TestCase):
                     df  = gen
                     holdout = gen
                 model = matching.DAME(repeats=False)
-                model.fit(holdout_data=holdout)
+                model.fit(holdout_data=False)
                 output = model.predict(df)
-                
-                        
+        
                 if check_statistics(model):
                     is_correct = 0
                     break
@@ -391,55 +443,54 @@ class TestDame(unittest.TestCase):
             self.assertEqual(1, is_correct,
                              msg='DAME-Error when we use the dataset generated by {0} '.format(str(gen)))
     
-#     def test_repeats_F(self):
-#         #Test other parameters
-#         df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
-#                                               num_cov=7, min_val=0,
-#                                               max_val=3, covar_importance=[4,3,2,1,0,0,0])
-#         holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
-#                                               num_cov=7, min_val=0,
-#                                               max_val=3, covar_importance=[4,3,2,1,0,0,0])
-#         is_correct = 1
-#         try:
-#             model = matching.DAME(repeats=True)
-#             model.fit(holdout_data=holdout)
-#             output = model.predict(df)
-#             if check_statistics(model):
-#                 is_correct = 0
+    def test_repeats_F(self):
+        #Test other parameters
+        df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                               num_cov=7, min_val=0,
+                                               max_val=3, covar_importance=[4,3,2,1,0,0,0])
+        holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                               num_cov=7, min_val=0,
+                                               max_val=3, covar_importance=[4,3,2,1,0,0,0])
+        is_correct = 1
+        try:
+            model = matching.DAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
 
-#         except (KeyError, ValueError):
-#             is_correct = 0
+        except (KeyError, ValueError):
+            is_correct = 0
+        self.assertEqual(1, is_correct, msg='DAME-Error when repeat = True')
 
-#         self.assertEqual(1, is_correct, msg='DAME-Error when repeat = True')
-        
-#    def test_verbose_F(self):
-#        #Test verbose
-#        df, true_TE = generate_uniform_given_importance()
-#        for verbose in [0,1,2,3]:
-#            is_correct = 1
-#            try:
-#                df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
-#                                                              num_cov=7, min_val=0,
-#                                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
-#                holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
-#                                                      num_cov=7, min_val=0,
-#                                                          max_val=3, covar_importance=[4,3,2,1,0,0,0])
-#                covar_importance = np.array([4,3,2,1,0,0,0])
-#                weight_array = covar_importance/covar_importance.sum()
-#                model = matching.DAME(missing_data_replace = 2, want_bf = True, verbose = verbose)
-#                model.fit(holdout_data=holdout)
-#                output = model.predict(df)
-#
-#                model = matching.DAME(verbose=verbose) # repeats = True
-#                model.fit(holdout_data=0.5)
-#                output = model.predict(df)
-#                if check_statistics(model):
-#                    is_correct = 0
-#                    break
-#            except (KeyError, ValueError):
-#                is_correct = 0
-#
-#            self.assertEqual(1, is_correct, msg='DAME-Error when verbose ={0}'.format(verbose))
+    def test_verbose_F(self):
+        #Test verbose
+        df, true_TE = generate_uniform_given_importance()
+        for verbose in [0,1,2,3]:
+            is_correct = 1
+            try:
+                df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000,
+                                                              num_cov=7, min_val=0,
+                                                              max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                holdout, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100,
+                                                      num_cov=7, min_val=0,
+                                                          max_val=3, covar_importance=[4,3,2,1,0,0,0])
+                covar_importance = np.array([4,3,2,1,0,0,0])
+                weight_array = covar_importance/covar_importance.sum()
+                model = matching.DAME(missing_data_replace = 2, want_bf = True, verbose = verbose)
+                model.fit(holdout_data=holdout)
+                output = model.predict(df)
+
+                model = matching.DAME(verbose=verbose) # repeats = True
+                model.fit(holdout_data=0.5)
+                output = model.predict(df)
+                if check_statistics(model):
+                    is_correct = 0
+                    break
+            except (KeyError, ValueError):
+                is_correct = 0
+
+            self.assertEqual(1, is_correct, msg='DAME-Error when verbose ={0}'.format(verbose))
             
         
     def test_data_split_F(self):
@@ -466,7 +517,7 @@ class TestDame(unittest.TestCase):
         is_correct = 1
         try:
             for missing_holdout_replace in [0,1,2]:
-                for missing_data_replace in [0,1,2]:
+                for missing_data_replace in [0,1,2,3]:
                     #Test missig data handling
                     df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
                     #Create missing df
@@ -526,16 +577,16 @@ class TestDame(unittest.TestCase):
             output = model.predict(df)
             if check_statistics(model):
                 is_correct = 0
-#            model = matching.DAME( stop_unmatched_c= True, verbose=0)
-#            model.fit(holdout_data=holdout)
-#            output = model.predict(df)
-#            if check_statistics(model):
-#                is_correct = 0
-#            model = matching.DAME(stop_unmatched_t= True, verbose=0)
-#            model.fit(holdout_data=holdout)
-#            output = model.predict(df)
-#            if check_statistics(model):
-#                is_correct = 0
+            model = matching.DAME( stop_unmatched_c= True, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
+            model = matching.DAME(stop_unmatched_t= True, verbose=0)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
             model = matching.DAME(early_stop_un_c_frac = 0.5, verbose=0)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
@@ -555,18 +606,62 @@ class TestDame(unittest.TestCase):
         except (KeyError, ValueError):
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when other parameters')
+        
+    def test_no_matching_F(self):
+        #Test data split
+        df, true_TE = generate_uniform_given_importance(num_control=3000, num_treated=3000)
 
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,1,2.0],[5,6,0,5.0],[7,8,1,8.0],[9,10,1,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.DAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+        except (KeyError, ValueError):
+            is_correct = 0
 
+        self.assertEqual(1, is_correct, msg='DAME-Error when no matching')
 
+    def test_miss_data_indicator_F(self):
+        is_correct = 1
+        try:
+            df, true_TE = generate_uniform_given_importance(num_control=1000, num_treated=1000)
+            #Create missing df
+            m,n = df.shape
+            for i in range(int(m/100)):
+                for j in [0,int(n/2)]:
+                    df.iloc[i,j] = 'a'
+            holdout = df.copy()
 
+            model = matching.DAME(missing_indicator= 'a', missing_holdout_replace = 1,missing_data_replace=1 )
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+            if check_statistics(model):
+                is_correct = 0
 
+        except (KeyError, ValueError):
+            is_correct = 0
+        self.assertEqual(1, is_correct, msg='DAME-Error when missing_indicator')
 
+    def test_has_unmatched_units_F(self):
+        #Test data split
+        is_correct = 1
+        try:
+            df = pd.DataFrame([[1,2,0,1.0],[3,4,0,2.0],[5,6,0,5.0],[7,8,0,8.0],[9,10,1,10.0],[9,20,0,10.0]])
+            df.columns = ['cov1','cov2','treated','outcome']
+            holdout = df.copy()
+            model = matching.DAME(repeats=True)
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
 
+            if check_statistics(model):
+                is_correct = 0
+        except (KeyError, ValueError):
+            is_correct = 0
 
-
-
-
-
+        self.assertEqual(1, is_correct, msg='DAME-Error when no matching')
 
 
 
@@ -642,18 +737,7 @@ class Test_exceptions(unittest.TestCase):
         self.assertTrue('The value provided for the early stopping critera of'\
                         ' PE needs to be between 0.0 and 1.0' in str(early_stop_pe_frac.exception))
 
-#     def test_false_verbose(self):
-#         def broken_verbose():
-#             df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100)
-#             model = matching.FLAME(verbose = 12312)
-#             model.fit(holdout_data=df)
-#             output = model.predict(df)
 
-#         with self.assertRaises(Exception) as verbose:
-#             broken_verbose()
-            
-#         self.assertTrue('Invalid input error. The verbose option must be'\
-#                         'the integer 0,1,2 or 3.' in str(verbose.exception))
     def test_false_weight_array_type(self):
         def broken_weight_array_type():
             df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100)
@@ -837,16 +921,52 @@ class Test_exceptions(unittest.TestCase):
                         'column must have either a 0 or a 1 value.' in str(treatment_column_name_value.exception))
         
 
-#     def test_false_weight_array_order(self):
-#         def broken_weight_array_sum():
-#             df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100)
-#             model = matching.FLAME(adaptive_weights = False)
-#             model.fit(holdout_data=df, weight_array = [1,1,1,1])
-#             output = model.predict(df)
-
-#         with self.assertRaises(Exception) as weight_array_sum:
-#             broken_weight_array_sum()
-            
-#         self.assertTrue('Invalid input error. Weight array values must '\
-#                             'sum to 1.0' in str(weight_array_sum.exception))
         
+    def test_false_data_type(self):
+        def broken_data_type():
+            df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100)
+            holdout = df.copy()
+            df.iloc[0,0] = 's'
+            model = matching.FLAME()
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+
+        with self.assertRaises(Exception) as _data_type:
+            broken_data_type()
+
+        self.assertTrue('Invalid input error on matching dataset. Ensure all inputs asides from '\
+                        'the outcome column are integers, and if missing' \
+                        ' values exist, ensure they are handled.' in str(_data_type.exception))
+    def test_false_holdout_type(self):
+        def broken_holdout_type():
+            df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100)
+            holdout = df.copy()
+            holdout.iloc[0,0] = 's'
+            model = matching.FLAME()
+            model.fit(holdout_data=holdout)
+            output = model.predict(df)
+
+        with self.assertRaises(Exception) as holdout_type:
+            broken_holdout_type()
+
+        self.assertTrue('Invalid input error on holdout dataset. Ensure all inputs asides from '\
+                                'the outcome column are integers, and if missing' \
+                                ' values exist, ensure they are handled.' in str(holdout_type.exception))
+
+    def test_false_ATE_input(self):
+        def broken_ATE_input():
+            ATE(1)
+
+        with self.assertRaises(Exception) as ATE_input:
+            broken_ATE_input()
+        self.assertTrue("The matching_object input parameter needs to be "\
+                            "of type DAME or FLAME" in str(ATE_input.exception))
+
+    def test_false_ATE_input_model(self):
+        def broken_ATE_input_model():
+            model = matching.FLAME()
+            ATE(model)
+        with self.assertRaises(Exception) as ATE_input_model:
+            broken_ATE_input_model()
+        self.assertTrue("This function can be only called after a match has "\
+                           "been formed using the .fit() and .predict() functions" in str(ATE_input_model.exception))

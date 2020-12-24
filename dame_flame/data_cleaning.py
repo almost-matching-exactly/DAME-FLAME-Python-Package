@@ -90,15 +90,11 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
     return early_stops_obj
 
 def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
-                     weight_array=[], C=0.0, verbose=0):
+                     weight_array=[], C=0.0):
     '''
     This function processes the parameters that were passed to DAME/FLAME
     that aren't directly the input file or related to stop_criteria.
     '''
-
-    if (verbose not in [0, 1, 2, 3]):
-        raise Exception('Invalid input error. The verbose option must be'\
-                        'the integer 0,1,2 or 3.')
 
     # Checks on the weight array...if the weight array needs to exist
     if not adaptive_weights:
@@ -175,7 +171,7 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
 
     cols = list(df.columns)
     cols.remove(outcome_column_name)
-    df[cols] = df[cols].astype('int64')
+    df.loc[:,cols] = df.loc[:, cols].astype('int64')
 
     return df
 
@@ -185,13 +181,14 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
     helper, this function drops rows that have missing_indicator in any of the cols
     '''
 
-    if math.isnan(missing_indicator):
+
+    if type(missing_indicator) != str and math.isnan(missing_indicator) == True:
         # either the missing indicator is already NaN and we just drop those rows
-        df = df.dropna()
+        df = df.dropna().copy()
     else:
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)
-        df = df.dropna()
+        df = df.dropna().copy()
 
 
     return df
@@ -268,18 +265,18 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
         try:
             cols = list(df.columns)
             cols.remove(outcome_column_name)
-            df[cols] = df[cols].astype('int64')
+            df.loc[:, cols] = df.loc[:,cols].astype('int64')
         except:
-            raise Exception('Invalid input error. Ensure all inputs asides from '\
+            raise Exception('Invalid input error on matching dataset. Ensure all inputs asides from '\
                             'the outcome column are integers, and if missing' \
                             ' values exist, ensure they are handled.')
     if not mice_on_holdout:
         try:
             cols = list(df_holdout.columns)
             cols.remove(outcome_column_name)
-            df_holdout[cols] = df_holdout[cols].astype('int64')
+            df_holdout.loc[:, cols] = df_holdout[cols].astype('int64')
         except:
-            raise Exception('Invalid input error. Ensure all inputs asides from '\
+            raise Exception('Invalid input error on holdout dataset. Ensure all inputs asides from '\
                             'the outcome column are integers, and if missing' \
                             ' values exist, ensure they are handled.')
 

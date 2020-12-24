@@ -127,6 +127,7 @@ class MatchParent:
         self.treatment_column_name = treatment_column_name
         self.outcome_column_name = outcome_column_name
         self.weight_array = weight_array
+        
 
 class DAME(MatchParent):
     '''
@@ -142,44 +143,50 @@ class DAME(MatchParent):
             The dataframe on which to perform the matching, or the location of
             the CSV with the dataframe
         """
+        
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
 
-        self.return_array = _DAME(self.input_data.copy(deep=True),
-                                  self.holdout_data.copy(deep=True),
-                                  self.treatment_column_name, self.weight_array,
-                                  self.outcome_column_name, self.adaptive_weights, self.alpha,
-                                  self.repeats, self.verbose, self.want_pe,
-                                  self.early_stop_iterations, self.stop_unmatched_c,
-                                  self.early_stop_un_c_frac, self.stop_unmatched_t,
-                                  self.early_stop_un_t_frac, self.early_stop_pe,
-                                  self.early_stop_pe_frac, self.want_bf,
-                                  self.missing_indicator,
-                                  self.missing_data_replace, self.missing_holdout_replace,
-                                  self.missing_holdout_imputations, self.missing_data_imputations)
+
+        return_array = _DAME(self.input_data.copy(deep=True),
+            self.holdout_data.copy(deep=True),
+            self.treatment_column_name, self.weight_array,
+            self.outcome_column_name, self.adaptive_weights, self.alpha,
+            self.repeats, self.verbose, self.want_pe,
+            self.early_stop_iterations, self.stop_unmatched_c,
+            self.early_stop_un_c_frac, self.stop_unmatched_t,
+            self.early_stop_un_t_frac, self.early_stop_pe,
+            self.early_stop_pe_frac, self.want_bf,
+            self.missing_indicator,
+            self.missing_data_replace, self.missing_holdout_replace,
+            self.missing_holdout_imputations, self.missing_data_imputations)
 
         self.bf_each_iter = None
         self.pe_each_iter = None
         # in the non-mice case:
-        if self.missing_data_replace != 3:
-            self.df_units_and_covars_matched = self.return_array[0]
+
+        if (self.missing_data_replace != 3):
+            self.df_units_and_covars_matched = return_array[0]
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
-            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns=['weights'])
-            self.units_per_group = self.return_array[1]
-            if self.want_pe:
-                self.pe_each_iter = self.return_array[2]
-            if self.want_bf:
-                self.bf_each_iter = self.return_array[-1]
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
+            self.units_per_group = return_array[1]
+            if (self.want_pe == True):
+                self.pe_each_iter = return_array[2]
+            if (self.want_bf == True):
+                self.bf_each_iter = return_array[-1]
         else:
             # in the mice case:
             array_of_dfs = []
             array_of_groups_per_unit = []
-            for arr in self.return_array:
+            array_of_units_per_group = []
+            for arr in return_array:
                 temp_df = arr[0]
                 array_of_groups_per_unit.append(temp_df['weights'])
                 array_of_dfs.append(temp_df.drop(columns=['weights']))
+                array_of_units_per_group.append(arr[1])
             self.groups_per_unit = array_of_groups_per_unit
             self.df_units_and_covars_matched = array_of_dfs
+            self.units_per_group = array_of_units_per_group
 
         return self.df_units_and_covars_matched
 
@@ -203,36 +210,37 @@ class FLAME(MatchParent):
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
 
-        self.return_array = _FLAME(self.input_data.copy(deep=True),
-                                   self.holdout_data.copy(deep=True), self.treatment_column_name,
-                                   self.weight_array, self.outcome_column_name, self.adaptive_weights,
-                                   self.alpha, self.repeats, self.verbose, self.want_pe,
-                                   self.early_stop_iterations, self.stop_unmatched_c,
-                                   self.early_stop_un_c_frac, self.stop_unmatched_t,
-                                   self.early_stop_un_t_frac, self.early_stop_pe,
-                                   self.early_stop_pe_frac, self.want_bf, self.missing_indicator,
-                                   self.missing_data_replace, self.missing_holdout_replace,
-                                   self.missing_holdout_imputations, self.missing_data_imputations, pre_dame, C)
+        return_array = _FLAME(self.input_data.copy(deep=True),
+            self.holdout_data.copy(deep=True), self.treatment_column_name,
+            self.weight_array,self.outcome_column_name, self.adaptive_weights,
+            self.alpha, self.repeats, self.verbose, self.want_pe,
+            self.early_stop_iterations, self.stop_unmatched_c,
+            self.early_stop_un_c_frac, self.stop_unmatched_t,
+            self.early_stop_un_t_frac, self.early_stop_pe,
+            self.early_stop_pe_frac, self.want_bf, self.missing_indicator,
+            self.missing_data_replace, self.missing_holdout_replace,
+            self.missing_holdout_imputations, self.missing_data_imputations,
+            pre_dame, C)
 
         self.bf_each_iter = None
         self.pe_each_iter = None
         # in the non-mice case:
-        if self.missing_data_replace != 3 and not pre_dame:
-            self.df_units_and_covars_matched = self.return_array[0]
+        if (self.missing_data_replace != 3 and pre_dame==False):
+            self.df_units_and_covars_matched = return_array[0]
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
-            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns=['weights'])
-            self.units_per_group = self.return_array[1]
-            if self.want_pe:
-                self.pe_each_iter = self.return_array[2]
-            if self.want_bf:
-                self.bf_each_iter = self.return_array[-1]
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
+            self.units_per_group = return_array[1]
+            if (self.want_pe == True):
+                self.pe_each_iter = return_array[2]
+            if (self.want_bf == True):
+                self.bf_each_iter = return_array[-1]
 
         elif pre_dame:
 
             # the first few items all look the same, then the last item is from dame
-            self.df_units_and_covars_matched = self.return_array[0]
-            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(self.return_array[-1][0])
-            if self.repeats:
+            self.df_units_and_covars_matched = return_array[0]
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0], sort=True)
+            if self.repeats == True:
                 # we have to aggregate the indexes appearing more than once,
                 # those are the ones which were matched units in both dame and flame:
 
@@ -249,27 +257,28 @@ class FLAME(MatchParent):
 
             self.df_units_and_covars_matched.replace(np.nan, "*")
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
-            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns=['weights'])
-            self.units_per_group = self.return_array[1]
-            self.units_per_group += self.return_array[-1][1]
-            if self.want_pe:
-                self.pe_each_iter = self.return_array[2]
-                self.pe_each_iter += self.return_array[-1][2]
-            if self.want_bf:
-                self.bf_each_iter = self.return_array[-2]
-                self.bf_each_iter += self.return_array[-1][-2]
+
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
+            self.units_per_group = return_array[1]
+            self.units_per_group += return_array[-1][1]
+            if (self.want_pe == True):
+                self.pe_each_iter = return_array[2]
+                self.pe_each_iter += return_array[-1][2]
+            if (self.want_bf == True):
+                self.bf_each_iter = return_array[-2]
+                self.bf_each_iter += return_array[-1][-2]
 
         else:
             # This is the mice case, where we have multiple return values.
             # We leave those as arrays.
             self.df_units_and_covars_matched = []
             self.groups_per_unit = []
-            self.df_units_and_covars_matched = []
             self.units_per_group = []
             self.pe_each_iter = []
             self.bf_each_iter = []
-            for return_val in self.return_array:
-                self.df_units_and_covars_matched.append(return_val[0].drop(columns=['weights']))
+
+            for return_val in return_array:
+                self.df_units_and_covars_matched.append(return_val[0].drop(columns = ['weights']))
                 self.groups_per_unit.append(return_val[0]['weights'])
                 self.units_per_group.append(return_val[1])
                 if self.want_pe:
@@ -277,9 +286,8 @@ class FLAME(MatchParent):
                 if self.want_bf:
                     self.bf_each_iter.append(return_val[-1])
 
-
         return self.df_units_and_covars_matched
-
+    
 
 def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
           outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1,
