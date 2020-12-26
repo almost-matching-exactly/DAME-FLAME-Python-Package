@@ -73,7 +73,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             return False
 
         # binarize holdout dataset if categorical:
-        if (adaptive_weights == "decisiontree" or adaptive_weights == "decisiontreeCV"):
+        if (adaptive_weights in ["decisiontree", "decisiontreeCV"]):
 
             # first binarize non-binary columns in the treated dataset
             bool_cols = bool_cols = [col for col in x_treated
