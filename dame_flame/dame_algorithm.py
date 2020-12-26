@@ -122,7 +122,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     all_covs.remove(treatment_column_name) # This is J in the paper
     all_covs.remove(outcome_column_name)
     df_unmatched = df_all.copy(deep=True) # This is df_h in the paper
-    all_covs_max_list = [max(df_all[x])+1 for x in all_covs]
 
     # Initialize return values
     return_pe = []

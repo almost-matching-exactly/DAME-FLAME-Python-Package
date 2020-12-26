@@ -185,11 +185,11 @@ def drop_missing(df, treatment_column_name, outcome_column_name,
 
     if type(missing_indicator) != str and math.isnan(missing_indicator) == True:
         # either the missing indicator is already NaN and we just drop those rows
-        df = df.dropna()
+        df = df.dropna().copy()
     else:
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)
-        df = df.dropna()
+        df = df.dropna().copy()
 
 
     return df
