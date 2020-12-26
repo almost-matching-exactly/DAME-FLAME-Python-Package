@@ -68,47 +68,47 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
 
         return best_drop, 0, matched_rows, return_matches, BF, units_in_g
 
-    else:
-        for poss_drop in consider_dropping:
-            # S is the set of covars we drop. We try dropping each one
-            s = prev_drop.union([poss_drop])
+    # This is the case of adaptive_weights, since False case handled above
+    for poss_drop in consider_dropping:
+        # S is the set of covars we drop. We try dropping each one
+        set_covars = prev_drop.union([poss_drop])
 
-            PE = flame_dame_helpers.find_pe_for_covar_set(
-                df_holdout_array, treatment_column_name, outcome_column_name, s,
-                adaptive_weights, alpha_given)
+        PE = flame_dame_helpers.find_pe_for_covar_set(
+            df_holdout_array, treatment_column_name, outcome_column_name, set_covars,
+            adaptive_weights, alpha_given)
 
-            # error check. PE can be float(0), but not denote error
-            if not PE and type(PE) == bool:
-                return False, False, False, False, False
+        # error check. PE can be float(0), but not denote error
+        if not PE and type(PE) == bool:
+            return False, False, False, False, False
 
-            # The dropping criteria for FLAME is max MQ
-            # MQ = C * BF - PE
+        # The dropping criteria for FLAME is max MQ
+        # MQ = C * BF - PE
 
-            all_covs = set(all_covs)
-            covs_match_on = all_covs.difference([poss_drop]).difference(prev_drop)
-            covs_match_on = list(covs_match_on)
+        all_covs = set(all_covs)
+        covs_match_on = all_covs.difference([poss_drop]).difference(prev_drop)
+        covs_match_on = list(covs_match_on)
 
-            # need to make sure we don't edit the mutable dataframes, then do match
-            df_all_temp = df_all.copy(deep=True)
-            return_matches_temp = return_matches.copy(deep=True)
-            matched_rows, return_matches_temp, units_in_g = grouped_mr.algo2_GroupedMR(
-                df_all_temp, df_unmatched, covs_match_on, all_covs,
-                treatment_column_name, outcome_column_name, return_matches_temp)
+        # need to make sure we don't edit the mutable dataframes, then do match
+        df_all_temp = df_all.copy(deep=True)
+        return_matches_temp = return_matches.copy(deep=True)
+        matched_rows, return_matches_temp, units_in_g = grouped_mr.algo2_GroupedMR(
+            df_all_temp, df_unmatched, covs_match_on, all_covs,
+            treatment_column_name, outcome_column_name, return_matches_temp)
 
-            # find the BF for this covariate set's match.
-            BF = flame_dame_helpers.compute_bf(
-                matched_rows, treatment_column_name, df_unmatched)
+        # find the BF for this covariate set's match.
+        BF = flame_dame_helpers.compute_bf(
+            matched_rows, treatment_column_name, df_unmatched)
 
-            # Use the largest MQ as the covariate set to drop.
-            MQ = C * BF - PE
-            if MQ > best_mq:
-                best_mq = MQ
-                best_pe = PE
-                best_bf = BF
-                best_drop = poss_drop
-                best_return_matches = return_matches_temp
-                best_matched_rows = matched_rows
-                best_units_in_g = units_in_g
+        # Use the largest MQ as the covariate set to drop.
+        MQ = C * BF - PE
+        if MQ > best_mq:
+            best_mq = MQ
+            best_pe = PE
+            best_bf = BF
+            best_drop = poss_drop
+            best_return_matches = return_matches_temp
+            best_matched_rows = matched_rows
+            best_units_in_g = units_in_g
 
         return best_drop, best_pe, best_matched_rows, best_return_matches, best_bf, best_units_in_g
 
@@ -181,9 +181,10 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     h = 1 # The iteration number
 
     if verbose == 3:
-        flame_dame_helpers.verbose_output(h, len(MG_units),
-            df_unmatched[treatment_column_name].sum(), len(df_unmatched),
-            orig_len_df_all, orig_tot_treated, 0, orig_len_df_all, set())
+        flame_dame_helpers.verbose_output(
+            h, len(MG_units), df_unmatched[treatment_column_name].sum(),
+            len(df_unmatched), orig_len_df_all, orig_tot_treated, 0,
+            orig_len_df_all, set())
 
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     consider_dropping = set(i for i in all_covs)
@@ -199,8 +200,8 @@ def flame_generic(df_all, treatment_column_name, weight_array,
                                               consider_dropping)):
             break
 
-        new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs,
-            consider_dropping, prev_dropped, df_all, treatment_column_name,
+        new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(
+            all_covs, consider_dropping, prev_dropped, df_all, treatment_column_name,
             outcome_column_name, df_holdout_array, adaptive_weights, alpha,
             df_unmatched, return_matches, C, weight_array)
 
@@ -250,10 +251,10 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             print("Iteration number: ", h)
         if ((verbose == 2 and (h%10 == 0)) or verbose == 3):
 
-            flame_dame_helpers.verbose_output(h, len(MG_units),
-                df_unmatched[treatment_column_name].sum(), len(df_unmatched),
-                orig_len_df_all, orig_tot_treated, pe, prev_iter_num_unmatched,
-                new_drop)
+            flame_dame_helpers.verbose_output(
+                h, len(MG_units),df_unmatched[treatment_column_name].sum(),
+                len(df_unmatched), orig_len_df_all, orig_tot_treated, pe,
+                prev_iter_num_unmatched, new_drop)
 
             if want_bf:
                 print("\tBalancing Factor of this iteration: ", bf)

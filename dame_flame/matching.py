@@ -145,7 +145,8 @@ class DAME(MatchParent):
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
 
-        return_array = _DAME(self.input_data.copy(deep=True),
+        return_array = _DAME(
+            self.input_data.copy(deep=True),
             self.holdout_data.copy(deep=True),
             self.treatment_column_name, self.weight_array,
             self.outcome_column_name, self.adaptive_weights, self.alpha,
@@ -207,7 +208,8 @@ class FLAME(MatchParent):
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
 
-        return_array = _FLAME(self.input_data.copy(deep=True),
+        return_array = _FLAME(
+            self.input_data.copy(deep=True),
             self.holdout_data.copy(deep=True), self.treatment_column_name,
             self.weight_array,self.outcome_column_name, self.adaptive_weights,
             self.alpha, self.repeats, self.verbose, self.want_pe,
