@@ -175,7 +175,7 @@ class DAME(MatchParent):
             # in the mice case:
             array_of_dfs = []
             array_of_groups_per_unit = []
-            for arr in self.return_array:
+            for arr in return_array:
                 temp_df = arr[0]
                 array_of_groups_per_unit.append(temp_df['weights'])
                 array_of_dfs.append(temp_df.drop(columns=['weights']))
@@ -221,14 +221,14 @@ class FLAME(MatchParent):
 		
         # in the non-mice case:
         if self.missing_data_replace != 3 and not pre_dame:
-            self.df_units_and_covars_matched = self.return_array[0]
+            self.df_units_and_covars_matched = return_array[0]
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
             self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns=['weights'])
-            self.units_per_group = self.return_array[1]
+            self.units_per_group = return_array[1]
             if self.want_pe:
-                self.pe_each_iter = self.return_array[2]
+                self.pe_each_iter = return_array[2]
             if self.want_bf:
-                self.bf_each_iter = self.return_array[-1]
+                self.bf_each_iter = return_array[-1]
 
         if (self.missing_data_replace != 3 and pre_dame==False):
             self.df_units_and_covars_matched = return_array[0]

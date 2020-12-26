@@ -6,7 +6,6 @@
 # Copyright Duke University 2020
 # License: MIT
 
-import pandas as pd
 import numpy as np
 from .. import matching
 

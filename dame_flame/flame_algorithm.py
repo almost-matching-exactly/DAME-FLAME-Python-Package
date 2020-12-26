@@ -141,8 +141,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
     # Initialize variables used in checking stopping criteria
     orig_len_df_all = len(df_all) # Need this bc of case where repeats=False
-    tot_treated = df_all[treatment_column_name].sum()
-    tot_control = len(df_all) - tot_treated
+    orig_tot_treated = df_all[treatment_column_name].sum()
 
     # As an initial step, we attempt to match on all covariates
 
