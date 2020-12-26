@@ -265,7 +265,7 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
             cols.remove(outcome_column_name)
             df[cols] = df[cols].astype('int64')
         except:
-            raise Exception('Invalid input error. Ensure all inputs asides from '\
+            raise Exception('Invalid input error on matching dataset. Ensure all inputs asides from '\
                             'the outcome column are integers, and if missing' \
                             ' values exist, ensure they are handled.')
     if not mice_on_holdout:
@@ -274,14 +274,13 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
             cols.remove(outcome_column_name)
             df_holdout[cols] = df_holdout[cols].astype('int64')
         except:
-            raise Exception('Invalid input error. Ensure all inputs asides from '\
+            raise Exception('Invalid input error on holdout dataset. Ensure all inputs asides from '\
                             'the outcome column are integers, and if missing' \
                             ' values exist, ensure they are handled.')
 
     return df, df_holdout, mice_on_matching, mice_on_holdout
 
-def process_input_file(df, treatment_column_name, outcome_column_name,
-                       adaptive_weights):
+def process_input_file(df, treatment_column_name, outcome_column_name):
     '''
     This function processes the parameters passed to DAME/FLAME that are
     directly the input file.
