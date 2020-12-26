@@ -347,8 +347,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
             df, treatment_column_name, weight_array, outcome_column_name,
             adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
             want_bf, mice_on_hold, early_stops)
-        
-    # if the 'if' condition is not ture, this would mean we need to run mice on
+
+    # if the 'if' condition is not true, this would mean we need to run mice on
     # the matching data, which means that we have to run algo1 multiple times
     print("Warning: You have opted to run MICE on the matching dataset. "\
           "This is slow, and not recommended. We recommend that instead,"\
@@ -402,12 +402,12 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
         df, df_holdout, missing_indicator, missing_data_replace,
         missing_holdout_replace, missing_holdout_imputations,
-        missing_data_imputations, treatment_column_name, outcome_column_name, 
+        missing_data_imputations, treatment_column_name, outcome_column_name,
         adaptive_weights)
 
     early_stops = data_cleaning.check_stops(
-        stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t, 
-        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
+        stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
+        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
         early_stop_iterations)
 
     if not mice_on_match:

@@ -43,11 +43,11 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
     # possible time efficiency exploration: combine this with above loop, 
     # calculating rho in one step
     s_e = dict()
-    for e in rho:
-        s_e[e] = 0
+    for covar_e in rho:
+        s_e[covar_e] = 0
         for tup in delta_k:
-            if e in tup:
-                s_e[e] += 1
+            if covar_e in tup:
+                s_e[covar_e] += 1
 
     # Step 6: omega is all the covariates not in s that have enough support
     # .items() iterates through key,val pairs
@@ -58,8 +58,8 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
 
 
     # Step 7: do all covariates in S have enough support in delta_k?
-    for e, support_e in s_e.items():
-        if e in newly_dropped and support_e < size_newly_dropped:
+    for covar_e, support_e in s_e.items():
+        if covar_e in newly_dropped and support_e < size_newly_dropped:
             return new_active_sets
 
     # Step 8

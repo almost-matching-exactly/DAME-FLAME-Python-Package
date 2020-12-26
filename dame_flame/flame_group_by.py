@@ -5,7 +5,6 @@
 # Copyright Duke University 2020
 # License: MIT
 
-import pandas as pd
 import numpy as np
 
 def match_ng(df, covs, covs_max_list, treatment_indicator_col='treated'):
@@ -16,7 +15,7 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col='treated'):
     # the treatment indicator column and the matched indicator column.
     # it returns the array indicating whether each unit is matched (the first return value),
     # and a list of indices for the matched units (the second return value)
-    
+
     arr_slice_wo_t = df[covs].values # the covariates values as a matrix
 
     # the covariate values together with the treatment indicator as a matrix
@@ -31,11 +30,11 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col='treated'):
                                                for i in range(len(covs_max_list))] + [1]))
 
     # count how many times each number appears
-    _, unqtags_wo_t, c_i = np.unique(b_i, return_inverse=True, 
+    _, unqtags_wo_t, c_i = np.unique(b_i, return_inverse=True,
                                      return_counts=True)
 
     # count how many times each number appears (with treatment indicator)
-    _, unqtags_w_t, c_i_plus = np.unique(b_i_plus, return_inverse=True, 
+    _, unqtags_w_t, c_i_plus = np.unique(b_i_plus, return_inverse=True,
                                          return_counts=True)
 
     # a unit is matched if and only if the counts don't agree
