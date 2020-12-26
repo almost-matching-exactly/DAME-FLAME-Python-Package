@@ -176,8 +176,7 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
 
     return df
 
-def drop_missing(df, treatment_column_name, outcome_column_name,
-                 missing_indicator):
+def drop_missing(df, missing_indicator):
     '''
     helper, this function drops rows that have missing_indicator in any of the cols
     '''
@@ -224,8 +223,7 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
 
 
     if missing_data_replace == 1:
-        df = drop_missing(df, treatment_column_name, outcome_column_name,
-                          missing_indicator)
+        df = drop_missing(df, missing_indicator)
 
     if missing_data_replace == 2:
         # so replacing with large unique values will only work if columns
@@ -250,8 +248,7 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
         missing_holdout_replace = 2
 
     if missing_holdout_replace == 1:
-        df_holdout = drop_missing(df_holdout, treatment_column_name,
-                                  outcome_column_name, missing_indicator)
+        df_holdout = drop_missing(df_holdout, missing_indicator)
 
     if missing_holdout_replace == 2:
         # this means do mice.

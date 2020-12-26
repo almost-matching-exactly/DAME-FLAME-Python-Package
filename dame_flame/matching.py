@@ -175,12 +175,15 @@ class DAME(MatchParent):
             # in the mice case:
             array_of_dfs = []
             array_of_groups_per_unit = []
+            array_of_units_per_group = []
             for arr in return_array:
                 temp_df = arr[0]
                 array_of_groups_per_unit.append(temp_df['weights'])
                 array_of_dfs.append(temp_df.drop(columns=['weights']))
+                array_of_units_per_group.append(arr[1])
             self.groups_per_unit = array_of_groups_per_unit
             self.df_units_and_covars_matched = array_of_dfs
+            self.units_per_group = array_of_units_per_group
 
         return self.df_units_and_covars_matched
 
