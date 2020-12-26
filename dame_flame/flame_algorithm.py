@@ -66,8 +66,6 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         BF = flame_dame_helpers.compute_bf(matched_rows,
                                            treatment_column_name, df_unmatched)
 
-        # Update documentation to reflect there being no PE when using
-        # adaptive_weights=False, and also the verbose output.
         return best_drop, 0, matched_rows, return_matches, BF, units_in_g
 
     else:
@@ -160,7 +158,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         # flatten to 1 list, then add occurrences of unique units
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-        for index, _ in enumerate(unique_units):
+        for index in range(len(unique_units)):
             weights['weights'][unique_units[index]] += occurrences[index]
 
     # Now remove the matched units
@@ -203,11 +201,10 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             break
 
         new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs,
-                                                                                 consider_dropping, prev_dropped, df_all,
-                                                                                 treatment_column_name,
-                                                                                 outcome_column_name, df_holdout_array,
-                                                                                 adaptive_weights, alpha,
-                                                                                 df_unmatched, return_matches, C, weight_array)
+            consider_dropping, prev_dropped, df_all, treatment_column_name,
+            outcome_column_name, df_holdout_array, adaptive_weights, alpha,
+            df_unmatched, return_matches, C, weight_array)
+
         # Check for error in above step:
         if not new_drop:
             raise Exception("There may have been an error in your choice of "\

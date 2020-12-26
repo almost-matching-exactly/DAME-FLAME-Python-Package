@@ -83,7 +83,7 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
 
             return_groups.loc[newly_matched, :] = group_covs
 
-            # OTHER IDEA:
+            # other idea for this step of algorithm:
             # store the bi in a column with df_all and also a column for "pair" with another
             # persons unit id.
             # don't update that when someone gets added to an auxiliary matched group

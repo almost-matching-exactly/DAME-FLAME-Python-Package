@@ -21,31 +21,7 @@ def verbose_output(iteration_number, num_matched_groups, num_unmatched_t,
                    num_unmatched, orig_len_df_all, tot_treated, pe,
                    prev_iter_num_unmatched, curr_covar_set):
     '''
-    Parameters
-    ----------
-    iteration_number : TYPE
-        DESCRIPTION.
-    num_matched_groups : TYPE
-        DESCRIPTION.
-    num_unmatched_t : TYPE
-        DESCRIPTION.
-    num_unmatched : TYPE
-        DESCRIPTION.
-    orig_len_df_all : TYPE
-        DESCRIPTION.
-    tot_treated : TYPE
-        DESCRIPTION.
-    pe : TYPE
-        DESCRIPTION.
-    prev_iter_num_unmatched : TYPE
-        DESCRIPTION.
-    curr_covar_set : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
+    Prints progress of matching algorithm along various metrics
     '''
     print("Iteration number: ", iteration_number)
     print("\tNumber of matched groups formed in total: ", num_matched_groups)
@@ -87,7 +63,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
     '''
     # The iteration and mean of array is only used when doing MICE on holdout
     pe_array = []
-    for i, _ in enumerate(df_holdout):
+    for i in range(len(df_holdout)):
 
 
         X_treated, X_control, Y_treated, Y_control = separate_dfs(

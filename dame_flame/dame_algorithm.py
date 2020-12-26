@@ -42,7 +42,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         max_weight = 0
         for s in active_covar_sets: # s is a set to consider dropping
             temp_weight = 0
-            for cov_index, _ in enumerate(all_covs):  # iter through all covars
+            for cov_index in range(len(all_covs)):  # iter through all covars
                 if all_covs[cov_index] not in s:
                     # if an item not in s, add weight. finding impact of drop s
                     temp_weight += weights[cov_index]
@@ -152,7 +152,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # flatten to 1 list, then add occurrences of unique units
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-        for index, _ in enumerate(unique_units):
+        for index in range(len(unique_units)):
             weights['weights'][unique_units[index]] += occurrences[index]
 
     # Now remove the matched units
@@ -231,7 +231,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             # flatten to 1 list, then add occurrences of unique units
             flat_units_in_g = np.concatenate(units_in_g).ravel()
             unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-            for index, _ in enumerate(unique_units):
+            for index in range(len(unique_units)):
                 weights['weights'][unique_units[index]] += occurrences[index]
 
 

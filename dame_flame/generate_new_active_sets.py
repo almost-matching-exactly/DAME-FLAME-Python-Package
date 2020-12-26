@@ -40,7 +40,8 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
             rho.add(i)
 
     # Step 5: s_e is the support of covariate e in delta_k, for covars in rho
-    # combine this with above loop, calculating rho, for time efficiency.
+    # possible time efficiency exploration: combine this with above loop, 
+    # calculating rho in one step
     s_e = dict()
     for e in rho:
         s_e[e] = 0
@@ -57,7 +58,6 @@ def algo3GenerateNewActiveSets(newly_dropped, prev_processed):
 
 
     # Step 7: do all covariates in S have enough support in delta_k?
-    # confirm this step is right.
     for e, support_e in s_e.items():
         if e in newly_dropped and support_e < size_newly_dropped:
             return new_active_sets

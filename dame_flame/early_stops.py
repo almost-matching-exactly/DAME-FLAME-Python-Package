@@ -6,11 +6,11 @@
 
 class EarlyStops:
     '''
-    This is the EarlyStops class
+    Class to hold all early stopping criteria as decided by user
     '''
     def __init__(self):
         '''
-        Constructor, defines all of the possible early stops needed
+        Constructor, defaults all of the possible early stopping criteria
         '''
         # create the members
         self.unmatched_c = False

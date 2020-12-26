@@ -102,7 +102,7 @@ def CATE(matching_object, unit_ids, mice_iter=0):
 
 
     if (matching_object.missing_data_replace != 3):
-        array_MGs = matching_object.units_per_group
+        array_MGs = matching_object.units_per_groups        
         df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_MGs = matching_object.units_per_group[mice_iter]
@@ -158,7 +158,7 @@ def ATE(matching_object, mice_iter=0):
 
     # Recover CATEs
     CATEs = [0] * len(array_MGs) # this will be a CATE for each matched group
-    for group_id, _ in enumerate(array_MGs):
+    for group_id in range(len(array_MGs)):
         group_data = matching_object.input_data.loc[array_MGs[group_id],
                                                     [matching_object.treatment_column_name,
                                                      matching_object.outcome_column_name]]
@@ -170,7 +170,7 @@ def ATE(matching_object, mice_iter=0):
     # Compute ATE
     weight_sum = 0
     weighted_CATE_sum = 0
-    for group_id, _ in enumerate(array_MGs):
+    for group_id in range(len(array_MGs)):
         MG_weight = 0
         for unit in array_MGs[group_id]:
             MG_weight += num_groups_per_unit[unit]

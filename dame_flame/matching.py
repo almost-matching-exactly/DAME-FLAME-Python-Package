@@ -130,7 +130,7 @@ class MatchParent:
 
 class DAME(MatchParent):
     '''
-    Now we define the class DAME
+    This is the class used for the DAME algorithm
     '''
     def predict(self, input_data):
         """
@@ -186,7 +186,7 @@ class DAME(MatchParent):
 
 class FLAME(MatchParent):
     '''
-    Now we define the FLAME class
+    The class used for the FLAME algorithm
     '''
     def predict(self, input_data, pre_dame=False, C=0.1):
         """
@@ -344,8 +344,9 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
             df, treatment_column_name, weight_array, outcome_column_name,
             adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
             want_bf, mice_on_hold, early_stops)
-    # this would mean we need to run mice on the matching data, which means
-    # that we have to run algo1 multiple times
+        
+    # if the 'if' condition is not ture, this would mean we need to run mice on
+    # the matching data, which means that we have to run algo1 multiple times
     print("Warning: You have opted to run MICE on the matching dataset. "\
           "This is slow, and not recommended. We recommend that instead,"\
           " you run the algorithm and skip matching on missing data "\
@@ -355,7 +356,7 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     df_array = flame_dame_helpers.create_mice_dfs(df, mice_on_match,
                                                   outcome_column_name)
     return_array = []
-    for i, _ in enumerate(df_array):
+    for i in range(len(df_array)):
         return_array.append(dame_algorithm.algo1(
             df_array[i], treatment_column_name, weight_array,
             outcome_column_name, adaptive_weights, alpha, df_holdout,
@@ -389,27 +390,28 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
         See DAME above.
     """
 
-    df = data_cleaning.process_input_file(df, treatment_column_name, outcome_column_name, adaptive_weights)
+    df = data_cleaning.process_input_file(
+        df, treatment_column_name, outcome_column_name, adaptive_weights)
 
-    data_cleaning.check_parameters(adaptive_weights, df_holdout, df, alpha, True, weight_array, C)
+    data_cleaning.check_parameters(
+        adaptive_weights, df_holdout, df, alpha, True, weight_array, C)
 
-    df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(df, df_holdout,
-                                                                               missing_indicator,
-                                                                               missing_data_replace,
-                                                                               missing_holdout_replace,
-                                                                               missing_holdout_imputations,
-                                                                               missing_data_imputations, treatment_column_name,
-                                                                               outcome_column_name, adaptive_weights)
+    df, df_holdout, mice_on_match, mice_on_hold = data_cleaning.check_missings(
+        df, df_holdout, missing_indicator, missing_data_replace,
+        missing_holdout_replace, missing_holdout_imputations,
+        missing_data_imputations, treatment_column_name, outcome_column_name, 
+        adaptive_weights)
 
-    early_stops = data_cleaning.check_stops(stop_unmatched_c, early_stop_un_c_frac,
-                                            stop_unmatched_t, early_stop_un_t_frac,
-                                            early_stop_pe, early_stop_pe_frac, early_stop_iterations)
+    early_stops = data_cleaning.check_stops(
+        stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t, 
+        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac, 
+        early_stop_iterations)
 
     if not mice_on_match:
-        return_array = flame_algorithm.flame_generic(df, treatment_column_name,
-                                                     weight_array, outcome_column_name,
-                                                     adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
-                                                     want_bf, mice_on_hold, early_stops, pre_dame, C)
+        return_array = flame_algorithm.flame_generic(
+            df, treatment_column_name, weight_array, outcome_column_name,
+            adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
+            want_bf, mice_on_hold, early_stops, pre_dame, C)
 
     else:
         # this would mean we need to run mice on the matching data, which means
@@ -429,7 +431,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
                                                       outcome_column_name)
 
         return_array = []
-        for i, _ in enumerate(df_array):
+        for i in range(len(df_array)):
             return_array.append(flame_algorithm.flame_generic(
                 df_array[i], treatment_column_name, weight_array, outcome_column_name,
                 adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
