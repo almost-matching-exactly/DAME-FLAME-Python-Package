@@ -102,7 +102,7 @@ def CATE(matching_object, unit_ids, mice_iter=0):
 
 
     if (matching_object.missing_data_replace != 3):
-        array_MGs = matching_object.units_per_groups        
+        array_MGs = matching_object.units_per_group        
         df_matched_units = matching_object.df_units_and_covars_matched
     else:
         array_MGs = matching_object.units_per_group[mice_iter]
