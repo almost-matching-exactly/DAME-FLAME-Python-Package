@@ -195,8 +195,8 @@ def ATT(matching_object, mice_iter=0):
     validate_matching_obj(matching_object)
 
     if matching_object.missing_data_replace != 3:
-        num_groups_per_unit = matching_object.return_array[0]['weights']
-        matched_df = matching_object.input_data.loc[matching_object.return_array[0].index]
+        num_groups_per_unit = matching_object.groups_per_unit
+        matched_df = matching_object.input_data.loc[matching_object.df_units_and_covars_matched.index]
     else:
         num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
         matched_df = matching_object.input_data.loc[matching_object.df_units_and_covars_matched[mice_iter].index]
