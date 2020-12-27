@@ -26,36 +26,34 @@ def read_files(input_data, holdout_data):
 
     # Read the input data
     if type(input_data) == pd.core.frame.DataFrame:
-        df = input_data
+        df_input = input_data
 
     elif not input_data:
         raise Exception("Need to specify either csv file name or pandas data "\
                         "frame in parameter 'input_data'")
     else:
-        df = pd.read_csv(input_data)
+        df_input = pd.read_csv(input_data)
 
     # Now read the holdout data
     if type(holdout_data) == pd.core.frame.DataFrame:
         df_holdout = holdout_data
-    elif (type(holdout_data) == float and holdout_data <= 1.0 
+    elif (type(holdout_data) == float and holdout_data <= 1.0
           and holdout_data > 0.0):
-        df_holdout = df.sample(frac=holdout_data)
+        df_holdout = df_input.sample(frac=holdout_data)
     elif not holdout_data:
-        df_holdout = df.sample(frac=0.1) # default if it's not provided is df.
+        df_holdout = df_input.sample(frac=0.1) # default if it's not provided is df.
     else:
         df_holdout = pd.read_csv(holdout_data)
 
-    df.columns = map(str, df.columns)
+    df_input.columns = map(str, df_input.columns)
     df_holdout.columns = map(str, df_holdout.columns)
 
-    return df, df_holdout
+    return df_input, df_holdout
 
 def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
                 early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
                 early_stop_iterations):
     """Check the parameters passed to DAME/FLAME relating to early stopping"""
-
-    #todo: add check for epsilon on FLAME
 
     early_stops_obj = early_stops.EarlyStops()
 
@@ -90,7 +88,7 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
 
     return early_stops_obj
 
-def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
+def check_parameters(adaptive_weights, df_holdout, df_input, alpha, FLAME,
                      weight_array=[], C=0.0, verbose=0):
     '''
     This function processes the parameters that were passed to DAME/FLAME
@@ -107,7 +105,7 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
 
         # Confirm that weight array has the right number of values in it
         # Subtracting 2 because one col is the treatment and one is outcome.
-        if len(weight_array) != (len(df.columns)-2):
+        if len(weight_array) != (len(df_input.columns)-2):
             raise Exception('Invalid input error. Weight array size not equal'\
                             ' to number of columns in dataframe')
 
@@ -134,12 +132,12 @@ def check_parameters(adaptive_weights, df_holdout, df, alpha, FLAME,
 
 
         # make sure the two dfs have the same number of columns first:
-        if len(df.columns) != len(df_holdout.columns):
+        if len(df_input.columns) != len(df_holdout.columns):
             raise Exception('Invalid input error. The holdout and main '\
                             'dataset must have the same number of columns')
 
         # make sure that the holdout columns match the df columns.
-        if set(df_holdout.columns) != set(df.columns):
+        if set(df_holdout.columns) != set(df_input.columns):
             # they don't match
             raise Exception('Invalid input error. The holdout and main '\
                             'dataset must have the same columns')
@@ -176,11 +174,11 @@ def replace_unique_large(df, treatment_column_name, outcome_column_name,
 
     return df
 
+
 def drop_missing(df, missing_indicator):
     '''
     helper, this function drops rows that have missing_indicator in any of the cols
     '''
-
 
     if type(missing_indicator) != str and math.isnan(missing_indicator) == True:
         # either the missing indicator is already NaN and we just drop those rows
@@ -189,11 +187,10 @@ def drop_missing(df, missing_indicator):
         # but if its not NaN, switch missing_indicator with nan and then drop
         df = df.replace(missing_indicator, np.nan)
         df = df.dropna().copy()
-
-
     return df
 
-def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
+
+def check_missings(df_input, df_holdout, missing_indicator, missing_data_replace,
                    missing_holdout_replace, missing_holdout_imputations,
                    missing_data_imputations, treatment_column_name,
                    outcome_column_name, adaptive_weights):
@@ -211,34 +208,29 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
 
     mice_on_matching = False
     mice_on_holdout = False
-    if (missing_data_replace == 0 and df.isnull().values.any()):
+    if (missing_data_replace == 0 and df_input.isnull().values.any()):
         print('There is missing data in this dataset. The default missing '\
               'data handling is being done, so we are not matching on '\
               'any missing values in the matching set')
         missing_data_replace = 2
 
-        # TODO: iterate through all the columns and check for non-integer values
-        # and then replace them with nan if needed.
-        # df['hi'] = pd.to_numeric(df['hi'], errors='coerce')
-
-
     if missing_data_replace == 1:
-        df = drop_missing(df, missing_indicator)
+        df_input = drop_missing(df_input, missing_indicator)
 
     if missing_data_replace == 2:
         # so replacing with large unique values will only work if columns
         # are in order!!
 
-        df = replace_unique_large(df, treatment_column_name,
+        df_input = replace_unique_large(df_input, treatment_column_name,
                                   outcome_column_name, missing_indicator)
 
         # Reorder if they're not in order:
-        df = df.loc[:, df.max().sort_values(ascending=True).index]
+        df_input = df_input.loc[:, df_input.max().sort_values(ascending=True).index]
 
     if missing_data_replace == 3:
         # this means do mice but only if theres something actually missing.
-        df = df.replace(missing_indicator, np.nan)
-        if df.isnull().values.any():
+        df_input = df_input.replace(missing_indicator, np.nan)
+        if df_input.isnull().values.any():
             mice_on_matching = missing_data_imputations
 
     if missing_holdout_replace == 0 and df_holdout.isnull().values.any():
@@ -261,24 +253,26 @@ def check_missings(df, df_holdout, missing_indicator, missing_data_replace,
     # converts float inputs to ints
     if not mice_on_matching:
         try:
-            cols = list(df.columns)
+            cols = list(df_input.columns)
             cols.remove(outcome_column_name)
-            df[cols] = df[cols].astype('int64')
+            df_input[cols] = df_input[cols].astype('int64')
         except:
-            raise Exception('Invalid input error on matching dataset. Ensure all inputs asides from '\
-                            'the outcome column are integers, and if missing' \
-                            ' values exist, ensure they are handled.')
+            raise Exception('Invalid input error on matching dataset. Ensure '\
+                            'all inputs asides from the outcome column are '\
+                            'integers, and if missing values exist, ensure '\
+                            'they are handled.')
     if not mice_on_holdout:
         try:
             cols = list(df_holdout.columns)
             cols.remove(outcome_column_name)
             df_holdout[cols] = df_holdout[cols].astype('int64')
         except:
-            raise Exception('Invalid input error on holdout dataset. Ensure all inputs asides from '\
-                            'the outcome column are integers, and if missing' \
-                            ' values exist, ensure they are handled.')
+            raise Exception('Invalid input error on holdout dataset. Ensure '\
+                            'all inputs asides from the outcome column are '\
+                            'integers, and if missing values exist, ensure '\
+                            'they are handled.')
 
-    return df, df_holdout, mice_on_matching, mice_on_holdout
+    return df_input, df_holdout, mice_on_matching, mice_on_holdout
 
 def process_input_file(df, treatment_column_name, outcome_column_name):
     '''

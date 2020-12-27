@@ -12,7 +12,7 @@ from . import flame_dame_helpers
 
 
 
-def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
+def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights,
                 treatment_column_name, outcome_column_name, df_holdout,
                 alpha_given):
     """ This is a helper function to Algorithm 1 in the paper.
@@ -25,7 +25,6 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         weights: This is the weight array provided by the user
         adaptive_weights: This is the T/F provided by the user indicating
             whether to run ridge regression to decide who to drop.
-        df: The untouched dataset given by the user (df_all in algo1)
         treatment_column_name (str): name of treatment column in df
         outcome_column_name (str): name of outcome column in df
         df_holdout: The cleaned, user-provided dataframe with all rows/columns.
@@ -185,7 +184,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     if verbose == 3:
         flame_dame_helpers.verbose_output(h, len(MG_units),
                                           df_unmatched[treatment_column_name].sum(),
-                                          len(df_unmatched), orig_len_df_all, 
+                                          len(df_unmatched), orig_len_df_all,
                                           orig_tot_treated, 0,
                                           orig_len_df_all, set())
 
@@ -194,7 +193,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     # Here, we begin the iterative dropping procedure of DAME
     while True:
 
-        # see if any stopping criteria have been met        
+        # see if any stopping criteria have been met
         if (flame_dame_helpers.stop_iterating(early_stops, df_unmatched,
                                               repeats, treatment_column_name,
                                               orig_len_df_all, h,
@@ -205,8 +204,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # We find curr_covar_set, the best covariate set to drop.
         curr_covar_set, pe = decide_drop(
             all_covs, active_covar_sets, weight_array, adaptive_weights,
-            df_all, treatment_column_name, outcome_column_name, df_holdout,
-            alpha)
+            treatment_column_name, outcome_column_name, df_holdout, alpha)
 
         # Check for error in above step:
         if not curr_covar_set:
@@ -284,7 +282,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             flame_dame_helpers.verbose_output(h, len(MG_units),
                                               df_unmatched[treatment_column_name].sum(),
                                               len(df_unmatched),
-                                              orig_len_df_all, 
+                                              orig_len_df_all,
                                               orig_tot_treated, pe,
                                               prev_iter_num_unmatched,
                                               curr_covar_set)

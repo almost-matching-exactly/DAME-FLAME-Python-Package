@@ -7,7 +7,6 @@ DAME and FLAME Matching Methods for Causal Inference. Starts matching methods.
 # License: MIT
 
 import numpy as np
-import pandas as pd
 from . import data_cleaning
 from . import dame_algorithm
 from . import flame_algorithm
