@@ -35,12 +35,12 @@ def generate_uniform_given_importance(num_control=1000, num_treated=1000,
     df2 = pd.DataFrame(x_t, columns=range(num_cov))
     df2['outcome'] = y_t
     df2['treated'] = 1
-    df = pd.concat([df2, df1])
+    data_frame = pd.concat([df2, df1])
 
-    df = df.reset_index()
-    df = df.drop(['index'], axis=1)
+    data_frame = data_frame.reset_index()
+    data_frame = data_frame.drop(['index'], axis=1)
 
-    return df, true_catt
+    return data_frame, true_catt
 
 def generate_binomial_given_importance(num_control=1000, num_treated=1000,
                                        num_cov=5, bernoulli_param=0.5,
@@ -73,12 +73,12 @@ def generate_binomial_given_importance(num_control=1000, num_treated=1000,
     df2 = pd.DataFrame(x_t, columns=range(num_cov))
     df2['outcome'] = y_t
     df2['treated'] = 1
-    df = pd.concat([df2, df1])
+    data_frame = pd.concat([df2, df1])
 
-    df = df.reset_index()
-    df = df.drop(['index'], axis=1)
+    data_frame = data_frame.reset_index()
+    data_frame = data_frame.drop(['index'], axis=1)
 
-    return df, true_catt
+    return data_frame, true_catt
 
 
 def generate_binomial_decay_importance(num_control=1000, num_treated=1000,
@@ -113,9 +113,9 @@ def generate_binomial_decay_importance(num_control=1000, num_treated=1000,
     df2 = pd.DataFrame(x_t, columns=range(num_cov))
     df2['outcome'] = y_t
     df2['treated'] = 1
-    df = pd.concat([df2, df1])
+    data_frame = pd.concat([df2, df1])
 
-    df = df.reset_index()
-    df = df.drop(['index'], axis=1)
+    data_frame = data_frame.reset_index()
+    data_frame = data_frame.drop(['index'], axis=1)
 
-    return df, true_catt
+    return data_frame, true_catt
