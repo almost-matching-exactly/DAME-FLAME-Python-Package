@@ -6,13 +6,12 @@
 # Copyright Duke University 2020
 # License: MIT
 
-import numpy as np
 from operator import itemgetter
+import numpy as np
 from . import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
                     outcome_column_name, return_groups):
-    # todo; not using all_covs variable anymore.
     '''
     Input:
         df_all: The dataframe of all of the data
@@ -31,24 +30,26 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     # is sorted from least to greatest
 
     # This is a list of tuples (max_of_column, column_name)
-    
-    covs_max_tuples = [(max(df_all[x])+1,x) for x in covs_match_on]
-    covs_max_tuples = sorted(covs_max_tuples,key=itemgetter(0))
+    covs_max_tuples = [(max(df_all[x])+1, x) for x in covs_match_on]
+    covs_max_tuples = sorted(covs_max_tuples, key=itemgetter(0))
+
     # Now covs_match_on is a list of covars and covs_max_list is their maximums
-    covs_max_list, covs_match_on = map(list,zip(*covs_max_tuples))
+    covs_max_list, covs_match_on = map(list, zip(*covs_max_tuples))
+
 
     # Form groups on D by exact matching on Js.
 
     df_all_without_outcome = df_all.drop([outcome_column_name], axis=1)
 
     matched_units, bi = flame_group_by.match_ng(df_all_without_outcome,
-                            covs_match_on, covs_max_list,
-                            treatment_column_name)
+                                                covs_match_on, covs_max_list,
+                                                treatment_column_name)
     # Find newly matched units and their main matched groups.
 
     # These are the rows of the ones that have been matched:
-    matched_rows = df_all_without_outcome.loc[matched_units, :].copy()
+    matched_rows = df_all.loc[matched_units, :].copy()
     matched_rows['b_i'] = bi
+
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
 
@@ -57,7 +58,8 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     all_units_in_g = []
     for bi_val in unique_matched_row_vals:
         # type "int64index", ~ list, all of the unit_numbers in a matched group.
-        units_in_g = matched_rows.index[matched_rows['b_i']==bi_val]
+        units_in_g = matched_rows.index[matched_rows['b_i'] == bi_val]
+
         # Which of the units of this new group haven't been matched yet?
         # unique_matched is a subset of units in the matched group, just the
         # ones for whom this is their main matched group.
@@ -66,9 +68,9 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
         if len(newly_matched) != 0:
 
             all_units_in_g.append(list(units_in_g))
+
             # Now, we figure out: What does the group look like? eg [1,2,*,1]
             temp_row_in_group = matched_rows.loc[units_in_g[0]]
-
             # ^ that line arbitrarily chooses the first row that has the bi_val so
             # the first row of that group.
             group_covs = []
@@ -80,7 +82,8 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
             # add that group to the newly matched units to our new dataframe
 
             return_groups.loc[newly_matched, :] = group_covs
-            # OTHER IDEA:
+
+            # other idea for this step of algorithm:
             # store the bi in a column with df_all and also a column for "pair" with another
             # persons unit id.
             # don't update that when someone gets added to an auxiliary matched group

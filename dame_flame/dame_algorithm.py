@@ -12,7 +12,7 @@ from . import flame_dame_helpers
 
 
 
-def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
+def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights,
                 treatment_column_name, outcome_column_name, df_holdout,
                 alpha_given):
     """ This is a helper function to Algorithm 1 in the paper.
@@ -25,7 +25,6 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
         weights: This is the weight array provided by the user
         adaptive_weights: This is the T/F provided by the user indicating
             whether to run ridge regression to decide who to drop.
-        df: The untouched dataset given by the user (df_all in algo1)
         treatment_column_name (str): name of treatment column in df
         outcome_column_name (str): name of outcome column in df
         df_holdout: The cleaned, user-provided dataframe with all rows/columns.
@@ -34,7 +33,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
     """
     curr_covar_set = set()
     best_pe = float("inf")
-    if adaptive_weights == False:
+    if not adaptive_weights:
         # We iterate through all active covariate sets and find the total
         # weight of each . For each possible covariate set, temp_weight counts
         # the total weight of the covs that are going to get used in the match,
@@ -62,7 +61,7 @@ def decide_drop(all_covs, active_covar_sets, weights, adaptive_weights, df,
                                                           outcome_column_name, s, adaptive_weights,
                                                           alpha_given)
             # error check. PE can be float(0), but not denote error
-            if PE == False and type(PE) == bool:
+            if not PE and type(PE) == bool:
                 return False, False
 
             # Use the smallest PE as the covariate set to drop.
@@ -122,7 +121,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     all_covs.remove(treatment_column_name) # This is J in the paper
     all_covs.remove(outcome_column_name)
     df_unmatched = df_all.copy(deep=True) # This is df_h in the paper
-    all_covs_max_list = [max(df_all[x])+1 for x in all_covs]
 
     # Initialize return values
     return_pe = []
@@ -158,11 +156,11 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
 
-    if repeats == False:
+    if not repeats:
         df_all = df_unmatched
 
     # set up all the extra dfs if needed
-    if missing_holdout_replace != False:
+    if missing_holdout_replace:
         # now df_holdout is actually an array of imputed datasets
         df_holdout = flame_dame_helpers.create_mice_dfs(
             df_holdout, missing_holdout_replace, outcome_column_name)
@@ -186,7 +184,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     if verbose == 3:
         flame_dame_helpers.verbose_output(h, len(MG_units),
                                           df_unmatched[treatment_column_name].sum(),
-                                          len(df_unmatched), orig_len_df_all, 
+                                          len(df_unmatched), orig_len_df_all,
                                           orig_tot_treated, 0,
                                           orig_len_df_all, set())
 
@@ -195,7 +193,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     # Here, we begin the iterative dropping procedure of DAME
     while True:
 
-        # see if any stopping criteria have been met        
+        # see if any stopping criteria have been met
         if (flame_dame_helpers.stop_iterating(early_stops, df_unmatched,
                                               repeats, treatment_column_name,
                                               orig_len_df_all, h,
@@ -206,11 +204,10 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # We find curr_covar_set, the best covariate set to drop.
         curr_covar_set, pe = decide_drop(
             all_covs, active_covar_sets, weight_array, adaptive_weights,
-            df_all, treatment_column_name, outcome_column_name, df_holdout,
-            alpha)
+            treatment_column_name, outcome_column_name, df_holdout, alpha)
 
         # Check for error in above step:
-        if curr_covar_set == False:
+        if not curr_covar_set:
             print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                   "We stopped when the holdout set was not large enough or "\
                   "there was nothing left to match")
@@ -237,7 +234,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
 
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think.
-        if (want_bf == True):
+        if want_bf:
             # compute balancing factor
             mg_treated = matched_rows[treatment_column_name].sum()
             mg_control = len(matched_rows) - mg_treated
@@ -249,7 +246,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                 bf = np.nan
             return_bf.append(bf)
 
-        if early_stops.pe != False:
+        if early_stops.pe:
             if pe >= early_stops.pe:
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
                         "We stopped matching with a pe of ", pe)
@@ -273,7 +270,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # Remove matches.
         df_unmatched = df_unmatched.drop(matched_rows.index, errors='ignore')
 
-        if repeats == False:
+        if not repeats:
             df_all = df_unmatched
 
         h += 1
@@ -285,11 +282,11 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             flame_dame_helpers.verbose_output(h, len(MG_units),
                                               df_unmatched[treatment_column_name].sum(),
                                               len(df_unmatched),
-                                              orig_len_df_all, 
+                                              orig_len_df_all,
                                               orig_tot_treated, pe,
                                               prev_iter_num_unmatched,
                                               curr_covar_set)
-            if want_bf == True:
+            if want_bf:
                 print("Balancing factor of this iteration: ", bf)
 
             prev_iter_num_unmatched = len(df_unmatched)
@@ -302,9 +299,9 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     return_package.append(MG_units)
 
     # the optional returns
-    if want_pe == True:
+    if want_pe:
         return_package.append(return_pe)
-    if want_bf == True:
+    if want_bf:
         return_package.append(return_bf)
 
 
