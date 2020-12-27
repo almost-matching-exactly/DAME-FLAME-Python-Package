@@ -9,6 +9,7 @@ python:
 env:
   - SKVERSION=0.23.2
   - SKVERSION=0.24
+env:
   - NUMPYVERSION=1.16.5
   - NUMPYVERSION=1.19.4
 matrix:
