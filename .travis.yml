@@ -42,9 +42,10 @@ matrix:
         - pip install nose
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 install:
- - pip install -r requirements.txt
- - pip install coverage
- - pip install coveralls
+ - pip3 install --upgrade pip
+ - pip3 install -r requirements.txt
+ - pip3 install coverage
+ - pip3 install coveralls
 script:
   - nosetests  --with-coverage --cover-package=dame_flame
 after_success:
