@@ -18,10 +18,6 @@ def validate_matching_obj(matching_object):
     if (not hasattr(matching_object, 'input_data')):
         raise Exception("This function can be only called after a match has "\
                        "been formed using the .fit() and .predict() functions")
-    if len(matching_object.units_per_group) == 0:
-        print("This dataset had no matches, so we can not perform this operation")
-        return False
-    return True
 
 def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     '''
@@ -41,8 +37,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
 
-    if not validate_matching_obj(matching_object):
-        return False
+    validate_matching_obj(matching_object)
 
     if (matching_object.missing_data_replace != 3):
         array_mgs = matching_object.units_per_group
@@ -98,8 +93,8 @@ def CATE(matching_object, unit_ids, mice_iter=0):
     if type(unit_ids) is int:
         unit_ids = [unit_ids]
 
-    if not validate_matching_obj(matching_object):
-        return False
+    validate_matching_obj(matching_object)
+
 
     if (matching_object.missing_data_replace != 3):
         arr_matched_groups = matching_object.units_per_group        
@@ -148,8 +143,7 @@ def ATE(matching_object, mice_iter=0):
 
     '''
 
-    if not validate_matching_obj(matching_object):
-        return False
+    validate_matching_obj(matching_object)
 
     if matching_object.missing_data_replace != 3:
         arr_matched_groups = matching_object.units_per_group
@@ -195,8 +189,7 @@ def ATT(matching_object, mice_iter=0):
         ATT: the average treatment effect on the treated for the matching data
     '''
 
-    if not validate_matching_obj(matching_object):
-        return False
+    validate_matching_obj(matching_object)
 
     if matching_object.missing_data_replace != 3:
         num_groups_per_unit = matching_object.groups_per_unit
