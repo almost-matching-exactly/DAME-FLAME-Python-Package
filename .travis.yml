@@ -37,8 +37,8 @@ matrix:
        - SKVERSION=0.24
 install:
  - pip install scikit-learn==$SKVERSION
- - pip install numpy==$NUMPYVERSION
  - pip3 install --upgrade pip
+ - pip3 install numpy==$NUMPYVERSION
  - pip3 install -r requirements.txt
  - pip3 install coverage
  - pip3 install nose
