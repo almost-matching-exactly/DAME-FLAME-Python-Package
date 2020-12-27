@@ -36,6 +36,7 @@ matrix:
 install:
  - pip install scikit-learn==$SKVERSION
  - pip3 install --upgrade pip
+ - pip3 install -r requirements.txt
  - pip3 install coverage
  - pip3 install nose
  - pip3 install coveralls
