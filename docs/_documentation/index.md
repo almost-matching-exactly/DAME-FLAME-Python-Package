@@ -11,9 +11,7 @@ permalink: /
 
 {: .fs-6 .fw-300 }
 
-[View us on GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package){: .btn .fs-5 .mb-4 .mb-md-0 }
-
-[View us on PyPi](https://pypi.org/project/dame-flame/){: .btn .fs-5 .mb-4 .mb-md-0 }
+[View us on GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package){: .btn .fs-5 .mb-4 .mb-md-0 } [View us on PyPi](https://pypi.org/project/dame-flame/){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .ml-2 }
 
 ---
 
