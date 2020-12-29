@@ -25,9 +25,9 @@ Four key takeaways from the experiment on github:
 4. Lastly, the plot as shown below, of CATE of matched groups against matched group size, leads us to believe there is little heterogeneity in the Conditional Average Treatment Effect (CATE) of maternal smoking on infant birth weight. Most extreme values are observed in small matched groups, for which CATE estimation is difficult. Put simply, we don't see evidence that there exists some "types of" mothers and infants (classified by characteristics such as education and race) for whom the impact of maternal smoking on infant birthweight is different than the outcomes for other mothers and infants.
 
 
-![Graph](https://raw.githubusercontent.com/nehargupta/dame-flame-experiments/master/Natality_Dataset_CATE_mgs.png "Graph")
+![Graph](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/natality.png "Graph")
 
-[Download Example From GitHub](https://raw.githack.com/nehargupta/dame-flame-experiments/master/Natality_Experiment.html){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/examples/Natality_Experiment.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
 
 <div id="references" class="language-markdown highlighter-rouge">

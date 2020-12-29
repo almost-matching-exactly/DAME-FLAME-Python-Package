@@ -90,7 +90,7 @@ plt.savefig('flame_vs_dame_quality.png')
 ```
 </div>
 
-![Bar graphs](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/flame_vs_dame_quality.png "Match Quality")
+![Bar graphs](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/flame_vs_dame_quality.png "Match Quality")
 
 [Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/flame_vs_dame_quality.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 

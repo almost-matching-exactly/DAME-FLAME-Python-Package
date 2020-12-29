@@ -67,7 +67,7 @@ draw_scatter(axes[1], true_catt_full, estimated_catt_full, "DAME, matching all u
 ```
 </div>
 
-![Two Graphs](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/early_stopping.png "Early Stopping")
+![Two Graphs](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/early_stopping.png "Early Stopping")
 
 [Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/early_stopping.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 

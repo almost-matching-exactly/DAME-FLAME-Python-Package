@@ -36,7 +36,7 @@ result_flame = model.predict(df)
 ```
 </div>
 
-![interpretability verbose](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/verbose_interpretability2.PNG "interpretability")
+![interpretability verbose](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/verbose_interpretability2.PNG "interpretability")
 
 
 <div class="code-example" markdown="1">
@@ -89,7 +89,7 @@ plt.savefig('interpretability.png')
 ```
 </div>
 
-![covar importance](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/covariate_importance.png "covarimportance")
+![covar importance](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/interpretability.png "covarimportance")
 
 
 [Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/interpretability.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }

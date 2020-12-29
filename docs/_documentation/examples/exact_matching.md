@@ -48,9 +48,9 @@ plt.savefig('treatment_effect_size_of_groups.png')
 ```
 </div>
 
-![Perfect Matching](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/treatment_effect_size_of_groups.png "Perfect Matching")
+![Perfect Matching](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/treatment_effect_size_of_groups.png "Perfect Matching")
 
-![Perfect Matching Verbose](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/exact_matching_verbose.PNG "Perfect Matching Verbose")
+![Perfect Matching Verbose](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/exact_matching_verbose.PNG "Perfect Matching Verbose")
 
 [Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/exact_matching.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
