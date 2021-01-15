@@ -1,93 +1,42 @@
 language: python
 python:
-  - "3.6.5"
-
+ - "3.6.5"
 services:
-  - postgresql
-#  - mysql
+ - postgresql
 
-
-# command to install dependencies
 install:
- - travis_wait pip install -r requirements.txt
- - travis_wait pip install coverage
- - travis_wait pip install coveralls
- 
+ - pip install -r requirements.txt
+ - pip install coverage
+ - pip install coveralls
 
 jobs:
     include:
     - name: "flame_db: test main function1"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_main1.py
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_main1.py
     - name: "flame_db: test main function2"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_main2.py
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_main2.py
     - name: "flame_db: test main function4"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_main4.py
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_main4.py
     - name: "flame_db: testcheck"
       before_script: psql -c 'create database tmp;' -U postgres
-      script:  travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_check.py
+      script:  travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_check.py
     - name: "flame_db: testcheck1"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_check1.py
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_check1.py
     - name: "flame_db: test stops1"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_early_stops1.py
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_early_stops1.py
     - name: "flame_db: test stops2"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_early_stops2.py
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_early_stops2.py
     - name: "flame_db: test stops3"
       before_script: psql -c 'create database tmp;' -U postgres
-      script: travis_wait 30 nosetests  --with-coverage --cover-package=flame_db tests/flame_db_test_early_stops3.py
-#    - name "dame-flame: "
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/FLAME_results_test.py
-
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_early_stops3.py
+    - name: "dame-flame: all"
+      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/FLAME_results_test.py
 
 after_success:
-    coveralls
-
-
-
-#language: python
-#python:
-# - "3.6.5"
-#services:
-# - postgresql
-#
-#install:
-# - pip install -r requirements.txt
-# - pip install coverage
-# - pip install coveralls
-#
-#jobs:
-#    include:
-#    - name: "flame_db: test main function1"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_main1.py
-#    - name: "flame_db: test main function2"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_main2.py
-#    - name: "flame_db: test main function4"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_main4.py
-#    - name: "flame_db: testcheck"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script:  travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_check.py
-#    - name: "flame_db: testcheck1"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_check1.py
-#    - name: "flame_db: test stops1"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_early_stops1.py
-#    - name: "flame_db: test stops2"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_early_stops2.py
-#    - name: "flame_db: test stops3"
-#      before_script: psql -c 'create database tmp;' -U postgres
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/flame_db_test_early_stops3.py
-#    - name "dame-flame: "
-#      script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/FLAME_results_test.py
-#
-#after_success:
-#   coveralls
+   coveralls
