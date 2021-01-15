@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-from flame_db.gen_insert_data import *
-from flame_db.FLAME_db_algorithm import *
-from flame_db.matching_helpers import *
-from flame_db.utils import *
+from dame_flame.flame_db.gen_insert_data import *
+from dame_flame.flame_db.FLAME_db_algorithm import *
+from dame_flame.flame_db.matching_helpers import *
+from dame_flame.flame_db.utils import *
 import unittest
 import pandas as pd
 import os
