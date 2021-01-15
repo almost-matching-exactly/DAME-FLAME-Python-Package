@@ -1,70 +1,15 @@
 language: python
-# ===== Linux ======
-#dist: xenial
-
 python:
    - "3.6.5"
-#  - 3.7
-#  - 3.8
-#  - 3.9
-
 services:
   - postgresql
-#env:
-#  - SKLEARNVERSION=0.23.2
-#  - SKLEARNVERSION=0.24
-#matrix:
-#  include:
-#    - name: "Python 3.7 on Windows sk-learn v0.23"
-#      os: windows           # Windows 10.0.17134 N/A Build 17134
-#      language: shell
-#      before_install:
-#        - choco install python --version 3.7
-#        - python -m pip install --upgrade pip
-#        - pip install nose
-#      env:
-#       - PATH=/c/Python37:/c/Python37/Scripts:$PATH
-#       - SKLEARNVERSION=0.23.2
-#    - name: "Python 3.7 on Windows sk-learn v0.24"
-#      os: windows           # Windows 10.0.17134 N/A Build 17134
-#      language: shell
-#      before_install:
-#        - choco install python --version 3.7
-#        - python -m pip install --upgrade pip
-#        - pip install nose
-#      env:
-#       - PATH=/c/Python37:/c/Python37/Scripts:$PATH
-#       - SKLEARNVERSION=0.24
-#    - name: "Python 3.8 on Windows sk-learn v0.23.2"
-#      os: windows           # Windows 10.0.17134 N/A Build 17134
-#      language: shell
-#      before_install:
-#        - choco install python --version 3.8
-#        - python -m pip install --upgrade pip
-#        - pip install nose
-#      env:
-#       - PATH=/c/Python38:/c/Python38/Scripts:$PATH
-#       - SKLEARNVERSION=0.23.2
-#    - name: "Python 3.8 on Windows sk-learn v0.24"
-#      os: windows           # Windows 10.0.17134 N/A Build 17134
-#      language: shell
-#      before_install:
-#        - choco install python --version 3.8
-#        - python -m pip install --upgrade pip
-#        - pip install nose
-#      env:
-#       - PATH=/c/Python38:/c/Python38/Scripts:$PATH
-#       - SKLEARNVERSION=0.24
 
 install:
-# - pip install scikit-learn==$SKLEARNVERSION
- - pip3 install --upgrade pip
  - pip3 install -r requirements.txt
  - pip3 install coverage
  - pip3 install nose
  - pip3 install coveralls
-#script:
-#  - nosetests  --with-coverage --cover-package=dame_flame
+ 
 jobs:
     include:
     - name: "flame_db: test main function1"
