@@ -1,0 +1,4 @@
+psycopg2>=2.8.6
+pyodbc>=4.0.0
+mysql-connector>=1.1.0
+mysql-connector-python>=8.0.22
