@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 
 
-setuptools.setup(name='dame_flame',
+setuptools.setup(name='flame_db',
       version='0.32',
       description='Causal Inference Covariate Matching',
       long_description=long_description,
@@ -23,10 +23,10 @@ setuptools.setup(name='dame_flame',
           'numpy>=1.6.1'
       ],
       extras_require={
-            "postgreSQL":  ["psycopg2>=2.8.6"],
-            "sqlserver":  ["pyodbc>=4.0.0"],
-            "mySQL":  ["mysql-connector>=1.1.0","mysql-connector-python>=8.0.22"]
-                 }
+        "postgreSQL":  ["psycopg2>=2.8.6"],
+        "sqlserver":  ["pyodbc>=4.0.0"],
+        "mySQL":  ["mysql-connector>=1.1.0","mysql-connector-python>=8.0.22"]
+    }
      long_description_content_type="text/markdown",
      classifiers=[
         "Programming Language :: Python :: 3",

@@ -5,10 +5,9 @@ services:
  - postgresql
 
 install:
- - pip3 install -r requirements.txt
- - pip3 install coverage
- - pip3 install nose
- - pip3 install coveralls
+ - pip install -r requirements.txt
+ - pip install coverage
+ - pip install coveralls
  
 jobs:
     include:
@@ -40,4 +39,4 @@ jobs:
       script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/FLAME_results_test.py
 
 after_success:
-  - coveralls
+   coveralls
