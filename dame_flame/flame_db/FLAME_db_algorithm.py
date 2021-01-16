@@ -1,6 +1,6 @@
-from flame_db.matching_helpers import *
-from flame_db.checker import *
-from flame_db.early_stoppings import *
+from dame_flame.flame_db.matching_helpers import *
+from dame_flame.flame_db.checker import *
+from dame_flame.flame_db.early_stoppings import *
 
 #This function is to print each iteration of dropping and matching. 
 def print_process(PE,BF,level,matching_option,is_unimportant,fixed_weights,cov_to_drop,cur_covs,verbose):
