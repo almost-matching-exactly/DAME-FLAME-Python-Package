@@ -5,6 +5,8 @@ services:
  - postgresql
 
 install:
+ - sudo apt-get install unixodbc-dev
+ - sudo apt-get install python-pip
  - pip install -r requirements.txt
  - pip install -r opt-requirements.txt
  - pip install coverage
