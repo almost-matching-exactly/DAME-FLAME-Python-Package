@@ -58,8 +58,6 @@ matrix:
 
 
 install:
- - sudo apt-get install unixodbc-dev
- - sudo apt-get install python-pip
  - pip install scikit-learn==$SKLEARNVERSION
  - pip3 install --upgrade pip
  - pip3 install -r requirements.txt
