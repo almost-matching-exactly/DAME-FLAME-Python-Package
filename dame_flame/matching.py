@@ -324,8 +324,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
         Exception: An error occurred in the data_cleaning.py file.
     """
 
-    df = data_cleaning.process_input_file(
-        df, treatment_column_name, outcome_column_name)
+    df = data_cleaning.process_input_file(df, treatment_column_name, 
+                                          outcome_column_name)
 
     data_cleaning.check_parameters(adaptive_weights, df_holdout, df,
                                    alpha, False, weight_array)

@@ -198,6 +198,11 @@ def flame_generic(df_all, treatment_column_name, weight_array,
                                               orig_tot_treated,
                                               consider_dropping)):
             break
+        # one additional stopping criteria check:
+        if (len(consider_dropping) == 1):
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
+                  "No more covariate sets to consider dropping")
+            break
 
         new_drop, pe, matched_rows, return_matches, bf, units_in_g = decide_drop(all_covs,
             consider_dropping, prev_dropped, df_all, treatment_column_name,

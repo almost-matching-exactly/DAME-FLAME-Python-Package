@@ -205,7 +205,7 @@ def stop_iterating(early_stops, df_unmatched, repeats, treat_col_name,
     # Hard stop criteria: exceeded the number of iters user asked for?
     if (early_stops.iterations != False and early_stops.iterations == h):
         print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-              "We stopped before doing iteration number: ", h)
+              "We stopped after doing iteration number: ", h)
         return True
 
     # Hard stop criteria: met the threshold of unmatched items to stop?
@@ -226,12 +226,6 @@ def stop_iterating(early_stops, df_unmatched, repeats, treat_col_name,
                   unmatched_control/orig_tot_control, "of the control "\
                   "units remained unmatched")
             return True
-
-    # quit if there are no more covariate sets to choose from
-    if (len(consider_dropping) == 1):
-        print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-              "No more covariate sets to consider dropping")
-        return True
 
     return False
         
