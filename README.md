@@ -35,7 +35,9 @@ $ pip install dame-flame
 #### Make toy dataset 
 ```
 import pandas as pd
-import dame_flame
+from dame_flame.flame_db.utils import *
+from dame_flame.flame_db.FLAME_db_algorithm import *
+
 train_df = pd.DataFrame([[0,1,1,1,0,5], [0,1,1,0,0,6], [1,0,1,1,1,7], [1,1,1,1,1,7]], 
                   columns=["x1", "x2", "x3", "x4", "treated", "outcome"])
 test_df = pd.DataFrame([[0,1,1,1,0,5], [0,1,1,0,0,6], [1,0,1,1,1,7], [1,1,1,1,1,7]], 
@@ -60,6 +62,7 @@ conn = connect_db(database_name, user, password, host, port)
 
 If you already have the dataset in the database, please ignore this step. Insert the test_df (data to be matched) into the database you are using.
 ```
+from dame_flame.flame_db.gen_insert_data import *
 insert_data_to_db("datasetToBeMatched", # The name of your table containing the dataset to be matched
                   test_df,
                   treatment_column_name= "treated",
