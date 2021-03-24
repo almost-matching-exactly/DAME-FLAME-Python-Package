@@ -72,7 +72,7 @@ def insert_data_to_db(table_name,data, conn, treatment_column_name,outcome_colum
     """
     Args:
         table_name (string, required parameter):
-            The name of your table in the database that will contain the data.
+            The name of your empty table in the database that will contain the data.
         data (string, dataframe,required parameter):
             This is the dataset to be matched. If a string is given, that should be 
             the location of a CSV file to input.
@@ -91,7 +91,7 @@ def insert_data_to_db(table_name,data, conn, treatment_column_name,outcome_colum
     table = table_name
 
     colnames = data.columns
-    cur.execute('drop table if exists {}'.format(table))
+#     cur.execute('drop table if exists {}'.format(table))
 
     col_setup =""
     for i in range(len(colnames)):
@@ -106,14 +106,22 @@ def insert_data_to_db(table_name,data, conn, treatment_column_name,outcome_colum
         if i != len(colnames) - 1:
             col_setup += ','
     cur.execute('CREATE TABLE ' + table +  '('+ col_setup+');')
-    
+#     print('CREATE TABLE ' + table +  '('+ col_setup+');')
  
     
     for i in range(data.shape[0]):
         col = ','.join(['{0}'.format(v) for v in colnames])
-        values = ','.join(['\'{0}\''.format(v) for v in data.iloc[i,:-2]])
-        values += ','
-        values += ','.join(['{0}'.format(v) for v in data.iloc[i,-2:]])
+        values = ""
+        for j in range(data.shape[1]):
+            v = colnames[j]
+            if v == outcome_column_name:
+                values += '{0}'.format(data.iloc[i,j])
+            elif v == treatment_column_name:
+                values += '{0}'.format(int(data.iloc[i,j]))
+            else:
+                values += '\'{0}\''.format(data.iloc[i,j])
+            if j != data.shape[1]-1:
+                values += ','        
 #         print('INSERT INTO '+  table +'('+ col +') VALUES (' + values + ')')
         cur.execute('INSERT INTO '+  table +'('+ col +') VALUES (' + values + ')')
     
@@ -145,5 +153,6 @@ def insert_data_to_db(table_name,data, conn, treatment_column_name,outcome_colum
 # 
     conn.commit()
     print('Insert {} rows successfully to Database'.format(data.shape[0]  ))
+
 
 
