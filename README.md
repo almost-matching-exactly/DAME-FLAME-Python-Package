@@ -15,10 +15,10 @@ DAME-FLAME is a Python package for performing matching for observational causal 
 #### Dependencies
 `dame-flame` requires Python version (>=3.6.5). Install from [here](https://www.python.org/downloads/) if needed.
 
-- NumPy (>= 1.6.1)
-- Pandas (>=0.11.0)
-- Scikit learn (>=0.23.2)
-- SciPy (>=0.14)
+- pandas>=0.11.0
+- numpy>= 1.16.5
+- scikit-learn>=0.23.2
+
 
 If your python version does not have these packages, install from [here](https://packaging.python.org/tutorials/installing-packages/).
 

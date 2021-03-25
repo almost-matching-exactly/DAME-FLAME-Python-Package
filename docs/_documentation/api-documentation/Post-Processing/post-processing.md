@@ -9,7 +9,7 @@ has_children: true
 
 # Post Processing
 {: .no_toc }
-
+These functions generate treatment effects and matched groups after a match has been found using the matching algorithms. 
 <details open markdown="block">
   <summary>
     Table of contents

@@ -22,29 +22,30 @@ In this example, we also graph the number of units that were placed in a matched
 
 <div class="code-example" markdown="1">
 ``` python
-import numpy as np
 import dame_flame
+import numpy as np
 import matplotlib.pyplot as plt
 
-# Generate Data
-df, true_catt = dame_flame.utils.data.generate_uniform_given_importance(50,50)
 
+df,_ = dame_flame.utils.data.generate_binomial_decay_importance(50,50)
+
+model = dame_flame.matching.FLAME(verbose=3, repeats=False)
+model.fit(holdout_data=df)
+result_flame = model.predict(df)
+
+```
+</div>
+
+![interpretability verbose](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/verbose_interpretability2.PNG "interpretability")
+
+
+<div class="code-example" markdown="1">
+``` python
 # Get matches using DAME and FLAME
 model_dame = dame_flame.matching.DAME(repeats=False)
 model_dame.fit(holdout_data=df)
 result_dame = model_dame.predict(df)
 
-model_flame = dame_flame.matching.FLAME(repeats=False, verbose=3)
-model_flame.fit(holdout_data=df)
-result_flame = model_flame.predict(df)
-```
-</div>
-
-![interpretability verbose](https://github.com/nehargupta/dame-flame-experiments/raw/master/verbose_interpretability2.PNG "interpretability")
-
-
-<div class="code-example" markdown="1">
-``` python
 # replace all the '*'s with NAs so we can get a count of the NAs. 
 result_flame = result_flame.replace(to_replace='*', value=np.nan)
 result_dame = result_dame.replace(to_replace='*', value=np.nan)
@@ -84,14 +85,14 @@ autolabel(rects2)
 
 f.tight_layout()
 
-plt.savefig('covariate_importance.png')
+plt.savefig('interpretability.png')
 ```
 </div>
 
-![covar importance](https://github.com/nehargupta/dame-flame-experiments/raw/master/covariate_importance.png "covarimportance")
+![covar importance](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/interpretability.png "covarimportance")
 
 
-[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/interpretability.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/interpretability.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
 
 {: .fs-6 .fw-300 }

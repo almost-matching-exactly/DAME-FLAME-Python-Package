@@ -17,7 +17,7 @@ import dame_flame
 import matplotlib.pyplot as plt
 
 
-df,_ = dame_flame.utils.data.gen_data_decay_importance(num_control=100, num_treated=100, 
+df,_ = dame_flame.utils.data.generate_binomial_decay_importance(num_control=100, num_treated=100, 
                     num_cov=5, bernoulli_param=0.9, bi_mean=2, bi_stdev=1)
 
 model = dame_flame.matching.FLAME(verbose=3, early_stop_iterations=1)
@@ -48,11 +48,11 @@ plt.savefig('treatment_effect_size_of_groups.png')
 ```
 </div>
 
-![Perfect Matching](https://github.com/nehargupta/dame-flame-experiments/raw/master/treatment_effect_size_of_groups.png "Perfect Matching")
+![Perfect Matching](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/treatment_effect_size_of_groups.png "Perfect Matching")
 
-![Perfect Matching Verbose](https://raw.githubusercontent.com/nehargupta/dame-flame-experiments/master/exact_matching_verbos.PNG "Perfect Matching Verbose")
+![Perfect Matching Verbose](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/exact_matching_verbose.PNG "Perfect Matching Verbose")
 
-[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/exact_matching.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/exact_matching.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
 <div id="references" class="language-markdown highlighter-rouge">
   <h4>References</h4>

@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 
 # Generate Data
 num_covariates = 10
-df, true_catt = dame_flame.utils.data.gen_data_binx_decay_importance(num_control=1000, num_treated=1000, 
+df, true_catt = dame_flame.utils.data.generate_binomial_decay_importance(num_control=1000, num_treated=1000, 
                     num_cov=num_covariates, bernoulli_param=0.5, bi_mean=2, bi_stdev=1)
 
 # Get matches using DAME and FLAME
@@ -40,23 +40,29 @@ model_flame = dame_flame.matching.FLAME(repeats=False, verbose=0, early_stop_ite
 model_flame.fit(holdout_data=df)
 result_flame = model_flame.predict(df)
 
-# pre-processing
+# replace all the '*'s with NAs so we can get a count of the NAs. 
 result_flame = result_flame.replace(to_replace='*', value=np.nan)
 result_dame = result_dame.replace(to_replace='*', value=np.nan)
+
+# This will map: {number of covariates matched on : number of units matched on that number of covariates}
 dict_matched_result_dame = {k:0 for k in range(0,num_covariates+1)}
 dict_matched_result_flame = {k:0 for k in range(0,num_covariates+1)}
+
+# iterate through the rows in the df and count the number of non-NaN values in the row to determine
+# how many units that row was matched on. 
 for i in result_flame.count(axis=1):
     dict_matched_result_flame[i] += 1
+    
 for i in result_dame.count(axis=1):
     dict_matched_result_dame[i] += 1
 
-# plot
 x = np.arange(len(dict_matched_result_flame.keys()))  # the label locations
 width = 0.5  # the width of the bars
 
+# plot
 f, ax = plt.subplots(figsize=(12,9))
-rects1 = ax.bar(x - width/2,  dict_matched_result_flame.values(), width, color="green", label = "DAME" ) #, stopping at {}% control units matched".format(percent), hatch="/")
-rects2 = ax.bar(x + width/2, dict_matched_result_dame.values(), width, color = "orange", label = "FLAME") #, stopping at {}% control units matched".format(percent), hatch = "\\")
+rects1 = ax.bar(x - width/2,  dict_matched_result_flame.values(), width, color="green", label = "FLAME" ) #, stopping at {}% control units matched".format(percent), hatch="/")
+rects2 = ax.bar(x + width/2, dict_matched_result_dame.values(), width, color = "orange", label = "DAME") #, stopping at {}% control units matched".format(percent), hatch = "\\")
 ax.set_ylabel('Number of units', fontsize=16)
 ax.set_xlabel('Number of covariates matched on', fontsize=16)
 ax.set_title('Number of covariates that units were matched on after 10 iterations',
@@ -80,13 +86,13 @@ def autolabel(rects):
 autolabel(rects1)
 autolabel(rects2)
 
-plt.show()
+plt.savefig('flame_vs_dame_quality.png')
 ```
 </div>
 
-![Bar graphs](https://github.com/nehargupta/dame-flame-experiments/raw/master/flame_vs_dame_quality.png "Match Quality")
+![Bar graphs](https://raw.githubusercontent.com/almost-matching-exactly/DAME-FLAME-Python-Package/master/examples/flame_vs_dame_quality.png "Match Quality")
 
-[Download Example From GitHub](https://github.com/nehargupta/dame-flame-experiments/blob/master/flame_vs_dame_quality.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
+[Download Example From GitHub](https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/tree/master/examples/flame_vs_dame_quality.ipynb){: .btn .btn-primary .fs-4 .mb-4 .mb-md-0 }
 
 <div id="references" class="language-markdown highlighter-rouge">
   <h4>References</h4>

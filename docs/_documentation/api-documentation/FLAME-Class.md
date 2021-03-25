@@ -25,7 +25,7 @@ class dame_flame.matching.FLAME(adaptive_weights='ridge', alpha=0.1,
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L190">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L189">
     <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -101,7 +101,7 @@ missing_holdout_imputations=10, missing_data_imputations=1, want_pe=False, want_
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L74">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L71">
   <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -116,7 +116,7 @@ weight_array=False))
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L105">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L99">
   <h6><u>Source Code</u></h6>
   </a>
 </div>
@@ -138,7 +138,7 @@ predict(self, input_data)
 </div>
 <div id="source" class="language-markdown highlighter-rouge">
   <a class="number" href="#SourceCode"></a> 
-  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L192">
+  <a href="https://github.com/almost-matching-exactly/DAME-FLAME-Python-Package/blob/master/dame_flame/matching.py#L193">
   <h6><u>Source Code</u></h6>
   </a>
 </div>
