@@ -200,6 +200,11 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                                               orig_tot_treated,
                                               active_covar_sets)):
             break
+        # one additional stopping criteria check:
+        if (len(active_covar_sets) == 0):
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
+                  "No more covariate sets to consider dropping")
+            break
 
         # We find curr_covar_set, the best covariate set to drop.
         curr_covar_set, pe = decide_drop(

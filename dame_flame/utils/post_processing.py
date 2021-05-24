@@ -160,8 +160,12 @@ def ATE(matching_object, mice_iter=0):
                                                      matching_object.outcome_column_name]]
         treated = group_data.loc[group_data[matching_object.treatment_column_name] == 1]
         control = group_data.loc[group_data[matching_object.treatment_column_name] == 0]
-        avg_treated = sum(treated[matching_object.outcome_column_name]) / len(treated.index)
-        avg_control = sum(control[matching_object.outcome_column_name]) / len(control.index)
+        try:
+            avg_treated = sum(treated[matching_object.outcome_column_name]) / len(treated.index)
+            avg_control = sum(control[matching_object.outcome_column_name]) / len(control.index)
+        except:
+            print("There was an error in the matching process.", group_id)
+            break
         cates[group_id] = avg_treated - avg_control
 
     # Compute ATE

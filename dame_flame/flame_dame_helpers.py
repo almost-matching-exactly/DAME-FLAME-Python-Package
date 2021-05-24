@@ -227,11 +227,5 @@ def stop_iterating(early_stops, df_unmatched, repeats, treat_col_name,
                   "units remained unmatched")
             return True
 
-    # quit if there are no more covariate sets to choose from
-    if (len(consider_dropping) == 1):
-        print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-              "No more covariate sets to consider dropping")
-        return True
-
     return False
         
