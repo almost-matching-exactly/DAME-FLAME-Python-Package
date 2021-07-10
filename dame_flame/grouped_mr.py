@@ -49,7 +49,7 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
     # These are the rows of the ones that have been matched:
     matched_rows = df_all.loc[matched_units, :].copy()
     matched_rows['b_i'] = bi
-
+    
     # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
 

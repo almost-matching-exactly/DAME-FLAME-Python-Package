@@ -153,6 +153,8 @@ def ATE(matching_object, mice_iter=0):
         num_groups_per_unit = matching_object.groups_per_unit[mice_iter]
 
     # Recover CATEs
+    
+    # TODO: see if units_per_group can ever be 1 (which would break this) ie when repeats=False 
     cates = [0] * len(arr_matched_groups) # this will be a CATE for each matched group
     for group_id in range(len(arr_matched_groups)):
         group_data = matching_object.input_data.loc[arr_matched_groups[group_id],

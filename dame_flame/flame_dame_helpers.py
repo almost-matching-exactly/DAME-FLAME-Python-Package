@@ -79,15 +79,18 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             bool_cols = bool_cols = [col for col in x_treated
                                      if np.isin(x_treated[col].unique(), [0, 1]).all()]
             non_bool_cols = x_treated.columns.difference(bool_cols)
-            binarized_df = pd.get_dummies(x_treated.loc[:, non_bool_cols].astype(str))
-            x_treated = pd.concat([binarized_df, x_treated.loc[:, bool_cols]], axis=1)
+            if (len(non_bool_cols) != 0):    
+                binarized_df = pd.get_dummies(x_treated.loc[:, non_bool_cols].astype(str))
+                x_treated = pd.concat([binarized_df, x_treated.loc[:, bool_cols]], axis=1)
 
             # binarize non-binary columns in the control dataset
             bool_cols = bool_cols = [col for col in x_control
                                      if np.isin(x_control[col].unique(), [0, 1]).all()]
             non_bool_cols = x_control.columns.difference(bool_cols)
-            binarized_df = pd.get_dummies(x_control.loc[:, non_bool_cols].astype(str))
-            x_control = pd.concat([binarized_df, x_control.loc[:, bool_cols]], axis=1)
+            if (len(non_bool_cols) != 0):
+                binarized_df = pd.get_dummies(x_control.loc[:, non_bool_cols].astype(str))
+                x_control = pd.concat([binarized_df, x_control.loc[:, bool_cols]], axis=1)
+
 
         if adaptive_weights in ["ridge", "ridgeCV"]:
             clf = Ridge(alpha=alpha_given)
