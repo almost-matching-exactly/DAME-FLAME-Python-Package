@@ -188,7 +188,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
     consider_dropping = set(i for i in all_covs)
     prev_dropped = set()
-
+    
     # Here, we begin the iterative dropping procedure of FLAME
     while True:
         # see if any stopping criteria have been met        
@@ -232,11 +232,16 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             # if we need to track the bf, do so.
             return_bf.append(bf)
 
-        if early_stops.pe:
-            if pe >= early_stops.pe:
+        # Check not equal to false because if it's turned off, value is False
+        # but if it's turned on, value is a float.
+        # Can't check prev_pe on first iteration so check not first iter
+        if early_stops.pe != False and h != 1 and prev_pe != 0:
+            if (pe - prev_pe)/prev_pe >= (1 - early_stops.pe):
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-                        "We stopped matching with a pe of ", pe)
+                        "We stopped matching with a pe of ", pe, 
+                        "Early stopping criteria of PE fraction met")
                 break
+        prev_pe = pe
 
         # Update covariate groups for future iterations
         consider_dropping = consider_dropping.difference([new_drop])
