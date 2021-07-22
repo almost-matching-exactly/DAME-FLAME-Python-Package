@@ -20,8 +20,10 @@ def check_statistics(model,unit_id = 1):
     CATE_ = CATE(model,unit_id)
     
     if len(model.units_per_group) == 0:
+        print("No model.units_per_group")
         return True
     if len(model.groups_per_unit) == 0:
+        print("No model.groups_per_unit")
         return True
     if type(ATE_) == np.nan:
         print("ATE: " + str(ATE_))
@@ -457,9 +459,11 @@ class TestDame(unittest.TestCase):
             model.fit(holdout_data=holdout)
             output = model.predict(df)
             if check_statistics(model):
+                print("One of the post-processing has failed.")
                 is_correct = 0
 
         except (KeyError, ValueError):
+            print("Encountered a KeyError or ValueError")
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when repeat = True')
 
