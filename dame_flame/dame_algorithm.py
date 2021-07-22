@@ -314,5 +314,4 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     if want_bf:
         return_package.append(return_bf)
 
-
     return return_package
