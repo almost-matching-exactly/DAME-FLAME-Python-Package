@@ -68,7 +68,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
                         print("star_cols found", star_cols)
                         for col in star_cols:
                             print("col: ", col, "type_col: ", type(col))
-                            new_group[[col]] = ["*"] * len(new_group.index)
+                            new_group[col] = ["*"] * len(new_group.index)
                             print("new_group found")
                     main_matched_groups.append(new_group)
                     break
