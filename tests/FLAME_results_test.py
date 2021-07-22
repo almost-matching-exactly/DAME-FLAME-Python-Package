@@ -462,7 +462,6 @@ class TestDame(unittest.TestCase):
             model = matching.DAME(repeats=True)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
-            print("Returned from predict function.")
             if check_statistics(model):
                 print("One of the post-processing has failed.")
                 is_correct = 0

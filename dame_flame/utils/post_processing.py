@@ -46,8 +46,6 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
         array_mgs = matching_object.units_per_group[mice_iter]
         df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
 
-    print(len(array_mgs), len(df_matched_units))
-
     main_matched_groups = []
 
     # Now we recover MMG
@@ -58,18 +56,12 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
                 # The first group to contain the specified unit is the MMG
                 if unit in group:
                     new_group = matching_object.input_data.loc[group]
-                    print("new_group columns, ", new_group.columns)
                     my_series = df_matched_units.loc[unit]
-                    print("no error thus far...")
                     if output_style == 1 and "*" in my_series.unique():
-                        print("in the if statement")
                         # Insert asterisks for unused covariates
                         star_cols = my_series[my_series == "*"].index
-                        print("star_cols found", star_cols)
                         for col in star_cols:
-                            print("col: ", col, "type_col: ", type(col))
                             new_group[col] = ["*"] * len(new_group.index)
-                            print("new_group found")
                     main_matched_groups.append(new_group)
                     break
         # Warn user if a unit has no matches
