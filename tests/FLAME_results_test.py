@@ -15,9 +15,13 @@ import sys
 
 def check_statistics(model,unit_id = 1):
     ATE_ = ATE(model)
+    print("no issue in ATE")
     ATT_ = ATT(model)
+    print("No issue in ATT")
     MG_ = MG(model,unit_id)
+    print("no issue in MG")
     CATE_ = CATE(model,unit_id)
+    print("No issue in CATE")
     
     if len(model.units_per_group) == 0:
         print("No model.units_per_group")
@@ -458,6 +462,7 @@ class TestDame(unittest.TestCase):
             model = matching.DAME(repeats=True)
             model.fit(holdout_data=holdout)
             output = model.predict(df)
+            print("Returned from predict function.")
             if check_statistics(model):
                 print("One of the post-processing has failed.")
                 is_correct = 0
