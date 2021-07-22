@@ -302,6 +302,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             prev_iter_num_unmatched = len(df_unmatched)
 
     # end loop.
+    print("debug issue 1")
     return_matches = return_matches.dropna(axis=0) # drop rows with nan, dont return unmatched stuff
     return_package = [return_matches]
 
@@ -314,5 +315,5 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     if want_bf:
         return_package.append(return_bf)
 
-
+    print("debug issue 2")
     return return_package
