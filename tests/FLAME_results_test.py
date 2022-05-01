@@ -15,13 +15,19 @@ import sys
 
 def check_statistics(model,unit_id = 1):
     ATE_ = ATE(model)
+    print("no issue in ATE")
     ATT_ = ATT(model)
+    print("No issue in ATT")
     MG_ = MG(model,unit_id)
+    print("no issue in MG")
     CATE_ = CATE(model,unit_id)
+    print("No issue in CATE")
     
     if len(model.units_per_group) == 0:
+        print("No model.units_per_group")
         return True
     if len(model.groups_per_unit) == 0:
+        print("No model.groups_per_unit")
         return True
     if type(ATE_) == np.nan:
         print("ATE: " + str(ATE_))
@@ -457,9 +463,11 @@ class TestDame(unittest.TestCase):
             model.fit(holdout_data=holdout)
             output = model.predict(df)
             if check_statistics(model):
+                print("One of the post-processing has failed.")
                 is_correct = 0
 
         except (KeyError, ValueError):
+            print("Encountered a KeyError or ValueError")
             is_correct = 0
         self.assertEqual(1, is_correct, msg='DAME-Error when repeat = True')
 
@@ -724,19 +732,6 @@ class Test_exceptions(unittest.TestCase):
         self.assertTrue('The value provided for early_stop_iteration needs '\
                         'to be an integer number of iterations, or False if '\
                         'not stopping early based on the number of iterations' in str(early_stop_iterations.exception))
-    def test_false_early_stop_pe_frac(self):
-        def broken_early_stop_pe_frac():
-            df, true_TE = generate_uniform_given_importance(num_control=100, num_treated=100)
-            model = matching.FLAME(early_stop_pe_frac = 123)
-            model.fit(holdout_data=df)
-            output = model.predict(df)
-
-        with self.assertRaises(Exception) as early_stop_pe_frac:
-            broken_early_stop_pe_frac()
-            
-        self.assertTrue('The value provided for the early stopping critera of'\
-                        ' PE needs to be between 0.0 and 1.0' in str(early_stop_pe_frac.exception))
-
 
     def test_false_weight_array_type(self):
         def broken_weight_array_type():
@@ -747,7 +742,7 @@ class Test_exceptions(unittest.TestCase):
 
         with self.assertRaises(Exception) as weight_array_type:
             broken_weight_array_type()
-            
+
         self.assertTrue('Invalid input error. A weight array of type'\
                             'array needs to be provided when the'\
                             'parameter adaptive_weights == True' in str(weight_array_type.exception))

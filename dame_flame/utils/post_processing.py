@@ -46,7 +46,6 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
         array_mgs = matching_object.units_per_group[mice_iter]
         df_matched_units = matching_object.df_units_and_covars_matched[mice_iter]
 
-
     main_matched_groups = []
 
     # Now we recover MMG
@@ -62,7 +61,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
                         # Insert asterisks for unused covariates
                         star_cols = my_series[my_series == "*"].index
                         for col in star_cols:
-                            new_group[[col]] = ['*'] * len(new_group.index)
+                            new_group[col] = ["*"] * len(new_group.index)
                     main_matched_groups.append(new_group)
                     break
         # Warn user if a unit has no matches
@@ -160,8 +159,12 @@ def ATE(matching_object, mice_iter=0):
                                                      matching_object.outcome_column_name]]
         treated = group_data.loc[group_data[matching_object.treatment_column_name] == 1]
         control = group_data.loc[group_data[matching_object.treatment_column_name] == 0]
-        avg_treated = sum(treated[matching_object.outcome_column_name]) / len(treated.index)
-        avg_control = sum(control[matching_object.outcome_column_name]) / len(control.index)
+        try:
+            avg_treated = sum(treated[matching_object.outcome_column_name]) / len(treated.index)
+            avg_control = sum(control[matching_object.outcome_column_name]) / len(control.index)
+        except:
+            print("There was an error in the matching process.", group_id)
+            break
         cates[group_id] = avg_treated - avg_control
 
     # Compute ATE

@@ -200,6 +200,11 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                                               orig_tot_treated,
                                               active_covar_sets)):
             break
+        # one additional stopping criteria check:
+        if (len(active_covar_sets) == 0):
+            print((orig_len_df_all - len(df_unmatched)), "units matched. "\
+                  "No more covariate sets to consider dropping")
+            break
 
         # We find curr_covar_set, the best covariate set to drop.
         curr_covar_set, pe = decide_drop(
@@ -246,11 +251,16 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                 bf = np.nan
             return_bf.append(bf)
 
-        if early_stops.pe:
-            if pe >= early_stops.pe:
+        # Check not equal to false because if it's turned off, value is False
+        # but if it's turned on, value is a float.
+        # Can't check prev_pe on first iteration so check not first iter
+        if early_stops.pe != False and h != 1 and prev_pe != 0:
+            if (pe - prev_pe)/prev_pe >= (1 - early_stops.pe):
                 print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-                        "We stopped matching with a pe of ", pe)
+                        "We stopped matching with a pe of ", pe, 
+                        "Early stopping criteria of PE fraction met")
                 break
+        prev_pe = pe
 
 
         # Generate new active sets
@@ -303,6 +313,5 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         return_package.append(return_pe)
     if want_bf:
         return_package.append(return_bf)
-
 
     return return_package

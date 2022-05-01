@@ -40,10 +40,10 @@ class MatchParent:
         from 0.0 - 1.0): If provided, a fraction of unmatched control/
         treatment units. When threshold met, hard stop the algo.
     early_stop_pe: Whether the covariate set chosen to match
-        on has a pe lower than the parameter early_stop_pe_frac, at
+        on has a pe lower than the parameter early_stop_pe_val, at
         which point the algorithm will stop.
-    early_stop_pe_frac: If early_stop_pe is true,
-        then if the covariate set chosen to match on has a PE lower than
+    early_stop_pe_val: If early_stop_pe is true,
+        then if the covariate set chosen to match on has a PE greater than
         this value, the algorithm will stop
     missing_holdout_replace (0,1,2): default 0.
         if 0, assume no missing holdout data and proceed
@@ -72,7 +72,7 @@ class MatchParent:
                  verbose=2, early_stop_iterations=False,
                  stop_unmatched_c=False, early_stop_un_c_frac=False,
                  stop_unmatched_t=False, early_stop_un_t_frac=False,
-                 early_stop_pe=False, early_stop_pe_frac=0.01,
+                 early_stop_pe=True, early_stop_pe_frac=0.05,
                  missing_indicator=np.nan, missing_data_replace=0,
                  missing_holdout_replace=0, missing_holdout_imputations=10,
                  missing_data_imputations=1, want_pe=False, want_bf=False):
@@ -302,8 +302,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
           repeats=True, verbose=2, want_pe=False,
           early_stop_iterations=False, stop_unmatched_c=False,
           early_stop_un_c_frac=False, stop_unmatched_t=False,
-          early_stop_un_t_frac=False, early_stop_pe=False,
-          early_stop_pe_frac=0.01, want_bf=False, missing_indicator=np.nan,
+          early_stop_un_t_frac=False, early_stop_pe=True,
+          early_stop_pe_frac=0.05, want_bf=False, missing_indicator=np.nan,
           missing_data_replace=0, missing_holdout_replace=0,
           missing_holdout_imputations=10, missing_data_imputations=1):
     """ Accepts user input, validates, error-checks, calls DAME algorithm.
@@ -324,8 +324,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
         Exception: An error occurred in the data_cleaning.py file.
     """
 
-    df = data_cleaning.process_input_file(
-        df, treatment_column_name, outcome_column_name)
+    df = data_cleaning.process_input_file(df, treatment_column_name, 
+                                          outcome_column_name)
 
     data_cleaning.check_parameters(adaptive_weights, df_holdout, df,
                                    alpha, False, weight_array)
@@ -371,8 +371,8 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
            repeats=True, verbose=2, want_pe=False,
            early_stop_iterations=False, stop_unmatched_c=False,
            early_stop_un_c_frac=False, stop_unmatched_t=False,
-           early_stop_un_t_frac=False, early_stop_pe=False,
-           early_stop_pe_frac=0.01, want_bf=False,
+           early_stop_un_t_frac=False, early_stop_pe=True,
+           early_stop_pe_frac=0.05, want_bf=False,
            missing_indicator=np.nan,
            missing_data_replace=0, missing_holdout_replace=0,
            missing_holdout_imputations=10, missing_data_imputations=0,
