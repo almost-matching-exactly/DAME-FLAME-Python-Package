@@ -6,8 +6,6 @@ services:
  - postgresql
 
 python:
-  - 3.6
-  - 3.8
   - 3.9
 env:
   - SKLEARNVERSION=0.23.2

@@ -62,68 +62,68 @@ class Test_exceptions(unittest.TestCase):
         self.assertTrue("Need to specify the name of the table that contains the dataset in your database "\
                         "frame in parameter 'input_data'" in str(false_dataset.exception))
         
-    def test_false_holdout(self):
-        def broken_false_holdout():
-            insert_data_to_db("test_df30", # The name of your table containing the dataset to be matched
-                    data,
-                    treatment_column_name= "treated",
-                    outcome_column_name= 'outcome',conn = conn)
-            res_post_new1 = FLAME_db(input_data = "test_df30", # The name of your table containing the dataset to be matched
-                                                holdout_data = 0, # holdout set
-                                                C = 0.1,
-                                                conn = conn,
-                                                matching_option = 0,
-                                                verbose = 3,
-                                                k = 0
-                                                )
-        with self.assertRaises(Exception) as holdout:
-            broken_false_holdout()
+    # def test_false_holdout(self):
+    #     def broken_false_holdout():
+    #         insert_data_to_db("test_df30", # The name of your table containing the dataset to be matched
+    #                 data,
+    #                 treatment_column_name= "treated",
+    #                 outcome_column_name= 'outcome',conn = conn)
+    #         res_post_new1 = FLAME_db(input_data = "test_df30", # The name of your table containing the dataset to be matched
+    #                                             holdout_data = 0, # holdout set
+    #                                             C = 0.1,
+    #                                             conn = conn,
+    #                                             matching_option = 0,
+    #                                             verbose = 3,
+    #                                             k = 0
+    #                                             )
+    #     with self.assertRaises(Exception) as holdout:
+    #         broken_false_holdout()
             
-        self.assertTrue("Holdout_data shoule be a dataframe or a directory" in str(holdout.exception))
+    #     self.assertTrue("Holdout_data shoule be a dataframe or a directory" in str(holdout.exception))
 
         
-    def test_false_treatment_column_name(self):
-        def broken_treatment_column_name():
-            insert_data_to_db("test_df31", # The name of your table containing the dataset to be matched
-                    data,
-                    treatment_column_name= "treated",
-                    outcome_column_name= 'outcome',conn = conn)
-            res_post_new1 = FLAME_db(input_data = "test_df31", # The name of your table containing the dataset to be matched
-                                                holdout_data = holdout, # holdout set
-                                                treatment_column_name= "sadfdag",
-                                                C = 0.1,
-                                                conn = conn,
-                                                matching_option = 0,
-                                                verbose = 3,
-                                                k = 0
-                                                )
-        with self.assertRaises(Exception) as treatment_column_name:
-            broken_treatment_column_name()
+    # def test_false_treatment_column_name(self):
+    #     def broken_treatment_column_name():
+    #         insert_data_to_db("test_df31", # The name of your table containing the dataset to be matched
+    #                 data,
+    #                 treatment_column_name= "treated",
+    #                 outcome_column_name= 'outcome',conn = conn)
+    #         res_post_new1 = FLAME_db(input_data = "test_df31", # The name of your table containing the dataset to be matched
+    #                                             holdout_data = holdout, # holdout set
+    #                                             treatment_column_name= "sadfdag",
+    #                                             C = 0.1,
+    #                                             conn = conn,
+    #                                             matching_option = 0,
+    #                                             verbose = 3,
+    #                                             k = 0
+    #                                             )
+    #     with self.assertRaises(Exception) as treatment_column_name:
+    #         broken_treatment_column_name()
             
-        self.assertTrue('Invalid input error. Treatment column name does not'\
-                        ' exist' in str(treatment_column_name.exception))
+    #     self.assertTrue('Invalid input error. Treatment column name does not'\
+    #                     ' exist' in str(treatment_column_name.exception))
 
-    def test_false_outcome_column_name(self):
-        def broken_outcome_column_name():
-            insert_data_to_db("test_df32", # The name of your table containing the dataset to be matched
-                    data,
-                    treatment_column_name= "treated",
-                    outcome_column_name= 'outcome',conn = conn)
-            res_post_new1 = FLAME_db(input_data = "test_df32", # The name of your table containing the dataset to be matched
-                                    holdout_data = holdout, # holdout set
-                                    outcome_column_name= '1232114',
-                                    C = 0.1,
-                                    conn = conn,
-                                    matching_option = 0,
-                                    verbose = 3,
-                                    k = 0
-                                    )
+    # def test_false_outcome_column_name(self):
+    #     def broken_outcome_column_name():
+    #         insert_data_to_db("test_df32", # The name of your table containing the dataset to be matched
+    #                 data,
+    #                 treatment_column_name= "treated",
+    #                 outcome_column_name= 'outcome',conn = conn)
+    #         res_post_new1 = FLAME_db(input_data = "test_df32", # The name of your table containing the dataset to be matched
+    #                                 holdout_data = holdout, # holdout set
+    #                                 outcome_column_name= '1232114',
+    #                                 C = 0.1,
+    #                                 conn = conn,
+    #                                 matching_option = 0,
+    #                                 verbose = 3,
+    #                                 k = 0
+    #                                 )
 
-        with self.assertRaises(Exception) as outcome_column_name:
-            broken_outcome_column_name()
+    #     with self.assertRaises(Exception) as outcome_column_name:
+    #         broken_outcome_column_name()
             
-        self.assertTrue('Invalid input error. Outcome column name does not'\
-                        ' exist' in str(outcome_column_name.exception))
+    #     self.assertTrue('Invalid input error. Outcome column name does not'\
+    #                     ' exist' in str(outcome_column_name.exception))
         
 
         
