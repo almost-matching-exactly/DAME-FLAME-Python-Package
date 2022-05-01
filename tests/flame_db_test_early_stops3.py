@@ -93,11 +93,11 @@ TE = 5
 p=10
 data,weight_array = gen_data_db(n = 100,p = p, TE = TE)
 holdout,weight_array = gen_data_db(n = 50,p = p, TE = TE)
-insert_data_to_db("test_df4", # The name of your table containing the dataset to be matched
+insert_data_to_db("test_df49999", # The name of your table containing the dataset to be matched
                     data,
                     treatment_column_name= "treated",
                     outcome_column_name= 'outcome',conn = conn)
-res_post_new1 = FLAME_db(input_data = "test_df4", # The name of your table containing the dataset to be matched
+res_post_new1 = FLAME_db(input_data = "test_df49999", # The name of your table containing the dataset to be matched
                         holdout_data = holdout, # holdout set
                         conn = conn,
                         matching_option = 3,
