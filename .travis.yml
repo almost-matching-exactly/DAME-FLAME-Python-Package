@@ -57,7 +57,7 @@ install:
  - pip3 install -r requirements.txt
  - pip3 install coverage
  - pip3 install nose
- - pip3 install coveralls
+ - pip3 install cpp-coveralls --user
 script:
   - nosetests  --with-coverage --cover-package=dame_flame
 after_success:
