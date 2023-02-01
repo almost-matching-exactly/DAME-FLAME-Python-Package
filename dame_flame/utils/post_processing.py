@@ -29,7 +29,7 @@ def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
         unit_ids (int, list): units for which MG will be returned
 
     Returns:
-        MMGs: list of datraframes or singular dataframe containing the units
+        MMGs: list of dataframes or singular dataframe containing the units
             in the main matched groups for the specified units
 
     '''
@@ -218,3 +218,99 @@ def ATT(matching_object, mice_iter=0):
     control_weight_sum = sum(control_weights)
     avg_control = sum(control[matching_object.outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
+
+def var_ATE_summary(matching_object, mice_iter=0):
+    '''
+    This is an EXPERIMENTAL function that implements the variance found in 
+    Abadie, Drukker, Herr, and Imbens (The Stata Journal, 2004) assuming
+    constant treatment effect and homoscedasticity. Note that the implemented 
+    estimator is NOT asymptotically normal and so in particular, 
+    asymptotically valid confidence intervals or hypothesis tests cannot be 
+    conducted on its basis. In the future, the estimation procedure will be 
+    changed.
+
+    Parameters
+    ----------
+    matching_object : TYPE
+        DESCRIPTION.
+    mice_iter : TYPE, optional
+        DESCRIPTION. The default is 0.
+
+    Returns
+    -------
+    variance: float
+    '''
+    validate_matching_obj(matching_object)
+
+    # Compute the sigma^2 estimate from equation 10 in Abadie et al
+    # units_per_group is in format [[#,#,#,...], [#,#,#,...],..]
+    # Need to double check this, if mice_iter != 0, then possibly need to index
+    units_per_group = matching_object.units_per_group
+    
+    mmgs_dict = {group[0]: group[1:] for group in units_per_group}
+    
+    # Compute K_dict, which maps i to KM value
+    K_dict = dict()
+    km_temp = 0
+    for i in mmgs_dict.keys():
+        # iterate through all groups and if i is in that group but not
+        # the first element then add that group's length to the count
+        is_treatment_val = matching_object.input_data.loc[
+            i, matching_object.treatment_column_name]
+        for group in units_per_group:
+            if i in group and group[0] != i:
+                # TEMP CHANGE: AND check to see if it's got the opposite treatment
+                index_my_mmg = group[0]
+                treatment_val_mmg = matching_object.input_data.loc[
+                    index_my_mmg, matching_object.treatment_column_name]
+                if treatment_val_mmg != is_treatment_val:
+                    # temp change, find out how many people in this mmg
+                    # have the opposite treatment status to the treatment_val_mmg
+                    num_treated = sum(matching_object.input_data.loc[group, 'treated'])
+                    if treatment_val_mmg:
+                        num_opposite = len(group) - num_treated
+                    else:
+                        num_opposite = num_treated
+                        
+                    km_temp += 1/num_opposite
+        K_dict[i] = km_temp
+        km_temp = 0
+        
+    # Compute ATE per simple estimator in paper
+    ate = 0
+    for i in mmgs_dict.keys():
+        treatment_val = matching_object.input_data.loc[
+            i, matching_object.treatment_column_name]
+        outcome_val = matching_object.input_data.loc[
+            i, matching_object.outcome_column_name]
+        ate += ((2*treatment_val - 1)*(1 + K_dict[i])*outcome_val)
+    ate = ate/len(mmgs_dict)
+        
+    # Compute sigma^2. 
+    i_summation = 0
+    # ate = ATE(matching_object, mice_iter)
+    for i in mmgs_dict.keys():
+        group_members = mmgs_dict[i] # these are the l values in Jm(i)
+        treatment_val = matching_object.input_data.loc[
+            i, matching_object.treatment_column_name]
+        outcome_val = matching_object.input_data.loc[
+            i, matching_object.outcome_column_name]
+        # iterate through my group members
+        temp_l_summation = 0
+        for l in group_members:
+            Y_l = matching_object.input_data.loc[
+            l, matching_object.outcome_column_name]
+            if treatment_val:
+                temp_l_summation += (outcome_val - Y_l - ate)**2
+            else:
+                temp_l_summation += (Y_l - outcome_val - ate)**2          
+        i_summation += temp_l_summation/len(group_members)
+    sigma_squared = 1/(2*len(mmgs_dict))*i_summation
+    
+    # Combine the above to compute var_estimator
+    dict_summation = 0
+    for key, value in K_dict.items():
+        dict_summation += (1+value)**2
+    var_estimator = sigma_squared*dict_summation/(len(mmgs_dict)**2)
+    
+    return ate, var_estimator
