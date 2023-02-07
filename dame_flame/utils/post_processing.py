@@ -18,6 +18,24 @@ def validate_matching_obj(matching_object):
     if (not hasattr(matching_object, 'input_data')):
         raise Exception("This function can be only called after a match has "\
                        "been formed using the .fit() and .predict() functions")
+            
+def all_MGs(matching_object):
+    '''
+    This function returns all of the main matched groups, for every unit.
+    It's slow! Use function "MG" instead if you want the matched group for
+    only specific units.
+    '''
+    validate_matching_obj(matching_object)
+    
+    mgs_dict = dict()
+    
+    for group in matching_object.units_per_group:
+        for index in group:
+            if index not in mgs_dict:
+                mgs_dict[index] = group
+                
+    return mgs_dict
+
 
 def MG(matching_object, unit_ids, output_style=1, mice_iter=0):
     '''
@@ -247,38 +265,47 @@ def var_ATE_summary(matching_object, mice_iter=0):
     # Need to double check this, if mice_iter != 0, then possibly need to index
     units_per_group = matching_object.units_per_group
     
-    mmgs_dict = {group[0]: group[1:] for group in units_per_group}
-    
+    mmgs_dict = all_MGs(matching_object)
+    # print(mmgs_dict)
+        
     # Compute K_dict, which maps i to KM value
-    K_dict = dict()
+    K_dict = dict.fromkeys(mmgs_dict,0)
     km_temp = 0
-    for i in mmgs_dict.keys():
-        # iterate through all groups and if i is in that group but not
-        # the first element then add that group's length to the count
+    for i in matching_object.df_units_and_covars_matched.index:        
+        # iterate through all matched units of indexes with opposite treatment
+        # values. How many of those MMGs am I in, and
+        # if I'm in someone's MMG, what is the size of their MMG?
+
         is_treatment_val = matching_object.input_data.loc[
             i, matching_object.treatment_column_name]
-        for group in units_per_group:
-            if i in group and group[0] != i:
-                # TEMP CHANGE: AND check to see if it's got the opposite treatment
-                index_my_mmg = group[0]
-                treatment_val_mmg = matching_object.input_data.loc[
-                    index_my_mmg, matching_object.treatment_column_name]
-                if treatment_val_mmg != is_treatment_val:
-                    # temp change, find out how many people in this mmg
-                    # have the opposite treatment status to the treatment_val_mmg
-                    num_treated = sum(matching_object.input_data.loc[group, 'treated'])
-                    if treatment_val_mmg:
-                        num_opposite = len(group) - num_treated
-                    else:
-                        num_opposite = num_treated
-                        
-                    km_temp += 1/num_opposite
-        K_dict[i] = km_temp
-        km_temp = 0
         
-    # Compute ATE per simple estimator in paper
+        ''' # This works for only the without repeats case!
+        for group in units_per_group:
+            if i in group:
+                # find out how many people in this mmg
+                # have the opposite treatment status to the treatment_val_mmg
+                num_treated = sum(matching_object.input_data.loc[group, 'treated'])
+                if is_treatment_val:
+                    num_opposite = len(group) - num_treated
+                else:
+                    num_opposite = num_treated
+                    
+                K_dict[i] += num_opposite/(len(group)-num_opposite) # is this right???  # (num_opposite/len(group)) # I think this is right per convo w Vittorio
+        ''' # This works for both! Technically somewhat slower though!
+        for j in matching_object.df_units_and_covars_matched.index:
+            if i in mmgs_dict[j] and matching_object.input_data.loc[j, 'treated'] != is_treatment_val:
+                num_treated = sum(matching_object.input_data.loc[mmgs_dict[j], 'treated'])
+                if matching_object.input_data.loc[j, 'treated']: # double think -- you have to be opposite of j != opp of i
+                    num_opposite = len(mmgs_dict[j]) - num_treated
+                else:
+                    num_opposite = num_treated
+                # print("i", i, "j", j, "num_opp", num_opposite)
+                K_dict[i] += 1/num_opposite
+        
+    # print(K_dict)
+    # Compute ATE per simple estimator in paper -- this should be right
     ate = 0
-    for i in mmgs_dict.keys():
+    for i in mmgs_dict:
         treatment_val = matching_object.input_data.loc[
             i, matching_object.treatment_column_name]
         outcome_val = matching_object.input_data.loc[
@@ -288,23 +315,23 @@ def var_ATE_summary(matching_object, mice_iter=0):
         
     # Compute sigma^2. 
     i_summation = 0
-    # ate = ATE(matching_object, mice_iter)
-    for i in mmgs_dict.keys():
+    for i in mmgs_dict:
         group_members = mmgs_dict[i] # these are the l values in Jm(i)
         treatment_val = matching_object.input_data.loc[
             i, matching_object.treatment_column_name]
         outcome_val = matching_object.input_data.loc[
             i, matching_object.outcome_column_name]
-        # iterate through my group members
+        opp_group_members = matching_object.input_data.loc[group_members].index[matching_object.input_data.loc[group_members][matching_object.treatment_column_name] != treatment_val].tolist()
+        # iterate through my group members -- only the ones w opp treatment to me!
         temp_l_summation = 0
-        for l in group_members:
+        for l in opp_group_members:
             Y_l = matching_object.input_data.loc[
             l, matching_object.outcome_column_name]
             if treatment_val:
-                temp_l_summation += (outcome_val - Y_l - ate)**2
+                temp_l_summation += ((outcome_val - Y_l - ate)**2)
             else:
-                temp_l_summation += (Y_l - outcome_val - ate)**2          
-        i_summation += temp_l_summation/len(group_members)
+                temp_l_summation += ((Y_l - outcome_val - ate)**2)         
+        i_summation += temp_l_summation/len(opp_group_members)
     sigma_squared = 1/(2*len(mmgs_dict))*i_summation
     
     # Combine the above to compute var_estimator
@@ -313,4 +340,4 @@ def var_ATE_summary(matching_object, mice_iter=0):
         dict_summation += (1+value)**2
     var_estimator = sigma_squared*dict_summation/(len(mmgs_dict)**2)
     
-    return ate, var_estimator
+    return ate, var_estimator, K_dict
