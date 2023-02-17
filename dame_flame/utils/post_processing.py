@@ -237,7 +237,7 @@ def ATT(matching_object, mice_iter=0):
     avg_control = sum(control[matching_object.outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
 
-def var_ATE_summary(matching_object, mice_iter=0):
+def var_ATE(matching_object, mice_iter=0):
     '''
     This is an EXPERIMENTAL function that implements the variance found in 
     Abadie, Drukker, Herr, and Imbens (The Stata Journal, 2004) assuming
@@ -271,13 +271,13 @@ def var_ATE_summary(matching_object, mice_iter=0):
     # Compute K_dict, which maps i to KM value
     K_dict = dict.fromkeys(mmgs_dict,0)
     km_temp = 0
+    treated_col = matching_object.treatment_column_name
     for i in matching_object.df_units_and_covars_matched.index:        
         # iterate through all matched units of indexes with opposite treatment
         # values. How many of those MMGs am I in, and
         # if I'm in someone's MMG, what is the size of their MMG?
 
-        is_treatment_val = matching_object.input_data.loc[
-            i, matching_object.treatment_column_name]
+        is_treatment_val = matching_object.input_data.loc[i, treated_col]
         
         ''' # This works for only the without repeats case!
         for group in units_per_group:
@@ -293,9 +293,9 @@ def var_ATE_summary(matching_object, mice_iter=0):
                 K_dict[i] += num_opposite/(len(group)-num_opposite) # is this right???  # (num_opposite/len(group)) # I think this is right per convo w Vittorio
         ''' # This works for both! Technically somewhat slower though!
         for j in matching_object.df_units_and_covars_matched.index:
-            if i in mmgs_dict[j] and matching_object.input_data.loc[j, 'treated'] != is_treatment_val:
-                num_treated = sum(matching_object.input_data.loc[mmgs_dict[j], 'treated'])
-                if matching_object.input_data.loc[j, 'treated']: # double think -- you have to be opposite of j != opp of i
+            if i in mmgs_dict[j] and matching_object.input_data.loc[j, treated_col] != is_treatment_val:
+                num_treated = sum(matching_object.input_data.loc[mmgs_dict[j], treated_col])
+                if matching_object.input_data.loc[j, treated_col]: # double think -- you have to be opposite of j != opp of i
                     num_opposite = len(mmgs_dict[j]) - num_treated
                 else:
                     num_opposite = num_treated
@@ -306,8 +306,7 @@ def var_ATE_summary(matching_object, mice_iter=0):
     # Compute ATE per simple estimator in paper -- this should be right
     ate = 0
     for i in mmgs_dict:
-        treatment_val = matching_object.input_data.loc[
-            i, matching_object.treatment_column_name]
+        treatment_val = matching_object.input_data.loc[i, treated_col]
         outcome_val = matching_object.input_data.loc[
             i, matching_object.outcome_column_name]
         ate += ((2*treatment_val - 1)*(1 + K_dict[i])*outcome_val)
@@ -317,11 +316,10 @@ def var_ATE_summary(matching_object, mice_iter=0):
     i_summation = 0
     for i in mmgs_dict:
         group_members = mmgs_dict[i] # these are the l values in Jm(i)
-        treatment_val = matching_object.input_data.loc[
-            i, matching_object.treatment_column_name]
+        treatment_val = matching_object.input_data.loc[i, treated_col]
         outcome_val = matching_object.input_data.loc[
             i, matching_object.outcome_column_name]
-        opp_group_members = matching_object.input_data.loc[group_members].index[matching_object.input_data.loc[group_members][matching_object.treatment_column_name] != treatment_val].tolist()
+        opp_group_members = matching_object.input_data.loc[group_members].index[matching_object.input_data.loc[group_members][treated_col] != treatment_val].tolist()
         # iterate through my group members -- only the ones w opp treatment to me!
         temp_l_summation = 0
         for l in opp_group_members:
@@ -340,4 +338,4 @@ def var_ATE_summary(matching_object, mice_iter=0):
         dict_summation += (1+value)**2
     var_estimator = sigma_squared*dict_summation/(len(mmgs_dict)**2)
     
-    return ate, var_estimator, K_dict
+    return ate, var_estimator
