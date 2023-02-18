@@ -80,7 +80,7 @@ class TestFlame(unittest.TestCase):
         This confirms the var ATE is returning the same result as the R-package
         var-ATE based on testing done manually
         '''
-        df_path.join((os.path.dirname(__file__)), 'varAteData.csv')
+        df_path = os.path.join((os.path.dirname(__file__)), 'varAteData.csv')
         df = pd.read_csv(df_path)
         model = matching.FLAME(adaptive_weights=0,early_stop_un_c_frac=0, 
                                early_stop_un_t_frac=0, repeats=False, 
