@@ -74,6 +74,32 @@ class TestFlame(unittest.TestCase):
         
         self.assertEqual(1, dfs_equal,
                          msg='Data frames not equal on index {0}, col {1}'.format(index, col))
+    
+    def test_var_ATE_R(self):
+        '''
+        This confirms the var ATE is returning the same result as the R-package
+        var-ATE based on testing done manually
+        '''
+        df_path.join((os.path.dirname(__file__)), 'varAteData.csv')
+        df = pd.read_csv(df_path)
+        model = matching.FLAME(adaptive_weights=0,early_stop_un_c_frac=0, 
+                               early_stop_un_t_frac=0, repeats=False, 
+                               stop_unmatched_c=True, early_stop_pe=False)
+        model.fit(df,weight_array=[1/31, 2/31, 4/31, 8/31, 16/31])
+        model.predict(df)
+        a,b = var_ATE(model)
+        self.assertEqual(round(a,3), 0.14, msg='Variance incorrect')
+        self.assertEqual(round(b,3), 5.01, msg="ATE incorrect")
+        
+        model = matching.FLAME(adaptive_weights=0, early_stop_un_c_frac=0,
+                               early_stop_un_t_frac=0, repeats=True, 
+                               stop_unmatched_c=True, early_stop_pe=False)
+        model.fit(df, weight_array=[1/31, 2/31, 4/31, 8/31, 16/31])
+        model.predict(df)
+        a,b = var_ATE(model)
+        self.assertEqual(round(a,3), 0.118,msg="variance incorrect")
+        self.assertEqual(round(b,3), 5.24,msg='ATE incorrect')
+
         
     def test_PE_F(self):
         for adaptive_weights in [False, 'ridge', 'decisiontree', 'ridgeCV','decisiontreeCV']: #
@@ -965,3 +991,4 @@ class Test_exceptions(unittest.TestCase):
             broken_ATE_input_model()
         self.assertTrue("This function can be only called after a match has "\
                            "been formed using the .fit() and .predict() functions" in str(ATE_input_model.exception))
+                    

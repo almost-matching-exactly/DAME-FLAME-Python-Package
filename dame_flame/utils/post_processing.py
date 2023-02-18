@@ -338,4 +338,4 @@ def var_ATE(matching_object, mice_iter=0):
         dict_summation += (1+value)**2
     var_estimator = sigma_squared*dict_summation/(len(mmgs_dict)**2)
     
-    return ate, var_estimator
+    return var_estimator, ate
