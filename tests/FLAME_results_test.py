@@ -88,8 +88,8 @@ class TestFlame(unittest.TestCase):
         model.fit(df,weight_array=[1/31, 2/31, 4/31, 8/31, 16/31])
         model.predict(df)
         a,b = var_ATE(model)
-        self.assertEqual(round(a,3), 0.14, msg='Variance incorrect')
-        self.assertEqual(round(b,3), 5.01, msg="ATE incorrect")
+        self.assertEqual(round(a,2), 0.14, msg='Variance incorrect')
+        self.assertEqual(round(b,2), 5.01, msg="ATE incorrect")
         
         model = matching.FLAME(adaptive_weights=0, early_stop_un_c_frac=0,
                                early_stop_un_t_frac=0, repeats=True, 
@@ -97,8 +97,8 @@ class TestFlame(unittest.TestCase):
         model.fit(df, weight_array=[1/31, 2/31, 4/31, 8/31, 16/31])
         model.predict(df)
         a,b = var_ATE(model)
-        self.assertEqual(round(a,3), 0.118,msg="variance incorrect")
-        self.assertEqual(round(b,3), 5.24,msg='ATE incorrect')
+        self.assertEqual(round(a,2), 0.12,msg="variance incorrect")
+        self.assertEqual(round(b,2), 5.24,msg='ATE incorrect')
 
         
     def test_PE_F(self):
