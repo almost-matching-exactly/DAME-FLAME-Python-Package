@@ -51,7 +51,7 @@ def read_files(input_data, holdout_data):
     return df_input, df_holdout
 
 def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
-                early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
+                early_stop_un_t_frac, early_stop_pe, 
                 early_stop_iterations):
     """Check the parameters passed to DAME/FLAME relating to early stopping"""
 
@@ -66,9 +66,6 @@ def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
         raise Exception('The value provided for the early stopping critera '\
                         'of proportion of unmatched control units needs to '\
                         'be between 0.0 and 1.0')
-
-    if early_stop_pe:
-        early_stop_pe = early_stop_pe_frac
 
     if early_stop_iterations != float('inf') and type(early_stop_iterations) != int:
         raise Exception('If finite, the value provided for early_stop_iterations needs '\

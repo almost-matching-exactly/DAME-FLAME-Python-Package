@@ -42,9 +42,6 @@ class MatchParent:
     early_stop_pe: Whether the covariate set chosen to match
         on has a pe lower than the parameter early_stop_pe_val, at
         which point the algorithm will stop.
-    early_stop_pe_val: If early_stop_pe is true,
-        then if the covariate set chosen to match on has a PE greater than
-        this value, the algorithm will stop
     missing_holdout_replace (0,1,2): default 0.
         if 0, assume no missing holdout data and proceed
         if 1, drop all missing_indicator values from holdout dataset
@@ -72,7 +69,7 @@ class MatchParent:
                  verbose=2, early_stop_iterations=float('inf'),
                  stop_unmatched_c=False, early_stop_un_c_frac=False,
                  stop_unmatched_t=False, early_stop_un_t_frac=False,
-                 early_stop_pe=True, early_stop_pe_frac=0.05,
+                 early_stop_pe=0.05,
                  missing_indicator=np.nan, missing_data_replace=0,
                  missing_holdout_replace=0, missing_holdout_imputations=10,
                  missing_data_imputations=1, want_pe=False, want_bf=False):
@@ -92,7 +89,6 @@ class MatchParent:
         self.stop_unmatched_t = stop_unmatched_t
         self.early_stop_un_t_frac = early_stop_un_t_frac
         self.early_stop_pe = early_stop_pe
-        self.early_stop_pe_frac = early_stop_pe_frac
         self.want_pe = want_pe
         self.want_bf = want_bf
 
@@ -152,7 +148,7 @@ class DAME(MatchParent):
             self.early_stop_iterations, self.stop_unmatched_c,
             self.early_stop_un_c_frac, self.stop_unmatched_t,
             self.early_stop_un_t_frac, self.early_stop_pe,
-            self.early_stop_pe_frac, self.want_bf,
+            self.want_bf,
             self.missing_indicator,
             self.missing_data_replace, self.missing_holdout_replace,
             self.missing_holdout_imputations, self.missing_data_imputations)
@@ -213,7 +209,7 @@ class FLAME(MatchParent):
             self.early_stop_iterations, self.stop_unmatched_c,
             self.early_stop_un_c_frac, self.stop_unmatched_t,
             self.early_stop_un_t_frac, self.early_stop_pe,
-            self.early_stop_pe_frac, self.want_bf, self.missing_indicator,
+            self.want_bf, self.missing_indicator,
             self.missing_data_replace, self.missing_holdout_replace,
             self.missing_holdout_imputations, self.missing_data_imputations,
             pre_dame, C)
@@ -302,8 +298,8 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
           repeats=True, verbose=2, want_pe=False,
           early_stop_iterations=float('inf'), stop_unmatched_c=False,
           early_stop_un_c_frac=False, stop_unmatched_t=False,
-          early_stop_un_t_frac=False, early_stop_pe=True,
-          early_stop_pe_frac=0.05, want_bf=False, missing_indicator=np.nan,
+          early_stop_un_t_frac=False, early_stop_pe=0.05,
+          want_bf=False, missing_indicator=np.nan,
           missing_data_replace=0, missing_holdout_replace=0,
           missing_holdout_imputations=10, missing_data_imputations=1):
     """ Accepts user input, validates, error-checks, calls DAME algorithm.
@@ -338,7 +334,7 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
 
     early_stops = data_cleaning.check_stops(
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
-        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
+        early_stop_un_t_frac, early_stop_pe, 
         early_stop_iterations)
 
     if not mice_on_match:
@@ -371,8 +367,8 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
            repeats=True, verbose=2, want_pe=False,
            early_stop_iterations=float('inf'), stop_unmatched_c=False,
            early_stop_un_c_frac=False, stop_unmatched_t=False,
-           early_stop_un_t_frac=False, early_stop_pe=True,
-           early_stop_pe_frac=0.05, want_bf=False,
+           early_stop_un_t_frac=False, early_stop_pe=0.05,
+           want_bf=False,
            missing_indicator=np.nan,
            missing_data_replace=0, missing_holdout_replace=0,
            missing_holdout_imputations=10, missing_data_imputations=0,
@@ -406,7 +402,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
 
     early_stops = data_cleaning.check_stops(
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
-        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
+        early_stop_un_t_frac, early_stop_pe, 
         early_stop_iterations)
 
     if not mice_on_match:
