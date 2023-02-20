@@ -1,11 +1,15 @@
 language: python
 # ===== Linux ======
 dist: xenial
+
+services:
+ - postgresql
+
 python:
+  - 3.9
   - 3.6
   - 3.7
   - 3.8
-  - 3.9
 env:
   - SKLEARNVERSION=0.23.2
   - SKLEARNVERSION=0.24
@@ -44,12 +48,20 @@ matrix:
 before_install:
  - pip3 install cpp-coveralls
 install:
+ - sudo apt-get install unixodbc-dev
+ - sudo apt-get install python-pip
  - pip install scikit-learn==$SKLEARNVERSION
  - pip3 install --upgrade pip
  - pip3 install -r requirements.txt
+ - pip3 install -r opt-requirements.txt
  - pip3 install coverage
  - pip3 install nose
 script:
   - nosetests  --with-coverage --cover-package=dame_flame
+
+ 
+ 
+before_script: psql -c 'create database tmp;' -U postgres
+script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/
 after_success:
   - coveralls
