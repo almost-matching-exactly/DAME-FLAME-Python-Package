@@ -23,18 +23,18 @@ def verbose_output(iteration_number, num_matched_groups, num_unmatched_t,
     '''
     Prints progress of matching algorithm along various metrics
     '''
-    print("Iteration number: ", iteration_number)
+    print("Completed iteration " + str(iteration_number) + " of matching")
     print("\tNumber of matched groups formed in total: ", num_matched_groups)
     print("\tUnmatched treated units: ", num_unmatched_t, "out of a total of ",
           tot_treated, "treated units")
-    print("\tUnmatched control units: ", num_unmatched-num_unmatched_t,
-          "out of a total of ", orig_len_df_all-tot_treated, "control units")
-    print("\tPredictive error of covariates chosen this iteration: ", pe)
-    print("\tNumber of matches made in this iteration: ",
+    print("\tUnmatched control units: ", num_unmatched - num_unmatched_t,
+          "out of a total of ", orig_len_df_all - tot_treated, "control units")
+    print("\tNumber of matches made this iteration: ",
           prev_iter_num_unmatched - num_unmatched)
     print("\tNumber of matches made so far: ",
           orig_len_df_all - num_unmatched)
-    print("\tIn this iteration, the covariates dropped are: ", curr_covar_set)
+    print("\tCovariates dropped so far: ", curr_covar_set)
+    print("\tPredictive error of covariate set used to match: ", pe)
 
 
 def compute_bf(matched_rows, treatment_column_name, df_unmatched):
@@ -142,7 +142,7 @@ def create_mice_dfs(df_holdout, num_imputes, outcome_col_name):
     return df_holdout_array
 
 def separate_dfs(df_holdout, treatment_col_name, outcome_col_name,
-                 covs_include):
+                 covs_drop):
     """
     This function serves to create the control/treatment dfs for use
     in the decide_drop functions in flame and in dame.
@@ -151,13 +151,13 @@ def separate_dfs(df_holdout, treatment_col_name, outcome_col_name,
     # all cols except: outcome/treated/the covs being dropped
     x_treated = df_holdout.loc[df_holdout[treatment_col_name] == 1,
                                df_holdout.columns.difference([outcome_col_name,
-                                                              treatment_col_name] + list(covs_include))]
+                                                              treatment_col_name] + list(covs_drop))]
 
     #X-control is the df that has rows where treated col = 0 and
     # all cols except: outcome/treated/the covs being dropped
     x_control = df_holdout.loc[df_holdout[treatment_col_name] == 0,
                                df_holdout.columns.difference([outcome_col_name,
-                                                              treatment_col_name] + list(covs_include))]
+                                                              treatment_col_name] + list(covs_drop))]
 
     y_treated = df_holdout.loc[df_holdout[treatment_col_name] == 1,
                                outcome_col_name]
@@ -203,9 +203,9 @@ def stop_iterating(early_stops, df_unmatched, repeats, treat_col_name,
         return True
 
     # Hard stop criteria: exceeded the number of iters user asked for?
-    if (early_stops.iterations != False and early_stops.iterations == h):
+    if early_stops.iterations == h:
         print((orig_len_df_all - len(df_unmatched)), "units matched. "\
-              "We stopped after doing iteration number: ", h)
+              "We stopped after iteration", h)
         return True
 
     # Hard stop criteria: met the threshold of unmatched items to stop?

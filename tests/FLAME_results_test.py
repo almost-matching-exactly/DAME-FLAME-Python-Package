@@ -730,8 +730,7 @@ class Test_exceptions(unittest.TestCase):
             broken_early_stop_iterations()
             
         self.assertTrue('The value provided for early_stop_iteration needs '\
-                        'to be an integer number of iterations, or False if '\
-                        'not stopping early based on the number of iterations' in str(early_stop_iterations.exception))
+                        'to be an integer number of iterations, or the default of infinity')
 
     def test_false_weight_array_type(self):
         def broken_weight_array_type():
@@ -965,3 +964,4 @@ class Test_exceptions(unittest.TestCase):
             broken_ATE_input_model()
         self.assertTrue("This function can be only called after a match has "\
                            "been formed using the .fit() and .predict() functions" in str(ATE_input_model.exception))
+unittest.main()
