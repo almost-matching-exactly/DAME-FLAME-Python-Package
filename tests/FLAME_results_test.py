@@ -964,4 +964,3 @@ class Test_exceptions(unittest.TestCase):
             broken_ATE_input_model()
         self.assertTrue("This function can be only called after a match has "\
                            "been formed using the .fit() and .predict() functions" in str(ATE_input_model.exception))
-unittest.main()
