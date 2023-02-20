@@ -237,7 +237,7 @@ def ATT(matching_object, mice_iter=0):
     avg_control = sum(control[matching_object.outcome_column_name] * control_weights)/control_weight_sum
     return avg_treated - avg_control
 
-def var_ATE(matching_object, mice_iter=0):
+def var_ATE(matching_object):
     '''
     This is an EXPERIMENTAL function that implements the variance found in 
     Abadie, Drukker, Herr, and Imbens (The Stata Journal, 2004) assuming
@@ -247,26 +247,18 @@ def var_ATE(matching_object, mice_iter=0):
     conducted on its basis. In the future, the estimation procedure will be 
     changed.
 
-    Parameters
-    ----------
-    matching_object : TYPE
-        DESCRIPTION.
-    mice_iter : TYPE, optional
-        DESCRIPTION. The default is 0.
-
     Returns
     -------
     variance: float
+    ATE: float
     '''
     validate_matching_obj(matching_object)
 
     # Compute the sigma^2 estimate from equation 10 in Abadie et al
     # units_per_group is in format [[#,#,#,...], [#,#,#,...],..]
-    # Need to double check this, if mice_iter != 0, then possibly need to index
     units_per_group = matching_object.units_per_group
     
     mmgs_dict = all_MGs(matching_object)
-    # print(mmgs_dict)
         
     # Compute K_dict, which maps i to KM value
     K_dict = dict.fromkeys(mmgs_dict,0)
@@ -279,7 +271,7 @@ def var_ATE(matching_object, mice_iter=0):
 
         is_treatment_val = matching_object.input_data.loc[i, treated_col]
         
-        ''' # This works for only the without repeats case!
+        ''' # Possible speed improvement to explore -- only works for without repeats
         for group in units_per_group:
             if i in group:
                 # find out how many people in this mmg
@@ -290,19 +282,18 @@ def var_ATE(matching_object, mice_iter=0):
                 else:
                     num_opposite = num_treated
                     
-                K_dict[i] += num_opposite/(len(group)-num_opposite) # is this right???  # (num_opposite/len(group)) # I think this is right per convo w Vittorio
-        ''' # This works for both! Technically somewhat slower though!
+                K_dict[i] += num_opposite/(len(group)-num_opposite)
+        ''' 
+        # This works for both with and without repeats. Technically somewhat slower though!
         for j in matching_object.df_units_and_covars_matched.index:
             if i in mmgs_dict[j] and matching_object.input_data.loc[j, treated_col] != is_treatment_val:
                 num_treated = sum(matching_object.input_data.loc[mmgs_dict[j], treated_col])
-                if matching_object.input_data.loc[j, treated_col]: # double think -- you have to be opposite of j != opp of i
+                if matching_object.input_data.loc[j, treated_col]: # you have to be opposite of j != opp of i
                     num_opposite = len(mmgs_dict[j]) - num_treated
                 else:
                     num_opposite = num_treated
-                # print("i", i, "j", j, "num_opp", num_opposite)
                 K_dict[i] += 1/num_opposite
         
-    # print(K_dict)
     # Compute ATE per simple estimator in paper -- this should be right
     ate = 0
     for i in mmgs_dict:
