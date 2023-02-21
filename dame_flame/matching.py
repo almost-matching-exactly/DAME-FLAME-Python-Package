@@ -157,7 +157,7 @@ class DAME(MatchParent):
         self.pe_each_iter = None
 
         # in the non-mice case:
-        if (self.missing_data_replace != 3 and self.missing_data_imputations==1):
+        if (self.missing_data_replace != 3):
             self.df_units_and_covars_matched = return_array[0]
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
             self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
@@ -404,7 +404,6 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
         early_stop_un_t_frac, early_stop_pe, 
         early_stop_iterations)
-
 
     if not mice_on_match:
         return_array = flame_algorithm.flame_generic(

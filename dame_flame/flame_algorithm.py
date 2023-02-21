@@ -121,7 +121,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
     pre_dame(False, integer): Indicates whether the algorithm will move to
     DAME and after integer number of iterations.
     '''
-    
 
     # Initialize variables. These are all moving/temporary throughout algo
     all_covs = df_all.columns.tolist()

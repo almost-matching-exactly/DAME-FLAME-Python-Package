@@ -223,15 +223,10 @@ def check_missings(df_input, df_holdout, missing_indicator, missing_data_replace
         df_input = df_input.loc[:, df_input.max().sort_values(ascending=True).index]
 
     if missing_data_replace == 3:
-        print("missing data replace is 3")
         # this means do mice but only if theres something actually missing.
         df_input = df_input.replace(missing_indicator, np.nan)
         if df_input.isnull().values.any():
             mice_on_matching = missing_data_imputations
-        else:
-            raise Exception('Invalid input error. There is no missing data '\
-                            'in this dataset, but missing data handling '\
-                            'was chosen.')
 
     if missing_holdout_replace == 0 and df_holdout.isnull().values.any():
         print('There is missing data in this dataset. The default missing '\
