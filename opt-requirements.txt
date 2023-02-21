@@ -1,0 +1,3 @@
+psycopg2>=2.8.6
+mysql-connector>=1.1.0
+mysql-connector-python>=8.0.22
