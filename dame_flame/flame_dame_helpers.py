@@ -140,6 +140,7 @@ def create_mice_dfs(df_holdout, num_imputes, outcome_col_name):
         cols = list(tmp_df.columns)
         cols.remove(outcome_col_name)
         tmp_df[cols] = tmp_df[cols].astype('int64')
+        tmp_df[outcome_col_name] = df_holdout[outcome_col_name]
         df_holdout_array.append(tmp_df)
 
     return df_holdout_array

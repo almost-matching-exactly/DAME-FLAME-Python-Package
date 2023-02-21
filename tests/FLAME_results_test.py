@@ -50,7 +50,7 @@ class TestFlame(unittest.TestCase):
     
         holdout_path = os.path.join((os.path.dirname(__file__)), 'basicHoldoutData.csv')
         holdout = pd.read_csv(holdout_path)
-        model = matching.FLAME(repeats=False, verbose=1)
+        model = matching.FLAME(repeats=False, verbose=1, early_stop_pe=False)
         model.fit(holdout_data=holdout)
         algo_output = model.predict(df, C=100000)
         
@@ -294,10 +294,15 @@ class TestFlame(unittest.TestCase):
             weight_array = covar_importance/covar_importance.sum()
             for x in [False, True]:
                 for y in [False, True]:
-                    model1 = matching.FLAME(repeats=x,want_pe = y, want_bf = y,verbose=0,adaptive_weights = False)
+                    model1 = matching.FLAME(repeats=x,want_pe = y, want_bf = y,
+                                            verbose=0,adaptive_weights = False,
+                                            early_stop_pe=False)
                     model1.fit(holdout_data=holdout,weight_array = list(weight_array))
                     output = model1.predict(df, pre_dame = True)
-                    model2 = matching.FLAME(repeats=x, want_pe = y, want_bf = y,verbose=0,adaptive_weights = 'decisiontreeCV')
+                    model2 = matching.FLAME(repeats=x, want_pe = y, 
+                                            want_bf = y,verbose=0,
+                                            adaptive_weights='decisiontreeCV',
+                                            early_stop_pe=False)
                     model2.fit(holdout_data=holdout)
                     output = model2.predict(df, pre_dame = True)
 
