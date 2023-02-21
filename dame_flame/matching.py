@@ -42,9 +42,6 @@ class MatchParent:
     early_stop_pe: Whether the covariate set chosen to match
         on has a pe lower than the parameter early_stop_pe_val, at
         which point the algorithm will stop.
-    early_stop_pe_val: If early_stop_pe is true,
-        then if the covariate set chosen to match on has a PE greater than
-        this value, the algorithm will stop
     missing_holdout_replace (0,1,2): default 0.
         if 0, assume no missing holdout data and proceed
         if 1, drop all missing_indicator values from holdout dataset
@@ -69,10 +66,10 @@ class MatchParent:
         iteration.
     """
     def __init__(self, adaptive_weights='ridge', alpha=0.1, repeats=True,
-                 verbose=2, early_stop_iterations=False,
+                 verbose=2, early_stop_iterations=float('inf'),
                  stop_unmatched_c=False, early_stop_un_c_frac=False,
                  stop_unmatched_t=False, early_stop_un_t_frac=False,
-                 early_stop_pe=True, early_stop_pe_frac=0.05,
+                 early_stop_pe=0.05,
                  missing_indicator=np.nan, missing_data_replace=0,
                  missing_holdout_replace=0, missing_holdout_imputations=10,
                  missing_data_imputations=1, want_pe=False, want_bf=False):
@@ -92,7 +89,6 @@ class MatchParent:
         self.stop_unmatched_t = stop_unmatched_t
         self.early_stop_un_t_frac = early_stop_un_t_frac
         self.early_stop_pe = early_stop_pe
-        self.early_stop_pe_frac = early_stop_pe_frac
         self.want_pe = want_pe
         self.want_bf = want_bf
 
@@ -152,7 +148,7 @@ class DAME(MatchParent):
             self.early_stop_iterations, self.stop_unmatched_c,
             self.early_stop_un_c_frac, self.stop_unmatched_t,
             self.early_stop_un_t_frac, self.early_stop_pe,
-            self.early_stop_pe_frac, self.want_bf,
+            self.want_bf,
             self.missing_indicator,
             self.missing_data_replace, self.missing_holdout_replace,
             self.missing_holdout_imputations, self.missing_data_imputations)
@@ -166,9 +162,9 @@ class DAME(MatchParent):
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
             self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
             self.units_per_group = return_array[1]
-            if (self.want_pe == True):
+            if self.want_pe:
                 self.pe_each_iter = return_array[2]
-            if (self.want_bf == True):
+            if self.want_bf:
                 self.bf_each_iter = return_array[-1]
         else:
             # in the mice case:
@@ -190,7 +186,7 @@ class FLAME(MatchParent):
     '''
     The class used for the FLAME algorithm
     '''
-    def predict(self, input_data, pre_dame=False, C=0.1):
+    def predict(self, input_data, pre_dame=float('inf'), C=0.1):
         """
         Performs match and returns matched data.
 
@@ -199,8 +195,8 @@ class FLAME(MatchParent):
         input_data: {string, dataframe}, required parameter
             The dataframe on which to perform the matching, or the location of
             the CSV with the dataframe
-        pre_dame (int, False): Indicates whether to switch to dame and after
-            int number of iterations.
+        pre_dame (int, float): Indicates whether to switch to dame after
+            int number of iterations. If float('inf') (default), only run FLAME.
         C (float, 0.1): The tradeoff between PE and BF in computing MQ
         """
         self.input_data, self.holdout_data = data_cleaning.read_files(
@@ -213,7 +209,7 @@ class FLAME(MatchParent):
             self.early_stop_iterations, self.stop_unmatched_c,
             self.early_stop_un_c_frac, self.stop_unmatched_t,
             self.early_stop_un_t_frac, self.early_stop_pe,
-            self.early_stop_pe_frac, self.want_bf, self.missing_indicator,
+            self.want_bf, self.missing_indicator,
             self.missing_data_replace, self.missing_holdout_replace,
             self.missing_holdout_imputations, self.missing_data_imputations,
             pre_dame, C)
@@ -222,7 +218,7 @@ class FLAME(MatchParent):
         self.pe_each_iter = None
 		
         # in the non-mice case:
-        if self.missing_data_replace != 3 and not pre_dame:
+        if self.missing_data_replace != 3 and pre_dame == float('inf'):
             self.df_units_and_covars_matched = return_array[0]
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
             self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns=['weights'])
@@ -232,7 +228,7 @@ class FLAME(MatchParent):
             if self.want_bf:
                 self.bf_each_iter = return_array[-1]
 
-        if (self.missing_data_replace != 3 and pre_dame==False):
+        if (self.missing_data_replace != 3 and pre_dame == float('inf')):
             self.df_units_and_covars_matched = return_array[0]
             self.groups_per_unit = self.df_units_and_covars_matched['weights']
             self.df_units_and_covars_matched = self.df_units_and_covars_matched.drop(columns = ['weights'])
@@ -242,7 +238,7 @@ class FLAME(MatchParent):
             if (self.want_bf == True):
                 self.bf_each_iter = return_array[-1]
 
-        elif pre_dame:
+        elif pre_dame < float('inf'):
 
             # the first few items all look the same, then the last item is from dame
             self.df_units_and_covars_matched = return_array[0]
@@ -300,10 +296,10 @@ class FLAME(MatchParent):
 def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
           outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1,
           repeats=True, verbose=2, want_pe=False,
-          early_stop_iterations=False, stop_unmatched_c=False,
+          early_stop_iterations=float('inf'), stop_unmatched_c=False,
           early_stop_un_c_frac=False, stop_unmatched_t=False,
-          early_stop_un_t_frac=False, early_stop_pe=True,
-          early_stop_pe_frac=0.05, want_bf=False, missing_indicator=np.nan,
+          early_stop_un_t_frac=False, early_stop_pe=0.05,
+          want_bf=False, missing_indicator=np.nan,
           missing_data_replace=0, missing_holdout_replace=0,
           missing_holdout_imputations=10, missing_data_imputations=1):
     """ Accepts user input, validates, error-checks, calls DAME algorithm.
@@ -338,7 +334,7 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
 
     early_stops = data_cleaning.check_stops(
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
-        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
+        early_stop_un_t_frac, early_stop_pe, 
         early_stop_iterations)
 
     if not mice_on_match:
@@ -369,22 +365,22 @@ def _DAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
 def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
            outcome_column_name='outcome', adaptive_weights='ridge', alpha=0.1,
            repeats=True, verbose=2, want_pe=False,
-           early_stop_iterations=False, stop_unmatched_c=False,
+           early_stop_iterations=float('inf'), stop_unmatched_c=False,
            early_stop_un_c_frac=False, stop_unmatched_t=False,
-           early_stop_un_t_frac=False, early_stop_pe=True,
-           early_stop_pe_frac=0.05, want_bf=False,
+           early_stop_un_t_frac=False, early_stop_pe=0.05,
+           want_bf=False,
            missing_indicator=np.nan,
            missing_data_replace=0, missing_holdout_replace=0,
            missing_holdout_imputations=10, missing_data_imputations=0,
-           pre_dame=False, C=0.1):
+           pre_dame=float('inf'), C=0.1):
     """ This function kicks off the FLAME algorithm.
 
     Args:
         See DAME above. The exeption is no weight_array, and the additional
         params below:
 
-        pre_dame (int, False): Indicates whether to switch to dame and after
-            int number of iterations.
+        pre_dame (int, float): Indicates whether to switch to dame and after
+            int number of iterations. A value of float('inf') (default) means only FLAME is run.
         C (float, 0.1): The tradeoff between PE and BF in computing MQ
 
 
@@ -406,7 +402,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
 
     early_stops = data_cleaning.check_stops(
         stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
-        early_stop_un_t_frac, early_stop_pe, early_stop_pe_frac,
+        early_stop_un_t_frac, early_stop_pe, 
         early_stop_iterations)
 
 
@@ -419,7 +415,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
     else:
         # this would mean we need to run mice on the matching data, which means
         # that we have to run flame_generic multiple times
-        if pre_dame:
+        if pre_dame < float('inf'):
             raise Exception("Invalid Input Error. At this time, we do not "\
                             "allow users to run the hybrid algorithm while "\
                             "running MICE on the matching dataset.")
