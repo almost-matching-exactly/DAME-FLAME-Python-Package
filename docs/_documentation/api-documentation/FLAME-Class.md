@@ -14,10 +14,10 @@ The FLAME algorithm class
 <div class="code-example" markdown="1">
 ```python
 class dame_flame.matching.FLAME(adaptive_weights='ridge', alpha=0.1, 
-         repeats=True, verbose=2, early_stop_iterations=False, 
+         repeats=True, verbose=2, early_stop_iterations=float('inf'), 
          stop_unmatched_c=False, early_stop_un_c_frac=False, 
          stop_unmatched_t=False, early_stop_un_t_frac=False, 
-         early_stop_pe=False, early_stop_pe_frac=0.01,
+         early_stop_pe=0.05, 
          missing_indicator=np.nan, missing_data_replace=0, 
          missing_holdout_replace=0, missing_holdout_imputations=10, 
          missing_data_imputations=1, want_pe=False, want_bf=False)    
@@ -42,13 +42,12 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 | alpha | float | 0.1 | If adaptive_weights is set to ridge, this is the alpha for ridge regression. | 
 | repeats | bool | True | Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. |
 | verbose | int: {0,1,2,3} | 2 | Style of printout while algorithm runs. If 0, no output. If 1, provides iteration number. If 2, provides iteration number and additional information on the progress of the matching at every 10th iteration. If 3, provides iteration number and additional information on the progress of the matching at every iteration |
-| early_stop_iterations | int | 0 | If provided, a number of iterations after which to hard stop the algorithm. |
+| early_stop_iterations | float,int | float('inf') | A number of iterations after which to hard stop the algorithm. The default is infinite; i.e. no early stopping is done. Iterations start at 0 so setting early_stop_iterations to 0, for example, implies that only exact matches should be made. |
 | stop_unmatched_c | bool | False | If True, then the algorithm terminates when there are no more control units to match. |
 | stop_unmatched_t | bool | False | If True, then the algorithm terminates when there are no more treatment units to match. |
 | early_stop_un_c_frac | float |  0.1 | Must be between 0.0 and 1.0. This provides a fraction of unmatched control units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 control units, the algorithm will stop when 10 control units are unmatched and 90 are matched (or earlier, depending on other stopping conditions). |
 | early_stop_un_t_frac | float | 0.1 | Must be between 0.0 and 1.0. This provides a fraction of unmatched treatment units. When the threshold is met, the algorithm will stop iterating. For example, using an input dataset with 100 treatment units, the algorithm will stop when 10 control units are unmatched and 90 are matched (or earlier, depending on other stopping conditions). | 
-| early_stop_pe | bool | False | If this is true, then if the covariate set chosen for matching has a predictive error higher than the parameter early_stop_pe_frac, the algorithm will stop. |
-| early_stop_pe_frac | float | 0.01 | If early_stop_pe is true, then if the covariate set chosen for matching has a predictive error higher than this value, the algorithm will stop. |
+| early_stop_pe| float | 0.05 | If FLAME attempts to drop a covariate set that would raise the PE above (1 + early_stop_pe) times the baseline PE (the PE before any covariates have been dropped), DAME terminates before dropping this covariate set.|
 | want_pe | bool | False | If true, the output of the algorithm will include the predictive error of the covariate sets used for matching in each iteration. |
 | want_bf | bool | False | If true, the output will include the balancing factor for each iteration. |
 | missing_indicator | {character, integer, numpy.nan} | numpy.nan | This is the indicator for missing data in the dataset. |
@@ -92,9 +91,9 @@ print(result)
 
 <div class="code-example" markdown="1">
 ```python
-__init__(adaptive_weights='ridge', alpha=0.1, repeats=True, verbose=2, early_stop_iterations=False, 
+__init__(adaptive_weights='ridge', alpha=0.1, repeats=True, verbose=2, early_stop_iterations=float('inf'), 
 stop_unmatched_c=False, early_stop_un_c_frac=False, stop_unmatched_t=False, early_stop_un_t_frac=False,
-early_stop_pe=False, early_stop_pe_frac=0.01
+early_stop_pe=0.05, 
 missing_indicator=np.nan, missing_data_replace=0, missing_holdout_replace=0, 
 missing_holdout_imputations=10, missing_data_imputations=1, want_pe=False, want_bf=False)
 ```
@@ -149,7 +148,7 @@ Perform match and return matches
 |--------------|------------------|--------- | ---- |
 | input_data | {string, dataframe} | Required Parameter | The dataframe on which to perform the matching, or the location of the CSV with the dataframe |
 | C | float | 0.1 | The tradeoff parameter between the balancing factor and the predictive error when deciding which covariates to match on |
-| pre_dame | {bool, integer} | False | If an integer is provided, this is the number of iterations to run the FLAME algorithm for before switching to DAME, in order for a hybrid FLAME-DAME option. | 
+| pre_dame | {float, int} | float('inf') | FLAME will run for this many iterations prior to switching to DAME.|
 
 
 | `predict` Return | Description  |
