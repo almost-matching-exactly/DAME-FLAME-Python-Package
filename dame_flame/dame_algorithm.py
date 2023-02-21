@@ -136,7 +136,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     orig_len_df_all = len(df_all) # Need this bc of case where repeats=False
     orig_tot_treated = df_all[treatment_column_name].sum()
 
-    h = 0 # Iteration (0'th round of matching is exact matching)
+    # As an initial step, we attempt to match on all covariates
 
     covs_match_on = all_covs
     matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
@@ -144,8 +144,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         outcome_column_name, return_matches)
 
     if (len(units_in_g)) != 0:
-        bf = flame_dame_helpers.compute_bf(matched_rows, treatment_column_name, df_unmatched)
-
         # add the newly matched groups to MG_units, which tracks units in groups
         MG_units = MG_units + units_in_g
         # update unit weights for all units which appear in the new groups
@@ -154,11 +152,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
         for index in range(len(unique_units)):
             weights['weights'][unique_units[index]] += occurrences[index]
-    else:
-        bf = 0
-
-		# Balancing factor of any exact matches
-    return_bf.append(bf)
 
     # Now remove the matched units
     df_unmatched.drop(matched_rows.index, inplace=True)
@@ -177,13 +170,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         x = list()
         x.append(df_holdout)
         df_holdout = x
-
-		# Predictive error of starting covariate set
-    baseline_pe = flame_dame_helpers.find_pe_for_covar_set(
-				df_holdout, treatment_column_name, outcome_column_name, [],
-				adaptive_weights, alpha)
-    return_pe.append(baseline_pe)
-
     # Here we initializing variables for the iterative portion of the code.
     # active_covar_sets indicates the sets elibible to be dropped. In the
     # paper, this is lambda_h. curr_covar_sets is the covariates chosen to be
@@ -193,11 +179,13 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
     active_covar_sets = set(frozenset([i]) for i in all_covs)
     processed_covar_sets = set()
 
+    h = 1 # The iteration number
+
     if verbose == 3:
         flame_dame_helpers.verbose_output(h, len(MG_units),
                                           df_unmatched[treatment_column_name].sum(),
                                           len(df_unmatched), orig_len_df_all,
-                                          orig_tot_treated, baseline_pe,
+                                          orig_tot_treated, 0,
                                           orig_len_df_all, set())
 
     prev_iter_num_unmatched = len(df_unmatched) # this is for output progress
@@ -230,7 +218,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                   "there was nothing left to match")
             break
 
-        h += 1
+        return_pe.append(pe)
 
         covs_match_on = list(set(all_covs)-curr_covar_set)
 
@@ -249,14 +237,6 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                 weights['weights'][unique_units[index]] += occurrences[index]
 
 
-        # Check not equal to false because if it's turned off, value is False
-        if early_stops.pe and (pe - baseline_pe) / baseline_pe >= early_stops.pe:
-            print("Matching stopped while attempting iteration " + str(h) +
-            " due to the PE fraction early stopping criterion.")
-            print("\tPredictive error of covariate set would have been " + str(pe))
-            break
-        return_pe.append(pe)
-
         # It's probably slow to compute this if people don't want it, so will
         # want to add this, I think.
         if want_bf:
@@ -270,6 +250,18 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             else:
                 bf = np.nan
             return_bf.append(bf)
+
+        # Check not equal to false because if it's turned off, value is False
+        # but if it's turned on, value is a float.
+        # Can't check prev_pe on first iteration so check not first iter
+        if early_stops.pe != False and h != 1 and prev_pe != 0:
+            if (pe - prev_pe)/prev_pe >= (1 - early_stops.pe):
+                print((orig_len_df_all - len(df_unmatched)), "units matched. "\
+                        "We stopped matching with a pe of ", pe, 
+                        "Early stopping criteria of PE fraction met")
+                break
+        prev_pe = pe
+
 
         # Generate new active sets
         Z_h = generate_new_active_sets.algo3GenerateNewActiveSets(curr_covar_set,
@@ -291,10 +283,11 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         if not repeats:
             df_all = df_unmatched
 
+        h += 1
         # End of iter. Decide what to print to user depending on verbose var.
         if verbose == 1:
-            print("Completed iteration " + str(h) + " of matching")
-        if ((verbose == 2 and (h % 10 == 0)) or verbose == 3):
+            print("Iteration number: ", h)
+        if ((verbose == 2 and (h%10 == 0)) or verbose == 3):
 
             flame_dame_helpers.verbose_output(h, len(MG_units),
                                               df_unmatched[treatment_column_name].sum(),
@@ -304,7 +297,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
                                               prev_iter_num_unmatched,
                                               curr_covar_set)
             if want_bf:
-                print("\tBalancing factor of this iteration: ", bf)
+                print("Balancing factor of this iteration: ", bf)
 
             prev_iter_num_unmatched = len(df_unmatched)
 
