@@ -250,6 +250,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
 
 
         # Check not equal to false because if it's turned off, value is False
+        baseline_pe = max(1e-12, baseline_pe)
         if early_stops.pe and (pe - baseline_pe) / baseline_pe >= early_stops.pe:
             print("Matching stopped while attempting iteration " + str(h) +
             " due to the PE fraction early stopping criterion.")
