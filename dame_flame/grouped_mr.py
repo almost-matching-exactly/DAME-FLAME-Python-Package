@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+
+"""Does the bit matching algo from "Fast Large Scale..."(Wang, et al)"""
+
+# author: Neha Gupta, Duke University
+# Copyright Duke University 2020
+# License: MIT
+
 from operator import itemgetter
 import numpy as np
 import pandas as pd
