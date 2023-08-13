@@ -119,11 +119,14 @@ def check_parameters(adaptive_weights, df_holdout, df_input, alpha, FLAME,
 
         # make sure that adaptive_weights is a valid value.
         if (adaptive_weights not in ["ridge", "decisiontree", "ridgeCV", "decisiontreeCV"]):
-            raise Exception("Invalid input error. The acceptable values for "\
+            # Check to see if adaptive_weights is an object of type scikit-model
+            if not (hasattr(adaptive_weights, 'fit') and hasattr(adaptive_weights, 'predict')):
+                raise Exception("Invalid input error. The acceptable values for "\
                             "the adaptive_weights parameter are 'ridge', "\
                             "'decisiontree', 'decisiontreeCV', or 'ridgeCV'. Additionally, "\
                             "adaptive-weights may be 'False' along "\
-                            "with a weight array")
+                            "with a weight array or may be a scikit learn object if it has"\
+                            " a fit, predict method.")
 
 
         # make sure the two dfs have the same number of columns first:
