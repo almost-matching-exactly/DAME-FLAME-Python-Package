@@ -96,7 +96,7 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             clf = Ridge(alpha=alpha_given)
         elif adaptive_weights in ["decisiontree", "decisiontreeCV"]:
             clf = DecisionTreeRegressor()
-        elif adaptive_weights == False:
+        elif adaptive_weights == 0:
             return False
         else:
             clf = adaptive_weights
