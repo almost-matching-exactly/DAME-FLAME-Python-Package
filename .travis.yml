@@ -10,8 +10,8 @@ python:
   - 3.6
   - 3.7
   - 3.8
-  - 3.10
-  - 3.11
+  - "3.10"
+  - "3.11"
 env:
   - SKLEARNVERSION=0.23.2
   - SKLEARNVERSION=0.24
