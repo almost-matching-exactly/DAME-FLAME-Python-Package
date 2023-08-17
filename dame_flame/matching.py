@@ -7,6 +7,7 @@ DAME and FLAME Matching Methods for Causal Inference. Starts matching methods.
 # License: MIT
 
 import numpy as np
+import pandas as pd
 from . import data_cleaning
 from . import dame_algorithm
 from . import flame_algorithm
@@ -242,7 +243,9 @@ class FLAME(MatchParent):
 
             # the first few items all look the same, then the last item is from dame
             self.df_units_and_covars_matched = return_array[0]
-            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0], sort=True)
+            # self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0], sort=True)
+            self.df_units_and_covars_matched = pd.concat([self.df_units_and_covars_matched, return_array[-1][0]])
+
             if self.repeats == True:
                 # we have to aggregate the indexes appearing more than once,
                 # those are the ones which were matched units in both dame and flame:
