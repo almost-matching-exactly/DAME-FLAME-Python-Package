@@ -1,6 +1,9 @@
 language: python
 # ===== Linux ======
-dist: xenial
+# dist: xenial
+os:
+ - linux 
+ - osx
 
 services:
  - postgresql
