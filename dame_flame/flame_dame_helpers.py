@@ -96,11 +96,21 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             clf = Ridge(alpha=alpha_given)
         elif adaptive_weights in ["decisiontree", "decisiontreeCV"]:
             clf = DecisionTreeRegressor()
-        else:
+        elif adaptive_weights == 0:
             return False
+        else:
+            clf = adaptive_weights
+            # return False
 
-        if adaptive_weights in ["ridge", "decisiontree"]:
-
+        if adaptive_weights in ["ridgeCV", "decisiontreeCV"]:
+            # calculate MSE via cross validation.
+            mse_treated = -1*np.mean(cross_val_score(clf, x_treated, y_treated,
+                                                     scoring='neg_mean_squared_error',
+                                                     cv=5))
+            mse_control = -1*np.mean(cross_val_score(clf, x_control, y_control,
+                                                     scoring='neg_mean_squared_error',
+                                                     cv=5))
+        else:
             # Calculate treated MSE
             clf.fit(x_treated, y_treated)
             predicted = clf.predict(x_treated)
@@ -110,15 +120,6 @@ def find_pe_for_covar_set(df_holdout, treatment_column_name,
             clf.fit(x_control, y_control)
             predicted = clf.predict(x_control)
             mse_control = mean_squared_error(y_control, predicted)
-
-        else:
-            # calculate MSE via cross validation.
-            mse_treated = -1*np.mean(cross_val_score(clf, x_treated, y_treated,
-                                                     scoring='neg_mean_squared_error',
-                                                     cv=5))
-            mse_control = -1*np.mean(cross_val_score(clf, x_control, y_control,
-                                                     scoring='neg_mean_squared_error',
-                                                     cv=5))
 
         pe_array.append(mse_treated + mse_control)
 
