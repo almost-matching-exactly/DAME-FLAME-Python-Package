@@ -6,6 +6,11 @@
 # License: MIT
 
 import numpy as np
+import math
+import decimal
+
+def cal_dec(x):
+    return math.ceil(np.log10(x))
 
 def match_ng(df, covs, covs_max_list, treatment_indicator_col='treated'):
     '''
@@ -22,11 +27,23 @@ def match_ng(df, covs, covs_max_list, treatment_indicator_col='treated'):
     # the covariate values together with the treatment indicator as a matrix
     arr_slice_w_t = df[covs + [treatment_indicator_col]].values
 
+    # calculate required precision
+    precision1=cal_dec(arr_slice_wo_t.max())+cal_dec(arr_slice_wo_t.shape[1])+ math.ceil(np.max(np.log10(covs_max_list)*np.arange(len(covs_max_list))))
+    precision2=cal_dec(arr_slice_w_t.max())+cal_dec(arr_slice_w_t.shape[1])+ math.ceil(np.max(np.log10(covs_max_list)*np.arange(1,len(covs_max_list)+1)))
+    decimal.getcontext().prec=max(precision1,precision2)
     # matrix multiplication, get a unique number for each unit
-    b_i = np.dot(arr_slice_wo_t, np.power(covs_max_list, [i for i in range(len(covs_max_list))]))
+    if max(precision1,precision2)<=18:
+        dtype=np.int64
+    else:
+        dtype=decimal.Decimal
+    b_i = np.dot(arr_slice_wo_t, np.power(np.array(covs_max_list).astype(dtype), np.arange(len(covs_max_list))))
+
+    # b_i = np.dot(arr_slice_wo_t, np.power(covs_max_list, [i for i in range(len(covs_max_list))]))
 
     # matrix multiplication, get a unique number for each unit with treatment indicator
-    b_i_plus = np.dot(arr_slice_w_t, np.append(np.power(covs_max_list, [i+1 for i in range(len(covs_max_list))]), [1]))
+    b_i_plus = np.dot(arr_slice_w_t, np.append(np.power(np.array(covs_max_list).astype(dtype), np.arange(1,len(covs_max_list)+1)), [1]))
+
+    # b_i_plus = np.dot(arr_slice_w_t, np.append(np.power(covs_max_list, [i+1 for i in range(len(covs_max_list))]), [1]))
     # b_i_plus = np.dot(arr_slice_w_t, np.array([covs_max_list[i]**(i+1) for i in range(len(covs_max_list))] + [1]))
 
     # count how many times each number appears

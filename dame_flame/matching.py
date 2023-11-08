@@ -7,7 +7,6 @@ DAME and FLAME Matching Methods for Causal Inference. Starts matching methods.
 # License: MIT
 
 import numpy as np
-import pandas as pd
 from . import data_cleaning
 from . import dame_algorithm
 from . import flame_algorithm
@@ -187,7 +186,7 @@ class FLAME(MatchParent):
     '''
     The class used for the FLAME algorithm
     '''
-    def predict(self, input_data, pre_dame=float('inf'), C=0.1):
+    def predict(self, input_data, pre_dame=float('inf'), C=0.1, n_cpus=1):
         """
         Performs match and returns matched data.
 
@@ -199,6 +198,11 @@ class FLAME(MatchParent):
         pre_dame (int, float): Indicates whether to switch to dame after
             int number of iterations. If float('inf') (default), only run FLAME.
         C (float, 0.1): The tradeoff between PE and BF in computing MQ
+        n_cpus (int): Define the maximum number of CPUs to be used for parallelizing 
+            a for loop in the decide_drop function of the FLAME algorithm. The actual 
+            number of CPUs used will be min(n_cpus, cpu_count, number_dropping), where 
+            cpu_count is the number of CPUs found in your system, and number_dropping
+            is the number of covariates to be dropped in each iteration. 
         """
         self.input_data, self.holdout_data = data_cleaning.read_files(
             input_data, self.holdout_data)
@@ -213,7 +217,7 @@ class FLAME(MatchParent):
             self.want_bf, self.missing_indicator,
             self.missing_data_replace, self.missing_holdout_replace,
             self.missing_holdout_imputations, self.missing_data_imputations,
-            pre_dame, C)
+            pre_dame, C, n_cpus)
 
         self.bf_each_iter = None
         self.pe_each_iter = None
@@ -243,9 +247,7 @@ class FLAME(MatchParent):
 
             # the first few items all look the same, then the last item is from dame
             self.df_units_and_covars_matched = return_array[0]
-            # self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0], sort=True)
-            self.df_units_and_covars_matched = pd.concat([self.df_units_and_covars_matched, return_array[-1][0]])
-
+            self.df_units_and_covars_matched = self.df_units_and_covars_matched.append(return_array[-1][0], sort=True)
             if self.repeats == True:
                 # we have to aggregate the indexes appearing more than once,
                 # those are the ones which were matched units in both dame and flame:
@@ -375,7 +377,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
            missing_indicator=np.nan,
            missing_data_replace=0, missing_holdout_replace=0,
            missing_holdout_imputations=10, missing_data_imputations=0,
-           pre_dame=float('inf'), C=0.1):
+           pre_dame=float('inf'), C=0.1, n_cpus=1):
     """ This function kicks off the FLAME algorithm.
 
     Args:
@@ -412,7 +414,7 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
         return_array = flame_algorithm.flame_generic(
             df, treatment_column_name, weight_array, outcome_column_name,
             adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
-            want_bf, mice_on_hold, early_stops, pre_dame, C)
+            want_bf, mice_on_hold, early_stops, pre_dame, C, n_cpus)
 
     else:
         # this would mean we need to run mice on the matching data, which means
@@ -436,6 +438,6 @@ def _FLAME(df, df_holdout, treatment_column_name='treated', weight_array=False,
             return_array.append(flame_algorithm.flame_generic(
                 df_array[i], treatment_column_name, weight_array, outcome_column_name,
                 adaptive_weights, alpha, df_holdout, repeats, want_pe, verbose,
-                want_bf, mice_on_hold, early_stops, pre_dame, C))
+                want_bf, mice_on_hold, early_stops, pre_dame, C, n_cpus))
 
     return return_array
