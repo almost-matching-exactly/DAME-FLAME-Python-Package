@@ -56,7 +56,7 @@ This is defined as the average treatment effect conditional on particular covari
 
 Our implementation of CATE estimation allows users to input a unit $i$ and receive its CATE, based off the covariates it was matched to other units on. 
 
-Since our units are matched almost-exactly, all units in a given matched group will have the same CATE. For a unit $i$ in matched group $m$ of size $\|m\|$, we estimate the CATE of unit $i$ as: $$\frac{1}{\|M\|}\sum_{i:T_i=1}[\hat{Y}_i(1)]-\frac{1}{\|M\|}\sum_{i:T_i=0}[\hat{Y}_i(0)]$$ 
+Since our units are matched almost-exactly, all units in a given matched group will have the same CATE. For a unit $i$ in matched group $m$ of size $\|m\|$, with $\|m_0\|$ control units and $\|m_1\|$ treated units, we estimate the CATE of unit $i$ as: $$\frac{1}{\|m_1\|}\sum_{i:T_i=1}[\hat{Y}_i(1)]-\frac{1}{\|m_0\|}\sum_{i:T_i=0}[\hat{Y}_i(0)]$$ 
 
 where $\hat{Y}_i(0), \hat{Y}_i(1)$ are estimated using the units in $m$ with treatment $1 - T_i$.
 
@@ -65,11 +65,11 @@ where $\hat{Y}_i(0), \hat{Y}_i(1)$ are estimated using the units in $m$ with tre
 
 The Average Treatment Effect is defined to be: $\text{ATE} = \mathbb{E}[Y(1)-Y(0)]$. 
 
-Let $q_i$ denote the number of matched groups that unit $i$ appears in. Note this quantity can be greater than 1 in case that matching is done with replacement, via the `Repeats = True` argument. We then define the weight of a matched group $m$: $w_m=\sum_{i=1}^{\|m\|}\frac{1}{q_i}$. Since the CATE of each unit in a group is the same, we can call the CATE of group $m$ $\text{CATE}_m$. 
+Let $q_i$ denote the number of matched groups that unit $i$ appears in. Note this quantity can be greater than 1 in case that matching is done with replacement, via the `Repeats = True` argument. We then define the weight of a matched group $m$: $w_m=\sum_{i=1}^{\|m\|}{q_i}$. Since the CATE of each unit in a group is the same, we can call the CATE of group $m$ $\text{CATE}_m$. 
 
-We estimate ATE as: $\text{ATE} = \frac{\sum_{m}\text{CATE}_m \times w_m}{\sum_{m}w_m}$.
+We estimate ATE as: $\text{ATE} = \frac{\sum_{m}{\text{CATE_m} \times w_m}}{\sum_{m} w_m}$.
 
-Note that this expression downweights units matched many times so that they do not dominate the ATE estimate.
+Note that this expression downweights units so that they do not dominate the ATE estimate.
 
 <div class="language-markdown highlighter-rouge">
   <h4>Further Readings</h4>

@@ -38,7 +38,7 @@ Read more in the [User Guide](../user-guide/Getting-Matches.html)
 
 | Parameter Name   | Type                                        | Default | Description                                                         |
 |------------------|---------------------------------------------|---------|---------------------------------------------------------------------|
-| adaptive_weights | {bool, 'ridge', 'decisiontree', 'ridgeCV', 'decisiontreeCV'} | 'ridge' | The method used to decide what covariate set should be dropped next. |
+| adaptive_weights | {bool, 'ridge', 'decisiontree', 'ridgeCV', 'decisiontreeCV', scikit model} | 'ridge' | The method used to decide what covariate set should be dropped next. If a scikit model object is passed as a parameter, it should be one with a fit and predict method. |
 | alpha | float | 0.1 | If adaptive_weights is set to ridge, this is the alpha for ridge regression. | 
 | repeats | bool | True | Whether or not units for whom a main matched has been found can be used again, and placed in an auxiliary matched group. |
 | verbose | int: {0,1,2,3} | 2 | Style of printout while algorithm runs. If 0, no output. If 1, provides iteration number. If 2, provides iteration number and additional information on the progress of the matching at every 10th iteration. If 3, provides iteration number and additional information on the progress of the matching at every iteration |
