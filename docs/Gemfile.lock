@@ -230,7 +230,7 @@ GEM
     rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    rexml (3.2.4)
+    rexml (3.2.6)
     rouge (3.23.0)
     ruby-enum (0.8.0)
       i18n
@@ -270,7 +270,6 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages (~> 209)
-  jekyll (~> 3.9.0)
   jekyll-feed (~> 0.12)
   jekyll-redirect-from
   just-the-docs
