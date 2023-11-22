@@ -33,3 +33,5 @@ gem "just-the-docs"
 
 # Redirect plugin
 gem 'jekyll-redirect-from'
+
+gem 'faraday-retry'

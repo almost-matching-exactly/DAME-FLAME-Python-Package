@@ -30,6 +30,7 @@ GEM
     faraday (1.1.0)
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
+    faraday-retry (1.0.3)
     ffi (1.13.1)
     ffi (1.13.1-x64-mingw32)
     forwardable-extended (2.6.0)
@@ -209,15 +210,15 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     mercenary (0.3.6)
-    mini_portile2 (2.8.1)
     minima (2.5.1)
       jekyll (>= 3.5, < 5.0)
       jekyll-feed (~> 0.9)
       jekyll-seo-tag (~> 2.1)
     minitest (5.20.0)
     multipart-post (2.1.1)
-    nokogiri (1.14.3)
-      mini_portile2 (~> 2.8.0)
+    nokogiri (1.14.3-x64-mingw32)
+      racc (~> 1.4)
+    nokogiri (1.14.3-x86_64-linux)
       racc (~> 1.4)
     octokit (4.19.0)
       faraday (>= 0.9)
@@ -269,10 +270,10 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  faraday-retry
   github-pages (~> 209)
   jekyll-feed (~> 0.12)
   jekyll-redirect-from
-  jekyll-remote-theme
   just-the-docs
   minima (~> 2.5)
   tzinfo (~> 1.2)
