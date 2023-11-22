@@ -37,12 +37,6 @@ We briefly define some of the terms we use interchangeably throughout this User 
 
 ## FAQ
 
-### How can I cite you?
-We appreciate your use of the Python dame-flame package. Please cite [this](https://arxiv.org/abs/2101.01867)
-
-### Where can I learn more about the underlying algorithms?
-See [here](https://arxiv.org/abs/1707.06315) or [here](https://proceedings.mlr.press/v89/dieng19b/dieng19b.pdf)
-
 ### Why Don't You Support Continuous Data?
 The FLAME and DAME algorithms use Hamming distance as the distance metric, which is only relevant for discrete data. If you have continuous data, we provide recommendations on discretizations here: [here](https://almost-matching-exactly.github.io/DAME-FLAME-Python-Package/documentation/user-guide/data-requirements).
 
