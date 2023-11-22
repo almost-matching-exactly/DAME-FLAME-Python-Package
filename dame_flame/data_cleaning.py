@@ -91,7 +91,7 @@ def check_parameters(adaptive_weights, df_holdout, df_input, alpha, FLAME,
     '''
 
     # Checks on the weight array...if the weight array needs to exist
-    if adaptive_weights == False:
+    if not adaptive_weights:
 
         if type(weight_array) != list:
             raise Exception('Invalid input error. A weight array of type'\
