@@ -272,6 +272,7 @@ DEPENDENCIES
   github-pages (~> 209)
   jekyll-feed (~> 0.12)
   jekyll-redirect-from
+  jekyll-remote-theme
   just-the-docs
   minima (~> 2.5)
   tzinfo (~> 1.2)
