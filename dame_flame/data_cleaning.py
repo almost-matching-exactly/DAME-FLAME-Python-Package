@@ -23,7 +23,6 @@ def read_files(input_data, holdout_data):
         input_data: dataframe
         holdout_data: dataframe
     """
-
     # Read the input data
     if type(input_data) == pd.core.frame.DataFrame:
         df_input = input_data
@@ -41,13 +40,12 @@ def read_files(input_data, holdout_data):
           and holdout_data > 0.0):
         df_holdout = df_input.sample(frac=holdout_data)
     elif not holdout_data:
-        df_holdout = df_input.sample(frac=0.1) # default if it's not provided is df.
+        df_holdout = df_input # default if it's not provided is df.
     else:
         df_holdout = pd.read_csv(holdout_data)
 
     df_input.columns = map(str, df_input.columns)
     df_holdout.columns = map(str, df_holdout.columns)
-
     return df_input, df_holdout
 
 def check_stops(stop_unmatched_c, early_stop_un_c_frac, stop_unmatched_t,
@@ -91,7 +89,7 @@ def check_parameters(adaptive_weights, df_holdout, df_input, alpha, FLAME,
     '''
 
     # Checks on the weight array...if the weight array needs to exist
-    if not adaptive_weights:
+    if adaptive_weights == False:
 
         if type(weight_array) != list:
             raise Exception('Invalid input error. A weight array of type'\
