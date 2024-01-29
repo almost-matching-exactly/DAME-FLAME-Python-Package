@@ -20,7 +20,7 @@ setuptools.setup(name='flame_db',
           'scikit-learn>=0.21.3',
           'scipy>=0.14',
           'pandas>=0.11.0',
-          'numpy>=1.22.0'
+          'numpy>=1.6.1'
       ],
       extras_require={
         "postgreSQL":  ["psycopg2>=2.8.6"],
