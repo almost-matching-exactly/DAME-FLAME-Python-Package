@@ -152,8 +152,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
         # flatten to 1 list, then add occurrences of unique units
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-        for index in range(len(unique_units)):
-            weights['weights'][unique_units[index]] += occurrences[index]
+        weights.loc[unique_units,'weights'] += occurrences
     else:
         bf = 0
 
@@ -245,8 +244,7 @@ def algo1(df_all, treatment_column_name="T", weight_array=[],
             # flatten to 1 list, then add occurrences of unique units
             flat_units_in_g = np.concatenate(units_in_g).ravel()
             unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-            for index in range(len(unique_units)):
-                weights['weights'][unique_units[index]] += occurrences[index]
+            weights.loc[unique_units,'weights'] += occurrences
 
 
         # Check not equal to false because if it's turned off, value is False

@@ -8,6 +8,7 @@
 
 from operator import itemgetter
 import numpy as np
+import pandas as pd
 from . import flame_group_by
 
 def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
@@ -26,67 +27,52 @@ def algo2_GroupedMR(df_all, df_unmatched, covs_match_on, all_covs, treatment_col
         all_units_in_g: list of unit ids for all matched groups created
 
     '''
-    # Find max of columns and make sure list of columns and list of maximums
-    # is sorted from least to greatest
-
-    # This is a list of tuples (max_of_column, column_name)
-    covs_max_tuples = [(max(df_all[x])+1, x) for x in covs_match_on]
+    covs_max_tuples =list(zip(list(df_all[covs_match_on].max()+1),covs_match_on))
     covs_max_tuples = sorted(covs_max_tuples, key=itemgetter(0))
-
-    # Now covs_match_on is a list of covars and covs_max_list is their maximums
     covs_max_list, covs_match_on = map(list, zip(*covs_max_tuples))
-
-
-    # Form groups on D by exact matching on Js.
-
     df_all_without_outcome = df_all.drop([outcome_column_name], axis=1)
-
     matched_units, bi = flame_group_by.match_ng(df_all_without_outcome,
                                                 covs_match_on, covs_max_list,
                                                 treatment_column_name)
-    # Find newly matched units and their main matched groups.
-
-    # These are the rows of the ones that have been matched:
     matched_rows = df_all.loc[matched_units, :].copy()
     matched_rows['b_i'] = bi
-
-    # These are the unique values in the bi col. length = number of groups
     unique_matched_row_vals = np.unique(bi)
-
-    # Each element in this list represents a matched group and contains all of
-    # the unit ids belonging to that particular group
-    all_units_in_g = []
-    for bi_val in unique_matched_row_vals:
-        # type "int64index", ~ list, all of the unit_numbers in a matched group.
-        units_in_g = matched_rows.index[matched_rows['b_i'] == bi_val]
-
-        # Which of the units of this new group haven't been matched yet?
-        # unique_matched is a subset of units in the matched group, just the
-        # ones for whom this is their main matched group.
-        newly_matched = [i for i in units_in_g if i in df_unmatched.index]
-        # Only need to proceed to fill in the return table if someone's MMG found.
-        if len(newly_matched) != 0:
-
-            all_units_in_g.append(list(units_in_g))
-
-            # Now, we figure out: What does the group look like? eg [1,2,*,1]
-            temp_row_in_group = matched_rows.loc[units_in_g[0]]
-            # ^ that line arbitrarily chooses the first row that has the bi_val so
-            # the first row of that group.
-            group_covs = []
-            for col in return_groups.columns:
-                if col in covs_match_on:
-                    group_covs.append(temp_row_in_group[col])
-                else:
-                    group_covs.append('*')
-            # add that group to the newly matched units to our new dataframe
-
-            return_groups.loc[newly_matched, :] = group_covs
-
-            # other idea for this step of algorithm:
-            # store the bi in a column with df_all and also a column for "pair" with another
-            # persons unit id.
-            # don't update that when someone gets added to an auxiliary matched group
-            # then at the end, iterate through it and create the nicely formatted output.
-
-    return matched_rows, return_groups, all_units_in_g
+    matched_rows_temp=matched_rows.reset_index()
+    # get index of matched_rows that is in df_unmatched
+    matched_rows_temp['matched']=matched_rows_temp['index'].isin(df_unmatched.index)
+    # group index and matched status of matched_rows by unique b_i
+    # to replace 
+    # if len(newly_matched) != 0:
+    #     all_units_in_g.append(list(units_in_g))
+    matched_rows_temp=matched_rows_temp.groupby('b_i').agg({'index': list,'matched':sum})
+    all_units_in_g=matched_rows_temp[matched_rows_temp['matched']!=0]['index'].values.tolist()
+    # replacing
+    # if len(newly_matched) != 0:
+    #     temp_row_in_group = matched_rows.loc[units_in_g[0]]
+    #     group_covs = []
+    #     for col in return_groups.columns:
+    #         if col in covs_match_on:
+    #             group_covs.append(temp_row_in_group[col])
+    #         else:
+    #             group_covs.append('*')
+    # find first row of each match group
+    if len(matched_rows_temp)==0:
+        matched_rows_first=pd.DataFrame(columns=['index'])
+    else:
+        matched_rows_first=matched_rows_temp[matched_rows_temp['matched']!=0]['index'].str[0]
+    # filter matched_rows by the first row of each match group
+    matched_rows_first=matched_rows[matched_rows.index.isin(matched_rows_first.values.tolist())][return_groups.columns]
+    # fill unmatched covs by *
+    matched_rows_first[list(set(return_groups.columns)-set(covs_match_on))]='*'
+    # join by b_i
+    return_groups_copy=return_groups.join(matched_rows[['b_i']],how='left')
+    # identify unmatched index
+    return_groups_copy['unmatched']=return_groups_copy.index.isin(df_unmatched.index)
+    # fill return_groups_copy if index is in matched_rows_first
+    return_groups_copy.loc[matched_rows_first.index,matched_rows_first.columns]=matched_rows_first
+    # forward fill return_groups_copy for each unique b_i by first rows
+    return_groups_copy.loc[return_groups_copy['b_i'].notna(),matched_rows_first.columns.to_list()]=return_groups_copy.loc[return_groups_copy['b_i'].notna(),['b_i']+matched_rows_first.columns.to_list()].groupby('b_i').transform('first')
+    index=return_groups_copy['b_i'].notna() & return_groups_copy['unmatched']==False
+    return_groups_copy.loc[index,matched_rows_first.columns]=return_groups.loc[index,matched_rows_first.columns]
+    return_groups_copy.drop(columns=['b_i','unmatched'],inplace=True)
+    return matched_rows,return_groups_copy,all_units_in_g

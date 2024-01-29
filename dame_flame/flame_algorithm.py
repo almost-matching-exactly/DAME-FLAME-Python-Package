@@ -7,10 +7,10 @@
 
 import pandas as pd
 import numpy as np
-
 from . import grouped_mr
 from . import dame_algorithm
 from . import flame_dame_helpers
+
 
 def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
                 treatment_column_name, outcome_column_name, df_holdout_array,
@@ -61,6 +61,7 @@ def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
         matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
             df_all_temp, df_unmatched, covs_match_on, all_covs,
             treatment_column_name, outcome_column_name, return_matches_temp)
+
 
         # find the BF for this covariate set's match.
         BF = flame_dame_helpers.compute_bf(matched_rows,
@@ -147,8 +148,8 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 						
     covs_match_on = all_covs
     matched_rows, return_matches, units_in_g = grouped_mr.algo2_GroupedMR(
-        df_all, df_unmatched, covs_match_on, all_covs, treatment_column_name,
-        outcome_column_name, return_matches)
+        df_all, df_unmatched, covs_match_on, all_covs,
+        treatment_column_name, outcome_column_name, return_matches)
 
     if (len(units_in_g)) != 0:
         bf = flame_dame_helpers.compute_bf(matched_rows, treatment_column_name, df_unmatched)
@@ -159,8 +160,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         # flatten to 1 list, then add occurrences of unique units
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-        for index in range(len(unique_units)):
-            weights['weights'][unique_units[index]] += occurrences[index]
+        weights.loc[unique_units,'weights'] += occurrences
     else:
         bf = 0
 
@@ -227,7 +227,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
                             "machine learning algorithm used to choose the "\
                             "covariate to drop. For help, please reach on "\
                             "github to the team. ")
-
         if (len(units_in_g)) != 0:
         # add the newly matched groups to MG_units, which tracks units in groups
             MG_units = MG_units + units_in_g
@@ -235,8 +234,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             # flatten to 1 list, then add occurrences of unique units
             flat_units_in_g = np.concatenate(units_in_g).ravel()
             unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
-            for index in range(len(unique_units)):
-                weights['weights'][unique_units[index]] += occurrences[index]
+            weights.loc[unique_units,'weights'] += occurrences
 
         # Check not equal to false because if it's turned off, value is False
         baseline_pe = max(1e-12, baseline_pe)
@@ -271,7 +269,6 @@ def flame_generic(df_all, treatment_column_name, weight_array,
 
             if want_bf:
                 print("\tBalancing Factor of this iteration: ", bf)
-
         # Do we switch to DAME?
         if (pre_dame and pre_dame <= h):
 
@@ -304,9 +301,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             return_package.append(return_matches_dame)
             return return_package
 
-
         # end loop.
-
     return_matches = return_matches.dropna(axis=0) #drop rows with nan
     return_package = [return_matches]
 
