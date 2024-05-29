@@ -65,9 +65,9 @@ where $\hat{Y}_i(0), \hat{Y}_i(1)$ are estimated using the units in $m$ with tre
 
 The Average Treatment Effect is defined to be: $\text{ATE} = \mathbb{E}[Y(1)-Y(0)]$. 
 
-Let $q_i$ denote the number of matched groups that unit $i$ appears in. Note this quantity can be greater than 1 in case that matching is done with replacement, via the `Repeats = True` argument. We then define the weight of a matched group $m$: $w_m=\sum_{i=1}^{\|m\|}\frac{1}{q_i}$. Since the CATE of each unit in a group is the same, we can call the CATE of group $m$ $\text{CATE}_m$. 
+Let $q_i$ denote the number of matched groups that unit $i$ appears in. Note this quantity can be greater than 1 in case that matching is done with replacement, via the `Repeats = True` argument. We then define the weight of a matched group $m$: $w_m=\sum_{i=1}^{\|m\|}{q_i}$. Since the CATE of each unit in a group is the same, we can call the CATE of group $m$ $\text{CATE}_m$. 
 
-We estimate ATE as: $\text{ATE} = \frac{\sum_{m}\text{CATE}_m \times w_m}{\sum_{m}w_m}$.
+We estimate ATE as: $\text{ATE} = \frac{\sum_{m}\text{CATE}_{m} \times w_m}{\sum_{m} w_m}$.
 
 Note that this expression downweights units matched many times so that they do not dominate the ATE estimate.
 
