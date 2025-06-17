@@ -5,12 +5,11 @@
 # Copyright Duke University 2020
 # License: MIT
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from . import grouped_mr
-from . import dame_algorithm
-from . import flame_dame_helpers
+from . import dame_algorithm, flame_dame_helpers, grouped_mr
+
 
 def decide_drop(all_covs, consider_dropping, prev_drop, df_all,
                 treatment_column_name, outcome_column_name, df_holdout_array,
@@ -160,7 +159,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
         flat_units_in_g = np.concatenate(units_in_g).ravel()
         unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
         for index in range(len(unique_units)):
-            weights['weights'][unique_units[index]] += occurrences[index]
+            weights.loc[unique_units[index], 'weights'] += occurrences[index]
     else:
         bf = 0
 
@@ -236,7 +235,7 @@ def flame_generic(df_all, treatment_column_name, weight_array,
             flat_units_in_g = np.concatenate(units_in_g).ravel()
             unique_units, occurrences = np.unique(flat_units_in_g, return_counts=True)
             for index in range(len(unique_units)):
-                weights['weights'][unique_units[index]] += occurrences[index]
+                weights.loc[unique_units[index], 'weights'] += occurrences[index]
 
         # Check not equal to false because if it's turned off, value is False
         baseline_pe = max(1e-12, baseline_pe)
