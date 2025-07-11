@@ -16,21 +16,6 @@ matrix:
    - name: "Python 3.9 sk-learn v1.4"
      python: 3.9
      env: SKLEARNVERSION=1.4
-   - name: "Python 3.6 sk-learn v0.23"
-     python: 3.6
-     env: SKLEARNVERSION=0.23
-   - name: "Python 3.6 sk-learn v0.24"
-     python: 3.6
-     env: SKLEARNVERSION=0.24
-   - name: "Python 3.7 sk-learn v0.23"
-     python: 3.7
-     env: SKLEARNVERSION=0.23
-   - name: "Python 3.7 sk-learn v0.24"
-     python: 3.7
-     env: SKLEARNVERSION=0.24
-   - name: "Python 3.7 sk-learn v1.0"
-     python: 3.7
-     env: SKLEARNVERSION=1.0
    - name: "Python 3.8 sk-learn v0.23"
      python: 3.8
      env: SKLEARNVERSION=0.23
