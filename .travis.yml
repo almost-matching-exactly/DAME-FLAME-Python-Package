@@ -55,6 +55,8 @@ matrix:
 
 before_install:
  - pip3 install cpp-coveralls
+ - pip install --upgrade pip setuptools ez_setup
+
 install:
  - sudo apt-get install unixodbc-dev
  - sudo apt-get install python-pip
@@ -64,7 +66,7 @@ install:
  - pip3 install -r opt-requirements.txt
  - pip3 install coverage
  - pip3 install nose
- - pip3 install setuptools==70.3.0
+ 
 script:
   - nosetests  --with-coverage --cover-package=dame_flame
 
