@@ -55,7 +55,7 @@ matrix:
 
 before_install:
  - pip3 install cpp-coveralls
- - pip install --upgrade pip setuptools ez_setup
+ - pip install setuptools==68
 
 install:
  - sudo apt-get install unixodbc-dev
