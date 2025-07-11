@@ -64,7 +64,7 @@ install:
  - pip3 install -r opt-requirements.txt
  - pip3 install coverage
  - pip3 install nose
- - pip3 install --upgrade numpy
+ - pip install --upgrade packaging
 script:
   - nosetests  --with-coverage --cover-package=dame_flame
 
