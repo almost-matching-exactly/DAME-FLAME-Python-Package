@@ -1,74 +1,88 @@
 language: python
-# ===== Linux ======
-# dist: xenial
 
 services:
- - postgresql
+  - postgresql
+
+env:
+  global:
+    - DEFAULT_SETUPTOOLS_VERSION=68
 
 matrix:
- include:      
-   - name: "Python 3.9 sk-learn v1.2"
-     python: 3.9
-     env: SKLEARNVERSION=1.2
-   - name: "Python 3.9 sk-learn v1.3"
-     python: 3.9
-     env: SKLEARNVERSION=1.3
-   - name: "Python 3.9 sk-learn v1.4"
-     python: 3.9
-     env: SKLEARNVERSION=1.4
-   - name: "Python 3.6 sk-learn v0.23"
-     python: 3.6
-     env: SKLEARNVERSION=0.23
-   - name: "Python 3.6 sk-learn v0.24"
-     python: 3.6
-     env: SKLEARNVERSION=0.24
-   - name: "Python 3.7 sk-learn v0.23"
-     python: 3.7
-     env: SKLEARNVERSION=0.23
-   - name: "Python 3.7 sk-learn v0.24"
-     python: 3.7
-     env: SKLEARNVERSION=0.24
-   - name: "Python 3.7 sk-learn v1.0"
-     python: 3.7
-     env: SKLEARNVERSION=1.0
-   - name: "Python 3.8 sk-learn v0.23"
-     python: 3.8
-     env: SKLEARNVERSION=0.23
-   - name: "Python 3.8 sk-learn v0.24"
-     python: 3.8
-     env: SKLEARNVERSION=0.24
-   - name: "Python 3.8 sk-learn v1.0"
-     python: 3.8
-     env: SKLEARNVERSION=1.0
-   - name: "Python 3.8 sk-learn v1.1"
-     python: 3.8
-     env: SKLEARNVERSION=1.1
-   - name: "Python 3.8 sk-learn v1.2"
-     python: 3.8
-     env: SKLEARNVERSION=1.2
-   - name: "Python 3.8 sk-learn v1.3"
-     python: 3.8
-     env: SKLEARNVERSION=1.3
-  
+  include:
+    - name: "Python 3.13 + scikit-learn 1.7"
+      python: 3.13
+      dist: jammy
+      env:
+        - SKLEARNVERSION=1.7
+        - PYTEST_VERSION=8
 
+    - name: "Python 3.12 + scikit-learn 1.7"
+      python: 3.12
+      dist: jammy
+      env:
+        - SKLEARNVERSION=1.7
+        - PYTEST_VERSION=8
+
+    - name: "Python 3.11 + scikit-learn 1.4"
+      python: 3.11
+      dist: focal
+      env:
+        - SKLEARNVERSION=1.4
+        - PYTEST_VERSION=8
+
+    - name: "Python 3.10 + scikit-learn 1.4"
+      python: "3.10"
+      dist: jammy
+      env:
+        - SKLEARNVERSION=1.4
+        - PYTEST_VERSION=8
+
+    - name: "Python 3.9 + scikit-learn 1.4"
+      python: 3.9
+      dist: xenial
+      env:
+        - SKLEARNVERSION=1.4
+        - PYTEST_VERSION=7
+
+    - name: "Python 3.8 + scikit-learn 1.2"
+      python: 3.8
+      dist: xenial
+      env:
+        - SKLEARNVERSION=1.2
+        - PYTEST_VERSION=7
+
+    - name: "Python 3.7 + scikit-learn 1.0"
+      python: 3.7
+      dist: xenial
+      env:
+        - SKLEARNVERSION=1.0
+        - PYTEST_VERSION=7
+
+    - name: "Python 3.6 + scikit-learn 0.23"
+      python: 3.6
+      dist: xenial
+      env:
+        - SKLEARNVERSION=0.23
+        - PYTEST_VERSION=6
+        - SETUPTOOLS_VERSION=57.5.0
 
 before_install:
- - pip3 install cpp-coveralls
-install:
- - sudo apt-get install unixodbc-dev
- - sudo apt-get install python-pip
- - pip install scikit-learn==$SKLEARNVERSION
- - pip3 install --upgrade pip
- - pip3 install -r requirements.txt
- - pip3 install -r opt-requirements.txt
- - pip3 install coverage
- - pip3 install nose
-script:
-  - nosetests  --with-coverage --cover-package=dame_flame
+  - pip3 install "setuptools==${SETUPTOOLS_VERSION:-$DEFAULT_SETUPTOOLS_VERSION}"
 
- 
- 
-before_script: psql -c 'create database tmp;' -U postgres
-script: travis_wait 30 nosetests  --with-coverage --cover-package=dame_flame tests/
+install:
+  - sudo apt-get update
+  - sudo apt-get install -y unixodbc-dev
+  - pip install scikit-learn==$SKLEARNVERSION
+  - pip install "pytest<$(($PYTEST_VERSION + 1)).0" pytest-cov
+  - pip install -r requirements.txt
+  - pip install -r opt-requirements.txt
+  - pip install coverage
+
+before_script:
+  - psql -c 'create database tmp;' -U postgres
+
+script:
+  - travis_wait 30 pytest --cov=dame_flame tests/
+
 after_success:
   - coveralls
