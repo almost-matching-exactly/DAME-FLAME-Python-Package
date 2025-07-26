@@ -3,9 +3,12 @@ language: python
 services:
   - postgresql
 
+env:
+  global:
+    - DEFAULT_SETUPTOOLS_VERSION=68
+
 matrix:
   include:
-    # Newer Python: use newer distros
     - name: "Python 3.13 + scikit-learn 1.7"
       python: 3.13
       dist: jammy
@@ -34,7 +37,6 @@ matrix:
         - SKLEARNVERSION=1.4
         - PYTEST_VERSION=8
 
-    # Older Python: stay on xenial
     - name: "Python 3.9 + scikit-learn 1.3"
       python: 3.9
       dist: xenial
@@ -62,9 +64,10 @@ matrix:
       env:
         - SKLEARNVERSION=0.23
         - PYTEST_VERSION=6
+        - SETUPTOOLS_VERSION=57.5.0
 
 before_install:
-  - pip3 install setuptools==68
+  - pip3 install "setuptools==${SETUPTOOLS_VERSION:-$DEFAULT_SETUPTOOLS_VERSION}"
 
 install:
   - sudo apt-get update
